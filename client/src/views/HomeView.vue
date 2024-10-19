@@ -1,40 +1,23 @@
 <template>
-  <div>
-    <ul>
-      <MoleculeListItem v-model="today"/>
-      <MoleculeListItem v-model="tomorrow"/>
-      <MoleculeListItem v-model="later"/>
-    </ul>
+  <div class="flex pl-10">
+    <OrganismTaskList class=""/>
   </div>
 </template>
   
 <script>
-import AtomCheckbox from '@/components/atoms/AtomCheckbox.vue';
-import MoleculeListItem from '@/components/molecules/MoleculeListItem.vue';
+import OrganismTaskList from '@/components/organisms/OrganismTaskList.vue';
 
 export default {
   components: {
-    AtomCheckbox,
-    MoleculeListItem
+    OrganismTaskList
   },
   data() {
     return {
-      today: { 
-        ttl: 'today',
-        name: 'Cuddle Olja',
-        done: false
-       },
-      tomorrow: { 
-        ttl: 'tomorrow',
-        name: 'Make Tea',
-        done: false
-      },
-      later: { 
-        ttl: 'later',
-        name: 'Go to Sleep',
-        done: true
-      }
     }
+  },
+  methods: {
+  },
+  mounted() {
   }
 }
 </script>

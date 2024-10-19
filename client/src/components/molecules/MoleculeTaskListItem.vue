@@ -1,7 +1,7 @@
 <template>
 
-<li>
-    <div class="flex min-w-96 min-h-16 p-2 border border-slate-300">
+<li class="w-full">
+    <div class="flex min-w-96 w-full min-h-16 p-2 border border-slate-300">
         <div class="flex my-auto mx-2 w-full">
             <AtomCheckbox :done="value.done" @clicked="handleClickCheck"/>
             <div class="flex items-center min-w-0 mx-8 flex-auto">
@@ -46,6 +46,10 @@ export default {
         this.$emit('update:modelValue', value)
       }
     }
+  },
+  mounted() {
+    console.log("mounted");
+    console.log(this.value)
   }
 }
 

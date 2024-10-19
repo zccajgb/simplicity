@@ -1,13 +1,15 @@
 <script setup>
+import OrganismSideNav from './components/organisms/OrganismSideNav.vue'
 import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
   <header>
   </header>
-  
-  <HomeView />
-  <RouterView />
+  <div id="app">
+    <OrganismSideNav />
+    <RouterView />
+  </div>
 </template>
 
 <style scoped>
