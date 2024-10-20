@@ -31,7 +31,7 @@ export default {
         { id: 5, value: 'tags' },
         { id: 6, value: 'search' }
       ],
-      selectedItemId: 1
+      selectedItemId: 0
     }
   },
   methods: {
@@ -39,6 +39,9 @@ export default {
       this.selectedItemId = item.id;
       this.$router.push({ name: item.value });
     }
-  }
+  },
+  mounted() {
+    this.selectedItemId = this.items.find(item => item.value === window.location.pathname.replace("/","")).id;
+  } 
 }
 </script>

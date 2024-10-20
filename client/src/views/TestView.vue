@@ -13,7 +13,12 @@ export default {
       task: {
        name: 'Task 1',
        done: false,
-       ttl: 'later'
+       ttl: 'later',
+       subtasks: [
+         { name: 'Subtask 1', done: false },
+         { name: 'Subtask 2', done: false },
+         { name: 'Subtask 3', done: false },
+       ],
       }
     }
   },

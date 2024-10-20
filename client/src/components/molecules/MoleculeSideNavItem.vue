@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/solid';
+import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 export default {
   props: [ "value", "selected" ],
   components: {

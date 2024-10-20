@@ -3,137 +3,164 @@ export function fakeTasks() {
     { 
       ttl: 'today',
       name: 'Cuddle Olja',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Make Tea',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Go to Sleep',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Milk',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Gym',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Breakfast',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Eggs',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Pool',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Lunch',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Bread',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Park',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Dinner',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Butter',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Beach',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Snacks',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Cheese',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Movies',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Dessert',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Jam',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Mall',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Supper',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Honey',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Zoo',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Midnight Snack',
-      done: true
+      done: true,
+      project: "inbox"
     },
     {
       ttl: 'today',
       name: 'Buy Sugar',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'tomorrow',
       name: 'Go to the Circus',
-      done: false
+      done: false,
+      project: "inbox"
     },
     { 
       ttl: 'later',
       name: 'Eat Brunch',
-      done: false
+      done: false,
+      project: "inbox"
     },
   ]
 }

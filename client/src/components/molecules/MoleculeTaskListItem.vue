@@ -3,7 +3,12 @@
 <li class="w-full">
     <div class="flex min-w-96 w-full min-h-16 p-2 border border-slate-300">
         <div class="flex my-auto mx-2 w-full">
-            <AtomCheckbox :done="value.done" @clicked="handleClickCheck"/>
+            <AtomCheckbox 
+            :done="value.done" 
+            @clicked="handleClickCheck" 
+            class="h-7 w-7" 
+            :class="value.done ? 'text-slate-300' : 'text-slate-400'"
+            />
             <div class="flex items-center min-w-0 mx-8 flex-auto">
                 <p class="text-lg leading-6" :class="value.done ? 'line-through text-slate-300' : 'text-slate-500'">{{value.name}}</p>
             </div>

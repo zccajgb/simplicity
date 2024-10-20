@@ -1,7 +1,7 @@
 <template>
-    <div @click="$emit('clicked')" class="flex items-center h-8 w-8">
-        <IconCheckboxChecked v-if="done" class="text-slate-300"/>
-        <IconCheckboxUnchecked v-else class="text-slate-400"/>
+    <div @click="$emit('clicked')" class="flex items-center">
+        <IconCheckboxChecked v-if="done"/>
+        <IconCheckboxUnchecked v-else/>
     </div>
 </template>
 

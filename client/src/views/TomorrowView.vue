@@ -4,7 +4,7 @@
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getTodayTasks } from '@/api/helperApi';
+import { getTomorrowTasks } from '@/api/helperApi';
 export default {
   components: {
     OrganismDayView,
@@ -16,7 +16,7 @@ export default {
   },
   methods: {
     getTasks() {
-      return getTodayTasks();
+      return getTomorrowTasks();
     },
   },
   mounted() {

@@ -11,3 +11,7 @@ export function getTodayTasks() {
 export function getTomorrowTasks() {
   return fakeTasks().filter(task => task.ttl === 'tomorrow');
 }
+
+export function getInboxTasks() {
+  return fakeTasks().filter(task => task.project === 'inbox');
+}
