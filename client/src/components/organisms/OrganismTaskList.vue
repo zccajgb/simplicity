@@ -1,33 +1,33 @@
 <template>
-  <div>
+  <div class="">
     <ul>
-      <MoleculeTaskListItem v-for="(_, index) in tasks" :key="index" v-model="tasks[index]"/>
+      <MoleculeTaskListItem v-for="(_, index) in tasks" :key="index" v-model="tasks[index]" @click="$emit('selected', index)"/>
     </ul>
   </div>
 </template>
   
 <script>
-import { getAllTasks } from '@/api/helperApi';
 import MoleculeTaskListItem from '@/components/molecules/MoleculeTaskListItem.vue';
 
 export default {
   components: {
     MoleculeTaskListItem
   },
-  data() {
-    return {
-      tasks: []
+  props: {
+    modelValue: {
+      type: Array,
+      required: true
     }
   },
-  methods: {
-    getTasks() {
-      console.log('getTasks');
-      return getAllTasks();
+  computed: {
+    tasks: {
+      get() {
+        return this.modelValue
+      },
+      set(value) {
+        this.$emit('update:modelValue', value)
+      }
     }
-  },
-  mounted() {
-    this.tasks = this.getTasks();
-    console.log(this.tasks);
   }
 }
 </script>

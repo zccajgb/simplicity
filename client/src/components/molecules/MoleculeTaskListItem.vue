@@ -7,7 +7,7 @@
             <div class="flex items-center min-w-0 mx-8 flex-auto">
                 <p class="text-lg leading-6" :class="value.done ? 'line-through text-slate-300' : 'text-slate-500'">{{value.name}}</p>
             </div>
-            <AtomTTL  class="flex items-center justify-end right-0" :ttl="value.ttl" :done="value.done" @clicked="handleClickIcon"/>
+            <AtomTTL  class="flex items-center justify-end right-0 " :class="value.done ? 'text-slate-200' : 'text-slate-500'" :ttl="value.ttl" @clicked="handleClickIcon"/>
         </div>
     </div>
   </li>
@@ -48,8 +48,6 @@ export default {
     }
   },
   mounted() {
-    console.log("mounted");
-    console.log(this.value)
   }
 }
 

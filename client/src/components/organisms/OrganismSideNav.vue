@@ -1,7 +1,7 @@
 <template>
-  <div class="flex m-5">
-    <aside class="fixed top-0 left-0 w-64 h-full bg-slate-800 text-white">
-      <nav>
+  <!-- <div class="flex"> -->
+    <aside class="top-0 left-0 p-0 m-0">
+    <div class="top-0 left-0 w-64 m-0 h-full bg-slate-800 text-white">
       <ul>
           <MoleculeSideNavItem 
             v-for="item in items" 
@@ -11,9 +11,8 @@
             @click="handleSelect(item)"
           />
       </ul>
-      </nav>
-    </aside>
-  </div>
+    </div>
+  </aside>
 </template>
 
 <script>
