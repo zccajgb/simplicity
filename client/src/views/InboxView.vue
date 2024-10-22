@@ -20,6 +20,7 @@ export default {
     },
   },
   mounted() {
+    console.log("gettingTasks");
     this.tasks = this.getTasks();
   }
 }

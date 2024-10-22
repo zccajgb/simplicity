@@ -1,12 +1,7 @@
 <template>
   <div class="w-full">
     <div class="p-1">
-      <div class="flex px-2">
-        <div class="inline-flex items-center w-full rounded-full border border-slate-900 m-1 p-2">
-          <MagnifyingGlassIcon class="h-6 w-6 text-slate-900"/>
-          <input class="text-lg w-full px-2" placeholder="search" @input="filterTasks"/>
-        </div>
-      </div>
+      <AtomSearchBar @input="filterTasks"/>
     </div>
   <OrganismDayView v-model="tasks"/>
   </div>
@@ -15,11 +10,12 @@
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getAllTasks } from '@/api/helperApi';
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
+
 export default {
   components: {
     OrganismDayView,
-    MagnifyingGlassIcon
+    AtomSearchBar,
   },
   data() {
     return {
@@ -31,7 +27,12 @@ export default {
       return getAllTasks();
     },
     filterTasks($event) {
-      this.tasks = this.getTasks().filter(task => task.name.toLowerCase().includes($event.target.value.toLowerCase()));
+      if (!$event || $event === "") {
+        this.tasks = this.getTasks();
+        return;
+      }
+      let searchTerm = $event.target.value;
+      this.tasks = this.getTasks().filter(task => task.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
   },
   mounted() {

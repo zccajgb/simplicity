@@ -1,4 +1,4 @@
-import { fakeTasks } from "./helperTestData";
+import { fakeTasks, fakeProjects, fakeTags } from "./helperTestData";
 
 export function getAllTasks() {
   return fakeTasks();
@@ -13,5 +13,25 @@ export function getTomorrowTasks() {
 }
 
 export function getInboxTasks() {
-  return fakeTasks().filter(task => task.project === 'inbox');
+  let tasks = fakeTasks().filter(task => task.project == 0);
+  console.log(tasks);
+  return tasks;
+}
+
+export function getProjects() {
+  return fakeProjects();
+}
+export function getProjectsWithoutInbox() {
+  return fakeProjects().filter(project => project.name !== 'inbox');
+}
+
+export function getTags() {
+  return fakeTags();
+}
+
+export function getTasksByProjectId(projectId) {
+  return fakeTasks().filter(task => task.project == projectId);
+}
+export function getTasksByTagId(tagId) {
+  return fakeTasks().filter(task => task.tags.some(id => id == tagId));
 }
