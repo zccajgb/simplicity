@@ -1,5 +1,5 @@
 <template>
-  <div v-if="header">
+  <div v-show="header">
     <div class="inline-flex items-center w-full min-h-8 bg-slate-700 mb-0">  
       <div class="h-full p-4 hover:bg-slate-400" @click="$emit('back')">
         <ArrowLeftIcon class="h-6 w-6"/>
@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="">
-      <AtomSearchBar @input="$emit('filterItems', $event)"/>
+      <AtomSearchBar @input="$emit('filterItems', $event)" ref="search" />
     </div>
   </div>
   <MoleculeSideNavItem
@@ -19,6 +19,12 @@
   :selected="selectedItemId === item.id"
   @click="$emit('select', item)"
   />
+  <div v-if="addable">
+    <AtomAddInput ref="addItem" :saveFunction="handleAdd" :defaultText="$refs?.search?.$refs?.input" v-model="showAdd" class="bg-slate-700"/>
+    <div class="absolute bottom-0 w-1/3 pb-6 px-4">
+        <AtomAddButton v-model="showAdd" :focusRef="$refs.addItem" :lightMode="false"/>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -26,17 +32,55 @@
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
 import MoleculeSideNavItem from '@/components/molecules/MoleculeSideNavItem.vue';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
+import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
 
 export default {
   components: {
     MoleculeSideNavItem,
     ArrowLeftIcon,
-    AtomSearchBar
+    AtomSearchBar,
+    AtomAddButton,
+    AtomAddInput
   },
-  props: [ "items", "selectedItemId", "header" ],
+  emits: ['select', 'back', 'filterItems', 'add'],
+  props: {
+    modelValue: {
+      type: Array,
+      required: true
+    },
+    selectedItemId: {
+      type: Number,
+      required: false
+    },
+    header: {
+      type: String,
+      required: false
+    },
+    addable: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
+      showAdd: false
     }
+  },
+  methods: {
+    handleAdd($event) {
+      this.$emit("add", $event.target.value);
+    },
+  },
+  computed: {
+    items: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit('update:modelValue', value);
+      },
+    },
   }
 }
 </script>

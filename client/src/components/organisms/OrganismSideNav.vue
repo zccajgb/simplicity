@@ -5,24 +5,29 @@
       <ul>
         <div v-if="type==='projects'">
           <MoleculeSideNavGroup 
-          :items="projects" 
+          v-model="projects" 
           :selectedItemId="selectedItemId" 
           @select="handleSelectProject" 
+          :addable="true"
           @back="handleBack" 
           header="projects"
-          @filterItems="handleFilterProjects"/>
+          @filterItems="handleFilterProjects"
+          @add="handleAddProject"
+          />
         </div>
         <div v-else-if="type==='tags'">
           <MoleculeSideNavGroup 
-          :items="tags" 
+          v-model="tags" 
           :selectedItemId="selectedItemId" 
           @select="handleSelectTag" 
           @back="handleBack" 
+          :addable="true"
           header="tags"
-          @filterItems="handleFilterTags"/>
+          @filterItems="handleFilterTags"
+          @add="handleAddTag"/>
         </div>
          <div v-else>
-          <MoleculeSideNavGroup :items="items" :selectedItemId="selectedItemId" @select="handleSelect"/>
+          <MoleculeSideNavGroup v-model="items" :selectedItemId="selectedItemId" @select="handleSelect"/>
         </div>
       </ul>
     </div>
@@ -30,7 +35,7 @@
 </template>
 
 <script>
-import { getProjectsWithoutInbox, getTags } from '@/api/helperApi';
+import { getProjectsWithoutInbox, getTags, addProject, addTag } from '@/api/helperApi';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
 export default {
   components: {
@@ -100,10 +105,23 @@ export default {
     },
     getTags() {
       this.tags = getTags();
-    }
+    },
+    handleAddProject(value) {
+      if (value.trim() === '') return;
+      addProject(value);
+    },
+    handleAddTag(value) {
+      if (value.trim() === '') return;
+      addTag(value);
+    },
   },
   mounted() {
-    this.selectedItemId = this.items.find(item => item.name === window.location.pathname.replace("/","")).id;
+    let selected = this.items.find(item => item.name === window.location.pathname.replace("/",""));
+    if (selected) {
+      this.selectedItemId = selected.id;
+      return;
+    }
+    this.selectedItemId = 1;
   } 
 }
 </script>

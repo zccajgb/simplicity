@@ -1,25 +1,22 @@
 <template>
-  <OrganismSelectedTask v-model="task"/>
+  <div class="w-1/4">
+    <MoleculeSelectRepeatModal v-model="repeat"/>
+    
+  </div>
+  <div>
+  </div>
 </template>
 <script>
-import OrganismSelectedTask from '@/components/organisms/OrganismSelectedTask.vue';
-
+import MoleculeSelectRepeatModal from '@/components/molecules/MoleculeSelectRepeatModal.vue';
 export default {
   components: {
-    OrganismSelectedTask,
+    MoleculeSelectRepeatModal,
   },
   data() {
     return {
-      task: {
-       name: 'Task 1',
-       done: false,
-       ttl: 'later',
-       subtasks: [
-         { name: 'Subtask 1', done: false },
-         { name: 'Subtask 2', done: false },
-         { name: 'Subtask 3', done: false },
-       ],
-      }
+      task: null,
+      repeat: null,
+      dropdown: [1, 2, 3, 4, 5],
     }
   },
   methods: {
