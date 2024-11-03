@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView v-model="tasks"/>
+  <OrganismDayView v-model="tasks" :tagId="tagId"/>
 </template>
   
 <script>

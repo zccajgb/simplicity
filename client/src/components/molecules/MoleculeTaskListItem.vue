@@ -1,7 +1,7 @@
 <template>
 
 <li class="w-full">
-    <div class="flex min-w-96 w-full min-h-16 p-2 border border-slate-300">
+    <div class="flex w-full min-h-16 p-2 border border-slate-300">
         <div class="flex my-auto mx-2 w-full">
             <AtomCheckbox 
             :done="value.done" 
