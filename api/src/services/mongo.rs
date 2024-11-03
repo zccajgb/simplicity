@@ -4,21 +4,8 @@ use mongodb::{options::ClientOptions, Client};
 
 pub async fn get_client() -> Result<Client> {
     let mongourl = std::env::var("MONGO_URL").expect("MONGO_URL must be set");
-    println!("Connecting to MongoDb at {}", mongourl);
     let mut client_options = ClientOptions::parse(mongourl).await?;
     // client_options.app_name = Some("".to_string());
     let client = Client::with_options(client_options)?;
-
-    println!("got client");
-    client
-        .database("admin")
-        .run_command(doc! { "ping": 1 })
-        .await?;
-
-    println!("got ping");
-
-    for name in client.list_database_names().await? {
-        println!("- {}", name);
-    }
     Ok(client)
 }

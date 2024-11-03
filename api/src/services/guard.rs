@@ -8,7 +8,6 @@ impl<'r> FromRequest<'r> for User {
 
     async fn from_request(request: &'r rocket::Request<'_>) -> request::Outcome<Self, Self::Error> {
         let token = request.headers().get_one("Authorization");
-
         let Some(token) = token else {
             return Outcome::Error((Status::Unauthorized, ()));
         };

@@ -1,66 +1,66 @@
-import { fakeTasks, fakeProjects, fakeTags } from "./helperTestData";
 import deepEqual from "deep-equal";
+import axios from 'axios';
 
-export function getAllTasks() {
-  return fakeTasks();
-}
-
-export function getTodayTasks() {
-  return fakeTasks().filter(task => task.ttl === 'today');
+const apiUri = 'http://localhost:8000';
+export async function getAllTasks() {
+  return await axios.get(`${apiUri}/tasks`);
 }
 
-export function getTomorrowTasks() {
-  return fakeTasks().filter(task => task.ttl === 'tomorrow');
+export async function getTodayTasks() {
+  return axios.get(`${apiUri}/tasks/today`)
 }
 
-export function getInboxTasks() {
-  let tasks = fakeTasks().filter(task => task.project == 0);
-  console.log(tasks);
-  return tasks;
+export async function getTomorrowTasks() {
+  return await axios.get(`${apiUri}/tasks/tomorrow`)
 }
 
-export function getProjects() {
-  return fakeProjects();
-}
-export function getProjectsWithoutInbox() {
-  return fakeProjects().filter(project => project.name !== 'inbox');
+export async function getInboxTasks() {
+  return await axios.get(`${apiUri}/tasks/inbox`)
 }
 
-export function getTags() {
-  return fakeTags();
+export async function getProjects() {
+  return await axios.get(`${apiUri}/projects`);
+}
+export async function getProjectsWithoutInbox() {
+  return await axios.get(`${apiUri}/projects/withoutInbox`);
 }
 
-export function getTasksByProjectId(projectId) {
-  return fakeTasks().filter(task => task.project == projectId);
+export async function getTags() {
+  return await axios.get(`${apiUri}/tags`);
 }
-export function getTasksByTagId(tagId) {
-  return fakeTasks().filter(task => task.tags.some(id => id == tagId));
+  
+
+export async function getTasksByProjectId(projectId) {
+  return await axios.get(`${apiUri}/tasks/project/${projectId}`);
+}
+export async function getTasksByTagId(tagId) {
+  return await axios.get(`${apiUri}/tasks/tag/${tagId}`);
 }
 
-export function getProjectById(projectId) {
-  return fakeProjects().find(project => project.id == projectId);
+export async function getProjectById(projectId) {
+  return await axios.get(`${apiUri}/projects/${projectId}`);  
 }
 
-export function getTaskById(taskId) {
-  return fakeTasks().find(task => task.id == taskId);
+export async function getTaskById(taskId) {
+  return await axios.get(`${apiUri}/tasks/${taskId}`);
 }
 
-export function updateTask(task) {
+export async function updateTask(task) {
   let savedTask = getTaskById(task.id); 
   if (!savedTask) return { error: 'Task not found', task: null };
 
   if (deepEqual(savedTask, task)) return { task, error: null };
 
-  // save()
-  return { task, error: null };
+  return await axios.put(`${apiUri}/tasks/${task.id}`, task);
 }
 
-export function addProject(project) {
-  return { project, error: null };
+export async function addProject(project) {
+  return await axios.post(`${apiUri}/projects`, project);
 }
-export function addTask(task) {
-  return { task, error: null };
+  
+export async function addTask(task) {
+  return await axios.post(`${apiUri}/tasks`, task);
 }
-export function addTag(tag) {
-  return { tag, error: null };
+export async function addTag(tag) {
+  return await axios.post(`${apiUri}/tags`, tag);
 }
