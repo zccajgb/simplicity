@@ -21,6 +21,7 @@ export default {
       logout: 'logout'
   }),
     async handleLogin(authResponse) {
+      await this.helperApi.handleLogin(authResponse);
       await this.$store.dispatch('login', authResponse, { root: true });
       // await this.login(authResponse);
       // Redirect after successful login

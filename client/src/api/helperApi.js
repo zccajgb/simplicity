@@ -64,3 +64,7 @@ export async function addTask(task) {
 export async function addTag(tag) {
   return await axios.post(`${apiUri}/tags`, tag);
 }
+
+export async function handleLogin(auth) {
+  return await axios.get(`${apiUri}/login`, auth);
+}
