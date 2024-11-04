@@ -6,6 +6,7 @@
 import { GoogleLogin } from 'vue3-google-login';
 import { jwtDecode } from 'jwt-decode';
 import { mapActions } from 'vuex';
+import { handleLogin } from '@/api/helperApi';
 
 export default {
   components: {
@@ -21,7 +22,7 @@ export default {
       logout: 'logout'
     }),
     async handleLogin(authResponse) {
-      await this.helperApi.handleLogin(authResponse);
+      await handleLogin(authResponse.credential);
       await this.$store.dispatch('login', authResponse, { root: true });
       // await this.login(authResponse);
       // Redirect after successful login
