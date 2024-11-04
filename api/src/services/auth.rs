@@ -1,6 +1,7 @@
 use anyhow::Result;
-use google_jwt_signin::{Client, Token};
+use google_jwt_signin::Client;
 
+#[derive(Clone)]
 pub struct User {
     pub id: String,
 }
@@ -13,7 +14,7 @@ pub fn validate_token(token: &str) -> Result<()> {
         return Err(anyhow::anyhow!("Token not valid"));
     };
 
-    return Ok(());
+    Ok(())
 }
 
 pub fn validate_token_and_get_user(token: &str) -> Result<User> {
@@ -26,5 +27,5 @@ pub fn validate_token_and_get_user(token: &str) -> Result<User> {
     let user = User {
         id: token_info.claims.subject,
     };
-    return Ok(user);
+    Ok(user)
 }

@@ -1,5 +1,7 @@
 use dotenv::dotenv;
-use routes::tasks::get_routes;
+use routes::projects;
+use routes::tags;
+use routes::tasks;
 use services::fairing::AuthFairing;
 
 mod repos;
@@ -9,13 +11,12 @@ mod services;
 #[macro_use]
 extern crate rocket;
 
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
-
 #[launch]
 fn rocket() -> _ {
     dotenv().ok();
-    rocket::build().mount("/", get_routes()).attach(AuthFairing)
+    rocket::build()
+        .mount("/", tags::get_routes())
+        .mount("/", tasks::get_routes())
+        .mount("/", projects::get_routes())
+        .attach(AuthFairing)
 }
