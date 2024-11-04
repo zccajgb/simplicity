@@ -1,7 +1,7 @@
+use crate::domain::user::User;
 use crate::repos::project_repo;
 use crate::repos::project_repo::{get_all_projects_for_user, get_project_by_id_for_user, Project};
 use crate::services::api_error::{ApiError, ApiJsonResult, ResultExt};
-use crate::services::auth::User;
 use bson::oid::ObjectId;
 use rocket::serde::json::Json;
 

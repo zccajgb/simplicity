@@ -1,8 +1,7 @@
+use crate::domain::user::User;
 use anyhow::Result;
 use google_jwt_signin::Client;
 use log::error;
-use rocket::http::impl_from_uri_param_identity;
-use crate::domain::user::User;
 
 pub fn validate_token(token: &str) -> Result<()> {
     let client_id = std::env::var("GOOGLE_CLIENT_ID").expect("GOOGLE_CLIENT_ID must be set");

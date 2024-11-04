@@ -1,4 +1,4 @@
-use crate::services::auth::User;
+use crate::domain::user::User;
 use crate::services::mongo::get_client;
 use anyhow::{anyhow, Result};
 use bson::oid::ObjectId;
@@ -85,13 +85,13 @@ pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
     }
 }
 
-pub async fn does_inbox_exist_for_user(user: User) -> Result<bool> {
+pub async fn does_inbox_exist_for_user(user: &User) -> Result<bool> {
     let collection = get_projects_collection().await?;
     let filter = doc! { "user_id": user.id.clone(), "name": "inbox" };
     let project = collection.find_one(filter).await?;
     match project {
         Some(_) => Ok(true),
-        None(_) => Ok(false),
+        None => Ok(false),
     }
 }
 

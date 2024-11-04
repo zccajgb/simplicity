@@ -1,4 +1,5 @@
-use super::auth::{validate_token_and_get_user, User};
+use super::auth::validate_token_and_get_user;
+use crate::domain::user::User;
 use log::error;
 use rocket::http::Status;
 use rocket::request::{self, FromRequest, Outcome};

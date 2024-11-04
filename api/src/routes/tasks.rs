@@ -1,3 +1,4 @@
+use crate::domain::user::User;
 use crate::repos::project_repo::{get_inbox_id_for_user, get_project_by_id_for_user};
 use crate::repos::tag_repo::get_tag_by_id_for_user;
 use crate::repos::task_repo::{
@@ -8,7 +9,6 @@ use crate::repos::task_repo::{
 use crate::routes::tasks;
 use crate::services::api_error::ApiError;
 use crate::services::api_error::{ApiJsonResult, ResultExt};
-use crate::services::auth::User;
 use anyhow::{anyhow, Result};
 use bson::oid::ObjectId;
 use rocket::serde::json::Json;

@@ -1,8 +1,8 @@
-use crate::services::api_error::{ApiJsonResult, ResultExt};
-use crate::{
-    repos::tag_repo::{add_tag_for_user, get_all_tags_for_user, get_tag_by_id_for_user, Tag},
-    services::auth::User,
+use crate::domain::user::User;
+use crate::repos::tag_repo::{
+    add_tag_for_user, get_all_tags_for_user, get_tag_by_id_for_user, Tag,
 };
+use crate::services::api_error::{ApiJsonResult, ResultExt};
 use bson::oid::ObjectId;
 use rocket::serde::json::Json;
 

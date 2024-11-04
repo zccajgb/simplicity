@@ -1,25 +1,22 @@
-use repos::project_repo::does_inbox_exist_for_user;
-use repos::project_repo::create_inbox_for_user;
+use crate::repos::project_repo::create_inbox_for_user;
+use crate::repos::project_repo::does_inbox_exist_for_user;
+use anyhow::Result;
+
 #[derive(Clone)]
 pub struct User {
     pub id: String,
 }
 
 impl User {
-    pub fn new(id: String) -> Self {
-        Self { id }
+    pub async fn does_user_exist(user: &User) -> Result<bool> {
+        does_inbox_exist_for_user(user).await
     }
 
-    pub fn does_user_exist(user: &User) -> Result<()> {
-        let does_exist = does_inbox_exist_for_user(user.id)?;
-        Ok(())
-    }
-
-    pub fn create_user(&user: User) -> Result<ObjectId> {
-        if let Ok(_) = User::does_user_exist(&user) {
-            anyhow::bail!("User already exists");
+    pub async fn create_user(user: User) -> Result<()> {
+        let exists = User::does_user_exist(&user).await?;
+        if !exists {
+            create_inbox_for_user(user).await?;
         }
-
-        create_inbox_for_user(user.id).await
+        Ok(())
     }
 }

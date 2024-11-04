@@ -1,9 +1,8 @@
-use crate::services::auth::User;
+use crate::domain::user::User;
 use crate::services::mongo::get_client;
 use anyhow::Result;
 use bson::oid::ObjectId;
 use futures::stream::TryStreamExt;
-use log::error;
 use mongodb::bson;
 use mongodb::bson::doc;
 use mongodb::Collection;
