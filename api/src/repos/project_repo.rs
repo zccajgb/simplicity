@@ -84,3 +84,23 @@ pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
         }
     }
 }
+
+pub async fn does_inbox_exist_for_user(user: User) -> Result<bool> {
+    let collection = get_projects_collection().await?;
+    let filter = doc! { "user_id": user.id.clone(), "name": "inbox" };
+    let project = collection.find_one(filter).await?;
+    match project {
+        Some(_) => Ok(true),
+        None(_) => Ok(false),
+    }
+}
+
+pub async fn create_inbox_for_user(user: User) -> Result<ObjectId> {
+    let project = Project {
+        _id: ObjectId::new(),
+        user_id: user.id.clone(),
+        name: "inbox".into(),
+        completed: false,
+    };
+    add_project(user, project).await
+}

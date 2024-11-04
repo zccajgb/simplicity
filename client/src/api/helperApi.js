@@ -1,70 +1,95 @@
 import deepEqual from "deep-equal";
 import axios from 'axios';
 
+async function helperGet(uri, token) {
+  return await axios.get(uri, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}
+
+async function helperPost(uri, data, token) {
+  return await axios.post(uri, data, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}
+
+async function helperPut(uri, data, token) {
+  return await axios.put(uri, data, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}
+
+
 const apiUri = 'http://localhost:8000';
-export async function getAllTasks() {
-  return await axios.get(`${apiUri}/tasks`);
+export async function getAllTasks(token) {
+  return await helperGet(`${apiUri}/tasks`, token);
 }
 
-export async function getTodayTasks() {
-  return axios.get(`${apiUri}/tasks/today`)
+export async function getTodayTasks(token) {
+  return helperGet(`${apiUri}/tasks/today`, token);
 }
 
-export async function getTomorrowTasks() {
-  return await axios.get(`${apiUri}/tasks/tomorrow`)
+export async function getTomorrowTasks(token) {
+  return await helperGet(`${apiUri}/tasks/tomorrow`, token);
 }
 
-export async function getInboxTasks() {
-  return await axios.get(`${apiUri}/tasks/inbox`)
+export async function getInboxTasks(token) {
+  return await helperGet(`${apiUri}/tasks/inbox`, token);
 }
 
-export async function getProjects() {
-  return await axios.get(`${apiUri}/projects`);
+export async function getProjects(token) {
+  return await helperGet(`${apiUri}/projects`, token);
 }
-export async function getProjectsWithoutInbox() {
-  return await axios.get(`${apiUri}/projects/withoutInbox`);
+export async function getProjectsWithoutInbox(token) {
+  return await helperGet(`${apiUri}/projects/withoutInbox`, token);
 }
 
-export async function getTags() {
-  return await axios.get(`${apiUri}/tags`);
+export async function getTags(token) {
+  return await helperGet(`${apiUri}/tags`, token);
 }
   
 
-export async function getTasksByProjectId(projectId) {
-  return await axios.get(`${apiUri}/tasks/project/${projectId}`);
+export async function getTasksByProjectId(projectId, token) {
+  return await helperGet(`${apiUri}/tasks/project/${projectId}`, token);
 }
-export async function getTasksByTagId(tagId) {
-  return await axios.get(`${apiUri}/tasks/tag/${tagId}`);
-}
-
-export async function getProjectById(projectId) {
-  return await axios.get(`${apiUri}/projects/${projectId}`);  
+export async function getTasksByTagId(tagId, token) {
+  return await helperGet(`${apiUri}/tasks/tag/${tagId}`, token);
 }
 
-export async function getTaskById(taskId) {
-  return await axios.get(`${apiUri}/tasks/${taskId}`);
+export async function getProjectById(projectId, token) {
+  return await helperGet(`${apiUri}/projects/${projectId}`, token);  
 }
 
-export async function updateTask(task) {
-  let savedTask = getTaskById(task.id); 
+export async function getTaskById(taskId, token) {
+  return await helperGet(`${apiUri}/tasks/${taskId}`, token);
+}
+
+export async function updateTask(task, token) {
+  let savedTask = getTaskById(task.id, token); 
   if (!savedTask) return { error: 'Task not found', task: null };
 
   if (deepEqual(savedTask, task)) return { task, error: null };
 
-  return await axios.put(`${apiUri}/tasks/${task.id}`, task);
+  return await helperPut(`${apiUri}/tasks/${task.id}`, task);
 }
 
-export async function addProject(project) {
-  return await axios.post(`${apiUri}/projects`, project);
+export async function addProject(project, token) {
+  return await helperPost(`${apiUri}/projects`, project, token);
 }
   
-export async function addTask(task) {
-  return await axios.post(`${apiUri}/tasks`, task);
+export async function addTask(task, token) {
+  return await helperPost(`${apiUri}/tasks`, task, token);
 }
-export async function addTag(tag) {
-  return await axios.post(`${apiUri}/tags`, tag);
+export async function addTag(tag, token) {
+  return await helperPost(`${apiUri}/tags`, tag, token);
 }
 
-export async function handleLogin(auth) {
-  return await axios.get(`${apiUri}/login`, auth);
+export async function handleLogin(loginData) {
+  return await helperGet(`${apiUri}/login`, loginData);
 }

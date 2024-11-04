@@ -23,7 +23,7 @@ import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
 import { getProjects, getTags, getAllTasks, addProject, addTask, addTag } from '@/api/helperApi';
 import MoleculeMenuItem from './MoleculeMenuItem.vue';
-
+import { mapGetters } from 'vuex';
 export default {
   props: ['modelValue', 'itemtype', 'multiselect'],
   data() {
@@ -39,14 +39,18 @@ export default {
     MoleculeMenuItem,
   },
   methods: {
+    ...mapGetters(
+      ['getToken']
+    ),
     getItems() {
       let items;
+      let token = this.getToken();
       if (this.itemtype === 'project') {
-        items = getProjects();
+        items = getProjects(token);
       } else if (this.itemtype === 'tasks') {
-        items = getAllTasks();
+        items = getAllTasks(token);
       } else  {
-        items = getTags();
+        items = getTags(token);
       }
       return items;
     },

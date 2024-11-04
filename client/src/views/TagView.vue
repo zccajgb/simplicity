@@ -5,6 +5,8 @@
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getTasksByTagId } from '@/api/helperApi';
+import { mapGetters } from 'vuex';
+
 export default {
   components: {
     OrganismDayView,
@@ -16,8 +18,12 @@ export default {
     }
   },
   methods: {
+    ...mapGetters(
+      ['getToken']
+    ),
     getTasks(tagId) {
-      let tasks = getTasksByTagId(tagId);
+      let token = this.getToken();
+      let tasks = getTasksByTagId(tagId, token);
       this.tasks = tasks;
     },
   },

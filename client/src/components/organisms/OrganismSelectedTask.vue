@@ -118,6 +118,7 @@ import { getProjectById, updateTask } from '@/api/helperApi';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
+import { mapGetters } from 'vuex';
 
 export default {
   props: ['modelValue'],
@@ -151,6 +152,9 @@ export default {
     clickOutside: vueClickOutside
   },
   methods: {
+    ...mapGetters(
+      ['getToken']
+    ),
     updateName(event) {
       this.model.name = event.target.innerText
     },
@@ -235,13 +239,15 @@ export default {
       $event.target.value = '';
     },
     getProjectName(projectId) {
-      return getProjectById(projectId).name;
+      let token = this.getToken();
+      return getProjectById(projectId, token).name;
     },
     close() {
       this.selector = null;
     },
     saveTask() {
-      updateTask(this.model);
+      let token = this.getToken();
+      updateTask(this.model, token);
     },
   },
   computed: {
