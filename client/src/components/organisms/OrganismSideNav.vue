@@ -36,6 +36,7 @@
 
 <script>
 import { getProjectsWithoutInbox, getTags, addProject, addTag } from '@/api/helperApi';
+import { mapGetters } from 'vuex';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
 export default {
   components: {
@@ -58,20 +59,24 @@ export default {
     }
   },
   methods: {
+    ...mapGetters(
+      ['getToken']
+    ),
     handleBack() {
       this.type = "main";
       this.selectedItemId = null;
     },
     handleSelect(item) {
+      let token = this.getToken();
       if (this.selectedItemId === item.id) return;
       if (item.name === 'projects') {
         this.type = 'projects';
-        this.getProjects();
+        this.getProjects(token);
         return;
       }
       if (item.name === 'tags') {
         this.type = 'tags';
-        this.getTags();
+        this.getTags(token);
         return;
       }
       this.type = "main";
@@ -87,32 +92,38 @@ export default {
       this.$router.push({ name: "tags", params: { tagId: item.id } });
     },
     handleFilterProjects($event) {
+      let token = this.getToken();
       if (!$event || $event === "") {
-        this.projects = getProjectsWithoutInbox();
+        this.projects = getProjectsWithoutInbox(token);
         return;
       }
-      this.projects = getProjectsWithoutInbox().filter(project => project.name.includes($event.target.value));
+      this.projects = getProjectsWithoutInbox(token).filter(project => project.name.includes($event.target.value));
     },
     handleFilterTags($event) {
+      let token = this.getToken();
       if (!$event || $event === "") {
-        this.tags = getTags();
+        this.tags = getTags(token);
         return;
       }
-      this.tags = getTags().filter(tag => tag.name.includes($event.target.value));
+      this.tags = getTags(token).filter(tag => tag.name.includes($event.target.value));
     },
     getProjects() {
-      this.projects = getProjectsWithoutInbox();
+      let token = this.getToken();
+      this.projects = getProjectsWithoutInbox(token);
     },
     getTags() {
-      this.tags = getTags();
+      let token = this.getToken();
+      this.tags = getTags(token);
     },
     handleAddProject(value) {
+      let token = this.getToken();
       if (value.trim() === '') return;
-      addProject(value);
+      addProject(value, token);
     },
     handleAddTag(value) {
+      let token = this.getToken();
       if (value.trim() === '') return;
-      addTag(value);
+      addTag(value, token);
     },
   },
   mounted() {

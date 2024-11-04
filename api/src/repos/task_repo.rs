@@ -3,6 +3,7 @@ use crate::services::mongo::get_client;
 use anyhow::Result;
 use bson::oid::ObjectId;
 use futures::stream::TryStreamExt;
+use log::error;
 use mongodb::bson;
 use mongodb::bson::doc;
 use mongodb::Collection;
@@ -46,6 +47,7 @@ pub async fn get_all_tasks_for_user(user: User) -> Result<Vec<Task>> {
 }
 
 pub async fn get_today_tasks_for_user(user: User) -> Result<Vec<Task>> {
+    // error!("Getting today tasks for user: {:?}", user.id);
     let filter = doc! { "user_id": user.id, "ttl": { "$eq": "today" } };
 
     get_tasks_inner(filter).await

@@ -11,6 +11,7 @@
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getAllTasks } from '@/api/helperApi';
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
+import { mapGetters } from 'vuex';
 
 export default {
   components: {
@@ -23,8 +24,12 @@ export default {
     }
   },
   methods: {
+    ...mapGetters(
+      ['getToken']
+    ),
     getTasks() {
-      return getAllTasks();
+      let token = this.getToken();
+      return getAllTasks(token);
     },
     filterTasks($event) {
       if (!$event || $event === "") {

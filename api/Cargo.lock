@@ -119,6 +119,7 @@ dependencies = [
  "futures",
  "google-jwt-signin",
  "google-jwt-verify",
+ "log",
  "mongodb",
  "rocket",
  "serde",

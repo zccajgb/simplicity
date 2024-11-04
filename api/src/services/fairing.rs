@@ -22,6 +22,7 @@ impl Fairing for AuthFairing {
             request.local_cache(|| Status::Unauthorized);
             return;
         };
+        let auth_token = &auth_token[7..];
         let Ok(_) = validate_token(auth_token) else {
             request.local_cache(|| Status::Unauthorized);
             return;

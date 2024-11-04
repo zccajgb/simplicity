@@ -1,4 +1,3 @@
-import { createStore } from 'vuex'
 
 export default {
   state: {
@@ -15,7 +14,6 @@ export default {
   },
   actions: {
     login({ commit }, user) {
-      // Perform login logic
       commit('setLoggedIn', true);
       commit('setUser', user);
     },
@@ -27,6 +25,7 @@ export default {
   },
   getters: {
     isLoggedIn: state => state.isLoggedIn,
-    user: state => state.user
+    user: state => state.user,
+    getToken: state => state.user ? state.user.credential : null
   }
 };
