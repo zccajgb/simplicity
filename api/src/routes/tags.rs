@@ -1,3 +1,6 @@
+use crate::repos::tag_repo::{
+    add_tag_for_user, get_all_tags_for_user, get_tag_by_id_for_user, Tag,
+};
 use rocket::serde::json::Json;
 
 pub fn get_routes() -> Vec<rocket::Route> {
@@ -10,28 +13,19 @@ pub fn get_routes() -> Vec<rocket::Route> {
 }
 
 #[get("/tags")]
-pub async fn get_all_tags(user: User) -> Json<Vec<Tag>> {
-    let tags: Result<_, _> = get_all_tags_for_user(user).await;
-    return match tags {
-        Ok(tags) => Json(tags),
-        Err(e) => Json(Vec::new()),
-    };
+pub async fn get_all_tags(user: User) -> ApiJsonError<Vec<Tag>> {
+    let tags = get_all_tags_for_user(user).await;
+    tags.map(|tags| Json(tags)).map_api_err()
 }
 
 #[get("/tags/<id>")]
-pub async fn get_tag_by_id(user: User, id: String) -> Json<Tag> {
+pub async fn get_tag_by_id(user: User, id: String) -> ApiJsonError<Tag> {
     let tag: Result<_, _> = get_tag_by_id_for_user(user, id).await;
-    return match tag {
-        Ok(tag) => Json(tag),
-        Err(e) => Json(Tag::default()),
-    };
+    tags.map(|tags| Json(tags)).map_api_err()
 }
 
 #[post("/tags", data = "<tag>")]
-pub async fn add_tag(user: User, tag: Json<Tag>) -> Json<Tag> {
+pub async fn add_tag(user: User, tag: Json<Tag>) -> ApiJsonError<Tag> {
     let tag: Result<_, _> = add_tag_for_user(user, tag.into_inner()).await;
-    return match tag {
-        Ok(tag) => Json(tag),
-        Err(e) => Json(Tag::default()),
-    };
+    tags.map(|tags| Json(tags)).map_api_err()
 }

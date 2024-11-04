@@ -9,10 +9,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
-    _id: ObjectId,
-    user_id: String,
-    name: String,
-    completed: bool,
+    pub _id: ObjectId,
+    pub user_id: String,
+    pub name: String,
+    pub completed: bool,
 }
 
 pub async fn get_tasks_collection() -> Result<Collection<Project>> {
@@ -63,4 +63,23 @@ pub async fn add_project(user: User, project: Project) -> Result<Project> {
         Ok(project) => Ok(project),
         Err(e) => Ok(Project::default()),
     };
+}
+
+pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
+    let collection = get_tasks_collection().await?;
+    let filter = doc! { "user_id": user.id, "name": "inbox" };
+    let project = collection.find_one(filter).await?;
+    let project = match project {
+        Some(project) => project,
+        None => {
+            let project = Project {
+                _id: ObjectId::new(),
+                user_id: user.id,
+                name: "inbox".into(),
+                completed: false,
+            };
+            add_project(user, project).await?
+        }
+    };
+    project._id
 }

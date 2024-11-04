@@ -27,7 +27,7 @@ pub async fn get_tasks_collection() -> Result<Collection<Task>> {
     Ok(collection)
 }
 
-async fn get_tasks_inner(Filter: bson::Document) -> Result<Vec<Task>> {
+async fn get_tasks_inner(filter: bson::Document) -> Result<Vec<Task>> {
     let mut cursor = collection.find(filter).await?;
 
     let mut tasks = Vec::new();
@@ -98,9 +98,9 @@ pub async fn add_task_for_user(user: User, task: Task) -> Result<Task> {
     };
 }
 
-pub async fn update_task_for_user(user: User, task: Task) -> Result<Task> {
+pub async fn update_task_for_user(user: User, id: ObjectId, task: Task) -> Result<Task> {
     let collection = get_tasks_collection().await?;
-    let filter = doc! { "_id": task._id, "user_id": user.id };
+    let filter = doc! { "_id": id, "user_id": user.id };
     let task = collection.update_one(filter, task).await?;
     return match task {
         Some(task) => Ok(task),
