@@ -32,7 +32,9 @@ export async function getAllTasks(token) {
 }
 
 export async function getTodayTasks(token) {
-  return helperGet(`${apiUri}/tasks/today`, token);
+  let task = await helperGet(`${apiUri}/tasks/today`, token);
+  console.log(task);
+  return task;
 }
 
 export async function getTomorrowTasks(token) {

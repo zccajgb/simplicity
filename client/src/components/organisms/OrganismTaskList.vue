@@ -77,6 +77,7 @@ export default {
   },
   mounted() {
     document.addEventListener('keyUp', this.handleKeyUp);
+    console.log("modelValue", this.modelValue);
   }
 }
 </script>
