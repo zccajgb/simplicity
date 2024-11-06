@@ -27,9 +27,9 @@ export default {
     ...mapGetters(
       ['getToken']
     ),
-    getTasks() {
+    async getTasks() {
       let token = this.getToken();
-      return getAllTasks(token);
+      return await getAllTasks(token);
     },
     filterTasks($event) {
       if (!$event || $event === "") {
@@ -40,8 +40,8 @@ export default {
       this.tasks = this.getTasks().filter(task => task.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
   },
-  mounted() {
-    this.tasks = this.getTasks();
+  async mounted() {
+    this.tasks = await this.getTasks();
   }
 }
 </script>

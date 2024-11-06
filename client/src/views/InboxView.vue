@@ -20,14 +20,14 @@ export default {
     ...mapGetters(
       ['getToken']
     ),
-    getTasks() {
+    async getTasks() {
       let token = this.getToken();
-      return getInboxTasks(token);
+      return await getInboxTasks(token);
     },
   },
-  mounted() {
+  async mounted() {
     console.log("gettingTasks");
-    this.tasks = this.getTasks();
+    this.tasks = await this.getTasks();
   }
 }
 </script>

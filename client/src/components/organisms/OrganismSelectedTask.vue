@@ -15,7 +15,7 @@
       <div class="overflow-y-auto h-full">
         <div class="grid mt-2">
           <div class="grid grid-cols-2 pb-1 px-6 gap-1">
-            <AtomIconButton :buttonText="getProjectName(model.project)" @click.stop="selectModal('project')" :selected="selector==='project'">
+            <AtomIconButton :buttonText="getProjectName(model.project_id)" @click.stop="selectModal('project')" :selected="selector==='project'">
               <FolderIcon class="h-4 w-4"/>
             </AtomIconButton>
             <AtomIconButton :buttonText="getDateText(model.date, 'snooze')" @click.stop="selectModal('snooze')" :selected="selector==='snooze'">
@@ -238,15 +238,22 @@ export default {
       });
       $event.target.value = '';
     },
-    getProjectName(projectId) {
+    async getProjectName(projectId) {
       let token = this.getToken();
-      return getProjectById(projectId, token).name;
+      let projectIdString = projectId.toString();
+      console.log(projectIdString);
+      let project = await getProjectById(projectIdString, token);
+      return project.name;
     },
     close() {
       this.selector = null;
     },
     saveTask() {
       let token = this.getToken();
+      if (!token) {
+        console.log('no token');
+        return;
+      }
       updateTask(this.model, token);
     },
   },
@@ -266,6 +273,7 @@ export default {
     }
   },
   mounted() {
+    console.log(this.model);
     if (this.model.comments) {
       this.showCommentPlaceholder = false;
     }

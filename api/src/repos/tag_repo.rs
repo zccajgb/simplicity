@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Tag {
-    pub _id: Option<ObjectId>,
+    pub _id: ObjectId,
     pub user_id: String,
     pub name: String,
 }

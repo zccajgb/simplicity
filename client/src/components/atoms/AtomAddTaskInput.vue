@@ -35,11 +35,17 @@ export default {
   },
   methods: {
     handleEnter($event) {
+      if (!$event.target.value) {
+        return;
+      }
       this.saveFunction($event.target.value);
       this.focus();
       this.$refs.input.value = '';
     },
     handleBlur($event) {
+      if (!$event.target.value) {
+        return;
+      }
       this.saveFunction($event.target.value);
       this.model = false;
     },

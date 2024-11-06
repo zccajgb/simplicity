@@ -21,15 +21,15 @@ export default {
     ...mapGetters(
       ['getToken']
     ),
-    getTasks(tagId) {
+    async getTasks(tagId) {
       let token = this.getToken();
-      let tasks = getTasksByTagId(tagId, token);
+      let tasks = await getTasksByTagId(tagId, token);
       this.tasks = tasks;
     },
   },
-  mounted() {
+  async mounted() {
     this.tagId = this.$route.params.tagId;
-    this.getTasks(this.tagId);
+    await this.getTasks(this.tagId);
   },
   watch: {
     '$route.params.tagId': {

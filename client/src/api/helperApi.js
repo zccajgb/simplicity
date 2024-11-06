@@ -1,28 +1,32 @@
 import deepEqual from "deep-equal";
 import axios from 'axios';
+import { ArrowUpOnSquareStackIcon } from "@heroicons/vue/24/solid";
 
 async function helperGet(uri, token) {
-  return await axios.get(uri, {
+  let result = await axios.get(uri, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
   });
+  return result.data;
 }
 
 async function helperPost(uri, data, token) {
-  return await axios.post(uri, data, {
+  let result = await axios.post(uri, data, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
   });
+  return result.data;
 }
 
 async function helperPut(uri, data, token) {
-  return await axios.put(uri, data, {
+  let result = await axios.put(uri, data, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
   });
+  return result.data;
 }
 
 
@@ -33,7 +37,6 @@ export async function getAllTasks(token) {
 
 export async function getTodayTasks(token) {
   let task = await helperGet(`${apiUri}/tasks/today`, token);
-  console.log(task);
   return task;
 }
 
@@ -65,6 +68,7 @@ export async function getTasksByTagId(tagId, token) {
 }
 
 export async function getProjectById(projectId, token) {
+  console.log('getProjectById: ' + projectId);
   return await helperGet(`${apiUri}/projects/${projectId}`, token);  
 }
 
@@ -73,12 +77,19 @@ export async function getTaskById(taskId, token) {
 }
 
 export async function updateTask(task, token) {
+  console.log('updateTask');
   let savedTask = getTaskById(task.id, token); 
-  if (!savedTask) return { error: 'Task not found', task: null };
+  if (!savedTask) {
+    console.log('no saved task');
+    return { error: 'Task not found', task: null }
+  };
 
-  if (deepEqual(savedTask, task)) return { task, error: null };
-
-  return await helperPut(`${apiUri}/tasks/${task.id}`, task);
+  if (deepEqual(savedTask, task)) {
+    console.log('no changes');
+    return { task, error: null };
+  };
+  let uri = `${apiUri}/tasks/${task.id}`;
+  return await helperPut(uri, task);
 }
 
 export async function addProject(project, token) {

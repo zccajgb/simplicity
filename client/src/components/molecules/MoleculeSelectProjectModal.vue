@@ -58,6 +58,7 @@ export default {
       if (this.itemtype === 'project') {
         addProject(newItem);
       } else if (this.itemtype === 'tasks') {
+        console.log("calling addTask from select project modal");
         addTask(newItem);
       } else  {
         addTag(newItem);

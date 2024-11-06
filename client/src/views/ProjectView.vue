@@ -20,15 +20,15 @@ export default {
     ...mapGetters(
       ['getToken']
     ),
-    getTasks(projectId) {
+    async getTasks(projectId) {
       let token = this.getToken();
-      let tasks = getTasksByProjectId(projectId, token);
+      let tasks = await getTasksByProjectId(projectId, token);
       this.tasks = tasks;
     },
   },
-  mounted() {
+  async mounted() {
     this.projectId = this.$route.params.projectId;
-    this.getTasks(this.projectId);
+    await this.getTasks(this.projectId);
   },
   watch: {
     '$route.params.projectId': {

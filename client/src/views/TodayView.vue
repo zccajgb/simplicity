@@ -27,7 +27,6 @@ export default {
   },
   async mounted() {
     this.tasks = await this.getTasks();
-    console.log("got tasks: " + this.tasks);
   }
 }
 </script>

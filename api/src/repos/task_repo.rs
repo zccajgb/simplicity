@@ -1,7 +1,7 @@
 use crate::domain::user::User;
 use crate::services::mongo::get_client;
 use anyhow::Result;
-use bson::oid::ObjectId;
+use bson::{oid::ObjectId, DateTime};
 use futures::stream::TryStreamExt;
 use mongodb::bson;
 use mongodb::bson::doc;
@@ -9,26 +9,26 @@ use mongodb::Collection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Task {
+pub struct TaskModel {
     pub _id: ObjectId,
     pub user_id: String,
     pub name: String,
     pub completed: bool,
     pub ttl: String,
-    pub project_id: ObjectId,
+    pub project_id: Option<ObjectId>,
     pub tags: Vec<ObjectId>,
-    pub date: String,
-    pub snooze: String,
+    pub date: Option<DateTime>,
+    pub snooze: Option<DateTime>,
 }
 
-pub async fn get_tasks_collection() -> Result<Collection<Task>> {
+pub async fn get_tasks_collection() -> Result<Collection<TaskModel>> {
     let client = get_client().await?;
     let db = client.database("simplicity");
-    let collection = db.collection::<Task>("tasks");
+    let collection = db.collection::<TaskModel>("tasks");
     Ok(collection)
 }
 
-async fn get_tasks_inner(filter: bson::Document) -> Result<Vec<Task>> {
+async fn get_tasks_inner(filter: bson::Document) -> Result<Vec<TaskModel>> {
     let collection = get_tasks_collection().await?;
     let mut cursor = collection.find(filter).await?;
 
@@ -39,32 +39,31 @@ async fn get_tasks_inner(filter: bson::Document) -> Result<Vec<Task>> {
     Ok(tasks)
 }
 
-pub async fn get_all_tasks_for_user(user: User) -> Result<Vec<Task>> {
+pub async fn get_all_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.id };
 
     get_tasks_inner(filter).await
 }
 
-pub async fn get_today_tasks_for_user(user: User) -> Result<Vec<Task>> {
-    // error!("Getting today tasks for user: {:?}", user.id);
+pub async fn get_today_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.id, "ttl": { "$eq": "today" } };
 
     get_tasks_inner(filter).await
 }
 
-pub async fn get_tomorrow_tasks_for_user(user: User) -> Result<Vec<Task>> {
+pub async fn get_tomorrow_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.id, "ttl": { "$eq": "tomorrow" } };
 
     get_tasks_inner(filter).await
 }
 
-pub async fn get_inbox_tasks_for_user(user: User, inbox_id: ObjectId) -> Result<Vec<Task>> {
+pub async fn get_inbox_tasks_for_user(user: User, inbox_id: ObjectId) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.id, "project_id": { "$eq": inbox_id } };
 
     get_tasks_inner(filter).await
 }
 
-pub async fn get_task_by_id_for_user(user: User, id: String) -> Result<Task> {
+pub async fn get_task_by_id_for_user(user: User, id: String) -> Result<TaskModel> {
     let collection = get_tasks_collection().await?;
     let filter = doc! { "_id": ObjectId::parse_str(&id)?, "user_id": user.id };
     let task = collection.find_one(filter).await?;
@@ -74,22 +73,26 @@ pub async fn get_task_by_id_for_user(user: User, id: String) -> Result<Task> {
     }
 }
 
-pub async fn get_tasks_by_project_for_user(user: User, project: ObjectId) -> Result<Vec<Task>> {
+pub async fn get_tasks_by_project_for_user(
+    user: User,
+    project: ObjectId,
+) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.id, "project_id": project };
 
     get_tasks_inner(filter).await
 }
 
-pub async fn get_tasks_by_tag_for_user(user: User, tag: ObjectId) -> Result<Vec<Task>> {
+pub async fn get_tasks_by_tag_for_user(user: User, tag: ObjectId) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.id, "tags": { "$contains": tag } };
 
     get_tasks_inner(filter).await
 }
 
-pub async fn add_task_for_user(user: User, task: Task) -> Result<ObjectId> {
+pub async fn add_task_for_user(user: User, task: TaskModel) -> Result<ObjectId> {
     if task.user_id != user.id {
-        anyhow::bail!("Task user_id does not match user id");
+        return Err(anyhow::anyhow!("Task user_id does not match user id"));
     }
+
     let collection = get_tasks_collection().await?;
     let res = collection.insert_one(task).await?;
     res.inserted_id
@@ -97,7 +100,7 @@ pub async fn add_task_for_user(user: User, task: Task) -> Result<ObjectId> {
         .ok_or_else(|| anyhow::anyhow!("No id found"))
 }
 
-pub async fn update_task_for_user(user: User, id: ObjectId, task: Task) -> Result<ObjectId> {
+pub async fn update_task_for_user(user: User, id: ObjectId, task: TaskModel) -> Result<ObjectId> {
     let collection = get_tasks_collection().await?;
     let filter = doc! { "_id": id, "user_id": user.id };
     let update_task = bson::to_document(&task)?;
