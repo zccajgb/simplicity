@@ -15,7 +15,7 @@
       <div class="overflow-y-auto h-full">
         <div class="grid mt-2">
           <div class="grid grid-cols-2 pb-1 px-6 gap-1">
-            <AtomIconButton :buttonText="getProjectName(model.project_id)" @click.stop="selectModal('project')" :selected="selector==='project'">
+            <AtomIconButton :buttonText="projectName" @click.stop="selectModal('project')" :selected="selector==='project'">
               <FolderIcon class="h-4 w-4"/>
             </AtomIconButton>
             <AtomIconButton :buttonText="getDateText(model.date, 'snooze')" @click.stop="selectModal('snooze')" :selected="selector==='snooze'">
@@ -126,7 +126,8 @@ export default {
     return {
       showCommentPlaceholder: true,
       selector: null,
-      showAddSubtask: false
+      showAddSubtask: false,
+      projectName: "",
     }
   },
   components: {
@@ -243,7 +244,7 @@ export default {
       let projectIdString = projectId.toString();
       console.log(projectIdString);
       let project = await getProjectById(projectIdString, token);
-      return project.name;
+      this.projectName = project.name;
     },
     close() {
       this.selector = null;
@@ -272,11 +273,12 @@ export default {
       }
     }
   },
-  mounted() {
+  async mounted() {
     console.log(this.model);
     if (this.model.comments) {
       this.showCommentPlaceholder = false;
     }
+    await this.getProjectName(this.model.projectId);
   },
   beforeUnmount() {
     this.saveTask();

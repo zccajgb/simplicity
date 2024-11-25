@@ -8,6 +8,10 @@ async function helperGet(uri, token) {
       'Authorization': `Bearer ${token}`
     }
   });
+
+  if (result.status !== 200) {
+    return { error: result.statusText, data: null };
+  }
   return result.data;
 }
 

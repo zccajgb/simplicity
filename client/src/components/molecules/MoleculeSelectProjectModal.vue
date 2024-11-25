@@ -8,7 +8,7 @@
         </MoleculeMenuItem>
       </div>
       <div @click.stop>
-        <AtomAddInput ref="addProject" :saveFunction="handleAdd" :defaultValue="$refs.search.$refs.input.value" v-model="showAdd" :lightMode="true"/>
+        <AtomAddInput ref="addProject" :saveFunction="handleAdd" :defaultValue="$refs?.search?.$refs?.input?.value ?? ''" v-model="showAdd" :lightMode="true"/>
         <div class="pr-2">
           <AtomAddButton v-model="showAdd" :focusRef="$refs.addProject" :lightMode="false"/>
         </div>
@@ -42,26 +42,26 @@ export default {
     ...mapGetters(
       ['getToken']
     ),
-    getItems() {
+    async getItems() {
       let items;
       let token = this.getToken();
       if (this.itemtype === 'project') {
-        items = getProjects(token);
+        items = await getProjects(token);
       } else if (this.itemtype === 'tasks') {
-        items = getAllTasks(token);
+        items = await getAllTasks(token);
       } else  {
-        items = getTags(token);
+        items = await getTags(token);
       }
       return items;
     },
-    saveItem(newItem) {
+    async saveItem(newItem) {
       if (this.itemtype === 'project') {
-        addProject(newItem);
+        await addProject(newItem);
       } else if (this.itemtype === 'tasks') {
         console.log("calling addTask from select project modal");
-        addTask(newItem);
+        await addTask(newItem);
       } else  {
-        addTag(newItem);
+        await addTag(newItem);
       }
     },
     handleSelect(key) {
@@ -82,24 +82,25 @@ export default {
       }
       return this.selectedId === key;
     },
-    handleFilter($event) {
+    async handleFilter($event) {
       if (!$event || $event == '') {
         this.getItems();
         return;
       }
-      this.items = this.getItems().filter(item => item.name.toLowerCase().includes($event.target.value.toLowerCase()));
+      let allItems = await this.getItems();
+      this.items = allItems.filter(item => item.name.toLowerCase().includes($event.target.value.toLowerCase()));
     },
-    handleAdd($event) {
+    async handleAdd($event) {
       if ($event.target.value === '') return;
       let newItem = { name: $event.target.value };
-      this.saveItem(newItem);    
+      await this.saveItem(newItem);    
       this.items = this.getItems();
       $event.target.value = '';
 
     },
   },
-  mounted() {
-    this.items = this.getItems();
+  async mounted() {
+    this.items = await this.getItems();
   },
   computed: {
     selectedId: {

@@ -16,6 +16,7 @@ use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct TaskDTO {
     pub _id: Option<String>,
     pub user_id: Option<String>,
@@ -197,7 +198,6 @@ async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
     } else {
         task.user_id = Some(user.id.clone());
     }
-    error!("Task user id: {:?}", task.clone().user_id.clone());
 
     if task.project_id.is_none() {
         task.project_id = get_inbox_id_for_user(user.clone())

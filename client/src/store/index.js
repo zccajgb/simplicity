@@ -12,7 +12,6 @@ export default createStore({
     auth
   },
   state: {
-    auth: []
   },
   mutations: {
   },

@@ -1,15 +1,16 @@
 { pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
-  buildInputs = with pkgs; [
-    nodejs
-    pkg-config
-    openssl
-    rustup
-   ];
+  buildInputs = [
+    pkgs.nodejs
+    pkgs.rustc
+    pkgs.cargo
+    pkgs.binutils
+    pkgs.libiconv  # Add any other libraries you need
+  ];
 
   shellHook = ''
-    rustup default stable
-    exec zsh
+    export RUST_SRC_PATH="${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}"
+    # Additional environment setup can go here
   '';
 }
