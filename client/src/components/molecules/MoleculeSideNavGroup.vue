@@ -18,8 +18,9 @@
   :value="item.name"
   :selected="selectedItemId === item.id"
   @click="$emit('select', item)"
+  :showNavMobile="showNavMobile"
   />
-  <div v-if="addable">
+  <div v-if="addable" class="">
     <AtomAddInput ref="addItem" :saveFunction="handleAdd" :defaultText="$refs?.search?.$refs?.input" v-model="showAdd" class="bg-slate-700"/>
     <div class="absolute bottom-0 w-1/3 pb-6 px-4">
         <AtomAddButton v-model="showAdd" :focusRef="$refs.addItem" :lightMode="false"/>
@@ -47,7 +48,7 @@ export default {
   props: {
     modelValue: {
       type: Array,
-      required: true
+      required: true,
     },
     selectedItemId: {
       type: Number,
@@ -58,6 +59,10 @@ export default {
       required: false
     },
     addable: {
+      type: Boolean,
+      default: false
+    },
+    showNavMobile: {
       type: Boolean,
       default: false
     }

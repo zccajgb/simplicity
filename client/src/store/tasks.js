@@ -2,7 +2,7 @@ import { addTask, updateTask } from "@/api/tasks";
 
 const sort = (tasks) => {
   console.log("tasks", tasks);
-  if (!tasks) return [];
+  if (!tasks || !tasks.length) return [];
   console.log(tasks);
   return tasks.sort((a, b) => {
     if (a.completed === b.completed) return 0;
@@ -11,7 +11,7 @@ const sort = (tasks) => {
 };
 
 const sortWithFilter = (tasks, filter) => {
-  if (!tasks) return [];
+  if (!tasks || !tasks.length) return [];
   return tasks.sort((a, b) => {
     const getScore = (task) => {
       if (filter(task) && !task.completed) return 0;

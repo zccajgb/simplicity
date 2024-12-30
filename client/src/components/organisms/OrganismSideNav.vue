@@ -1,8 +1,11 @@
 <template>
   <!-- <div class="flex"> -->
     <aside class="top-0 left-0 p-0 m-0">
-    <div class="top-0 left-0 w-64 m-0 h-full bg-slate-800 text-white">
+    <div class="top-0 left-0 w-14 sm:w-64 m-0 h-full bg-slate-800 text-white" :class="showNavMobile ? 'w-64' : 'w-14'">
       <ul>
+        <div class="flex sm:hidden" @click="showNavMobile = !showNavMobile">
+          <Bars3Icon class="h-8 w-8 my-4" :class="showNavMobile ? 'mx-4' : 'mx-auto'"/>
+        </div> 
         <div v-if="type==='projects'">
           <MoleculeSideNavGroup 
           v-model="projects" 
@@ -27,7 +30,12 @@
           @add="handleAddTag"/>
         </div>
          <div v-else>
-          <MoleculeSideNavGroup v-model="items" :selectedItemId="selectedItemId" @select="handleSelect"/>
+          <MoleculeSideNavGroup 
+            v-model="items"
+            :selectedItemId="selectedItemId"
+            @select="handleSelect"
+            :showNavMobile="showNavMobile"  
+          />
         </div>
       </ul>
     </div>
@@ -39,9 +47,11 @@ import { getProjectsWithoutInbox, addProject } from '@/api/projects';
 import { getTags, addTag } from '@/api/tags';
 import { mapGetters } from 'vuex';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
+import { Bars3Icon } from '@heroicons/vue/24/outline';
 export default {
   components: {
-    MoleculeSideNavGroup
+    MoleculeSideNavGroup,
+    Bars3Icon
   },
   data() {
     return {
@@ -59,6 +69,7 @@ export default {
       tags: [],
       selectedItemId: 0,
       type: "main",
+      showNavMobile: false
     }
   },
   methods: {

@@ -1,11 +1,12 @@
 use dotenv::dotenv;
+use rocket_cors::Cors;
+use rocket_cors::{AllowedOrigins, CorsOptions};
 use routes::projects;
 use routes::scheduled;
 use routes::tags;
 use routes::tasks;
 use routes::users;
 use services::fairing::AuthFairing;
-use rocket_cors::{AllowedOrigins, CorsOptions};
 
 mod domain;
 mod repos;
@@ -28,15 +29,17 @@ fn rocket() -> _ {
         .attach(AuthFairing)
 }
 
-fn make_cors() -> CorsOptions {
-    let allowed_origins = AllowedOrigins::some_exact(&["http://client:8080", "https://simplicity.buckleyresearch.com"]);
-    let allowed_methods = vec![Method::Get, Method::Post, Method::Patch, Method::Delete]
-        .into_iter()
-        .map(From::from)
-        .collect();
+fn make_cors() -> Cors {
+    let allowed_origins = AllowedOrigins::some_exact(&[
+        "http://localhost:8080",
+        "https://localhost:8080",
+        "https://127.0.0.1:8080",
+        "https://simplicity.buckleyresearch.com",
+    ]);
+    let allowed_origins = AllowedOrigins::all();
+
     let cors = CorsOptions {
         allowed_origins,
-        allowed_methods,
         allow_credentials: true,
         ..Default::default()
     }

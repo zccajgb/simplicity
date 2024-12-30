@@ -1,4 +1,4 @@
-FROM rust:latest
+FROM rust:alpine
 
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./

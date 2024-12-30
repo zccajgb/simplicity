@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-screen">
-    <div class="flex flex-col h-screen" :class="selectedTaskId? 'w-[calc(75vw-16rem)]' : 'w-full'" @click="this.selectedTaskId=null">
+    <div class="flex flex-col h-screen w-full" :class="selectedTaskId? 'sm:w-[calc(75vw-16rem)]' : ''" @click="this.selectedTaskId=null">
       <OrganismTaskList 
         @selected="handleClickTask($event)"
         :projectId="projectId"

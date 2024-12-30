@@ -2,19 +2,23 @@ import axios from 'axios';
 
 const apiUri = import.meta.env.VITE_API_URL;
 export async function helperGet(uri, token) {
-  const apiUri = import.meta.env.VITE_API_URL;
   console.log('apiUri', apiUri);
   const url = `${apiUri}/${uri}`;
-  let result = await axios.get(url, {
-    headers: {
-      'Authorization': `Bearer ${token}`
+  console.log('url', url);
+  try {
+    let result = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (result.status !== 200) {
+      return { error: result.statusText, data: null };
     }
-  });
-
-  if (result.status !== 200) {
-    return { error: result.statusText, data: null };
+    return result.data;
+  } catch (error) {
+    console.log('error', error.message);
+    return { error: error.message, data: null };
   }
-  return result.data;
 }
 
 export async function helperPost(uri, data, token) {
