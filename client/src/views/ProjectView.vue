@@ -4,7 +4,7 @@
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getTasksByProjectId } from '@/api/helperApi';
+import { getTasksByProjectId } from '@/api/tasks';
 import { mapGetters } from 'vuex';
 export default {
   components: {
@@ -13,7 +13,6 @@ export default {
   data() {
     return {
       projectId: null,
-      tasks: [],
     }
   },
   methods: {
@@ -23,7 +22,10 @@ export default {
     async getTasks(projectId) {
       let token = this.getToken();
       let tasks = await getTasksByProjectId(projectId, token);
-      this.tasks = tasks;
+      this.$store.commit('setTasks', tasks);
+      this.$store.commit('setFilter', (task) => {
+        return task.projectId === projectId;
+      });
     },
   },
   async mounted() {
@@ -37,7 +39,7 @@ export default {
         this.projectId = id;
         this.getTasks(id)
       }
-    }
+    },
   }
 }
 </script>

@@ -3,13 +3,13 @@
     <div class="p-1">
       <AtomSearchBar @input="filterTasks"/>
     </div>
-  <OrganismDayView v-model="tasks"/>
+  <OrganismDayView/>
   </div>
   </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getAllTasks } from '@/api/helperApi';
+import { getAllTasks } from '@/api/tasks';
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
 import { mapGetters } from 'vuex';
 
@@ -18,30 +18,36 @@ export default {
     OrganismDayView,
     AtomSearchBar,
   },
-  data() {
-    return {
-      tasks: [],
-    }
-  },
   methods: {
     ...mapGetters(
       ['getToken']
     ),
     async getTasks() {
       let token = this.getToken();
-      return await getAllTasks(token);
+      let tasks = await getAllTasks(token);
+      this.$store.commit('setTasks', tasks);
     },
-    filterTasks($event) {
+    async filterTasks($event) {
       if (!$event || $event === "") {
-        this.tasks = this.getTasks();
+        this.tasks = await this.getTasks();
         return;
       }
       let searchTerm = $event.target.value;
-      this.tasks = this.getTasks().filter(task => task.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      this.tasks = (await this.getTasks()).filter(task => task.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
   },
   async mounted() {
-    this.tasks = await this.getTasks();
+    await this.getTasks();
+  },
+  computed: {
+    tasks: {
+      get() {
+        this.$store.getters.getAllTasks;
+      },
+      set(value) {
+        this.$store.commit('setTasks', value);
+      },
+    }
   }
 }
 </script>

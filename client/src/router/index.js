@@ -2,11 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import TodayView from '../views/TodayView.vue';
 import TestView from '../views/TestView.vue';
 import TomorrowView from '@/views/TomorrowView.vue';
+import LaterView from '@/views/LaterView.vue';
 import InboxView from '@/views/InboxView.vue';
 import SearchView from '@/views/SearchView.vue';
 import ProjectView from '@/views/ProjectView.vue';
 import TagView from '@/views/TagView.vue';
 import LoginView from '@/views/LoginView.vue';
+import SnoozedView from '@/views/SnoozedView.vue';
 import store from '@/store';
 
 const router = createRouter({
@@ -37,9 +39,21 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/later',
+      name: 'later',
+      component: LaterView,
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/inbox',
       name: 'inbox',
       component: InboxView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/snoozed',
+      name: 'snoozed',
+      component: SnoozedView,
       meta: { requiresAuth: true }
     },
     {

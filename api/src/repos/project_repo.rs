@@ -8,21 +8,22 @@ use mongodb::Collection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Project {
-    pub _id: ObjectId,
+pub struct ProjectModel {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub _id: Option<ObjectId>,
     pub user_id: String,
     pub name: String,
     pub completed: bool,
 }
 
-pub async fn get_projects_collection() -> Result<Collection<Project>> {
+pub async fn get_projects_collection() -> Result<Collection<ProjectModel>> {
     let client = get_client().await?;
     let db = client.database("simplicity");
-    let collection = db.collection::<Project>("projects");
+    let collection = db.collection::<ProjectModel>("projects");
     Ok(collection)
 }
 
-pub async fn get_all_projects_for_user(user: User) -> Result<Vec<Project>> {
+pub async fn get_all_projects_for_user(user: User) -> Result<Vec<ProjectModel>> {
     let collection = get_projects_collection().await?;
     let filter = doc! { "user_id": user.id };
     let mut cursor = collection.find(filter).await?;
@@ -34,7 +35,7 @@ pub async fn get_all_projects_for_user(user: User) -> Result<Vec<Project>> {
     Ok(projects)
 }
 
-pub async fn get_all_projects_without_inbox(user: User) -> Result<Vec<Project>> {
+pub async fn get_all_projects_without_inbox(user: User) -> Result<Vec<ProjectModel>> {
     let collection = get_projects_collection().await?;
     let filter = doc! { "user_id": user.id, "name": { "$ne": "Inbox" } };
     let mut cursor = collection.find(filter).await?;
@@ -46,7 +47,7 @@ pub async fn get_all_projects_without_inbox(user: User) -> Result<Vec<Project>> 
     Ok(projects)
 }
 
-pub async fn get_project_by_id_for_user(user: &User, id: ObjectId) -> Result<Project> {
+pub async fn get_project_by_id_for_user(user: &User, id: ObjectId) -> Result<ProjectModel> {
     let collection = get_projects_collection().await?;
     let filter = doc! { "_id":id, "user_id": user.id.clone() };
     let project = collection.find_one(filter).await?;
@@ -56,7 +57,7 @@ pub async fn get_project_by_id_for_user(user: &User, id: ObjectId) -> Result<Pro
     }
 }
 
-pub async fn add_project(user: User, project: Project) -> Result<ObjectId> {
+pub async fn add_project(user: User, project: ProjectModel) -> Result<ObjectId> {
     if user.id != project.user_id {
         anyhow::bail!("Project user_id does not match user id");
     }
@@ -69,11 +70,12 @@ pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
     let collection = get_projects_collection().await?;
     let filter = doc! { "user_id": user.id.clone(), "name": "inbox" };
     let project = collection.find_one(filter).await?;
-    match project {
-        Some(project) => Ok(project._id),
+    let project_id = project.and_then(|p| p._id);
+    match project_id {
+        Some(project_id) => Ok(project_id),
         None => {
-            let project = Project {
-                _id: ObjectId::new(),
+            let project = ProjectModel {
+                _id: Some(ObjectId::new()),
                 user_id: user.id.clone(),
                 name: "inbox".into(),
                 completed: false,
@@ -96,8 +98,8 @@ pub async fn does_inbox_exist_for_user(user: &User) -> Result<bool> {
 }
 
 pub async fn create_inbox_for_user(user: User) -> Result<ObjectId> {
-    let project = Project {
-        _id: ObjectId::new(),
+    let project = ProjectModel {
+        _id: Some(ObjectId::new()),
         user_id: user.id.clone(),
         name: "inbox".into(),
         completed: false,

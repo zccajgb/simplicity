@@ -1,52 +1,54 @@
 use crate::domain::user::User;
 use crate::repos::project_repo;
-use crate::repos::project_repo::{get_all_projects_for_user, get_project_by_id_for_user, Project};
+use crate::repos::project_repo::{
+    get_all_projects_for_user, get_project_by_id_for_user, ProjectModel,
+};
 use crate::services::api_error::{ApiError, ApiJsonResult, ResultExt};
 use anyhow::{anyhow, Context, Result};
 use bson::oid::ObjectId;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProjectDTO {
-    _id: Option<String>,
+    id: Option<String>,
     name: Option<String>,
     user_id: Option<String>,
     completed: Option<bool>,
 }
 
 impl ProjectDTO {
-    fn from_project(project: Project) -> Self {
+    fn from_project(project: ProjectModel) -> Self {
         Self {
-            _id: Some(project._id.to_string()),
+            id: project._id.map(|s| s.to_string()),
             name: Some(project.name),
             user_id: Some(project.user_id),
             completed: Some(project.completed),
         }
     }
 
-    fn to_project(self: ProjectDTO) -> Result<Project> {
-        Ok(Project {
-            _id: ObjectId::parse_str(self._id.ok_or(anyhow!("no id"))?).unwrap(),
+    fn to_project(self: ProjectDTO) -> Result<ProjectModel> {
+        Ok(ProjectModel {
+            _id: self.id.and_then(|s| ObjectId::parse_str(s).ok()),
             name: self.name.context("name is required")?,
             user_id: self.user_id.context("user_id is required")?,
-            completed: self.completed.ok_or(false).unwrap(),
+            completed: self.completed.unwrap_or(false),
         })
     }
 
-    fn vec_from_project_model(projects: Vec<Project>) -> Vec<ProjectDTO> {
+    fn vec_from_project_model(projects: Vec<ProjectModel>) -> Vec<ProjectDTO> {
         projects.into_iter().map(ProjectDTO::from_project).collect()
     }
 }
 
-fn map_and_return_project(project: Result<Project>) -> ApiJsonResult<ProjectDTO> {
+fn map_and_return_project(project: Result<ProjectModel>) -> ApiJsonResult<ProjectDTO> {
     project
         .map(ProjectDTO::from_project)
         .map(Json)
         .map_api_err()
 }
 
-fn map_and_return_projects(projects: Result<Vec<Project>>) -> ApiJsonResult<Vec<ProjectDTO>> {
+fn map_and_return_projects(projects: Result<Vec<ProjectModel>>) -> ApiJsonResult<Vec<ProjectDTO>> {
     let projects = projects.map_api_err()?;
     let projects_dto = ProjectDTO::vec_from_project_model(projects);
     Ok(Json(projects_dto))
@@ -82,7 +84,9 @@ pub async fn get_project_by_id(user: User, id: &str) -> ApiJsonResult<ProjectDTO
 
 #[post("/projects", data = "<project>")]
 pub async fn add_project(user: User, project: Json<ProjectDTO>) -> ApiJsonResult<ObjectId> {
-    let project = project.into_inner();
+    error!("Adding project: {:?}", project);
+    error!("For user {:?}", user);
+    let mut project = project.into_inner();
     let project_name = project.name.clone().ok_or(ApiError::new(
         String::from("Cannot create a project with an empty name"),
         400,
@@ -102,10 +106,7 @@ pub async fn add_project(user: User, project: Json<ProjectDTO>) -> ApiJsonResult
             ));
         }
     } else {
-        return Err(ApiError::new(
-            String::from("Cannot create a project without a user_id"),
-            400,
-        ));
+        project.user_id = Some(user.id.clone());
     }
 
     let project_model = project.to_project().map_api_err()?;

@@ -1,16 +1,15 @@
 <template>
   <div class="w-full h-screen">
-    <div class="flex flex-col h-screen" :class="selectedTask? 'w-[calc(75vw-16rem)]' : 'w-full'" @click.self="this.selectedTask=null">
+    <div class="flex flex-col h-screen" :class="selectedTaskId? 'w-[calc(75vw-16rem)]' : 'w-full'" @click="this.selectedTaskId=null">
       <OrganismTaskList 
-        v-model="tasks" 
         @selected="handleClickTask($event)"
         :projectId="projectId"
         :tagId="tagId"
         :ttl="ttl"
       />
     </div>
-    <div v-if="selectedTask">
-      <OrganismSelectedTask v-if="selectedTask" v-model="selectedTask" @close="selectedTask=null"/>
+    <div v-if="selectedTaskId!=null">
+      <OrganismSelectedTask :selectedTaskId="selectedTaskId" @close="selectedTaskId=null"/>
     </div>
   </div>
 </template>
@@ -26,10 +25,6 @@ export default {
     AtomAddButton,
   },
   props: {
-    modelValue: {
-      type: Array,
-      required: true
-    },
     projectId: {
       type: Number,
       required: false
@@ -45,41 +40,31 @@ export default {
   },
   data() {
     return {
-      selectedTask: null
+      selectedTaskId: null
     }
   },
   methods: {
-    handleClickTask(index) {
-      if (this.selectedTask === this.tasks[index]) {
-        this.selectedTask = null;
+    handleClickTask(id) {
+      if (this.selectedTaskId === id) {
+        this.selectedTaskId = null;
         return;
       }
-      this.selectedTask = this.tasks[index];
+      this.selectedTaskId = id;
       document.addEventListener('keyup', this.handleKeyUp);
     },
     handleKeyUp(event) {
       if (event.key === 'Escape') {
-        this.selectedTask = null;
+        this.selectedTaskId = null;
       }
     },
   },
   mounted() {
   },
-  computed: {
-    tasks: {
-      get() {
-        return this.modelValue
-      },
-      set(value) {
-        this.$emit('update:modelValue', value)
-      }
-    }
-  },
   watch: {
-    selectedTask() {
-      if (this.selectedTask) {
+    selectedTaskId() {
+      if (this.selectedTaskId) {
         document.addEventListener('keyup', this.handleKeyUp);
-      } else if (!this.selectedTask) {
+      } else if (!this.selectedTaskId) {
         document.removeEventListener('keyup', this.handleKeyUp);
       }
     }

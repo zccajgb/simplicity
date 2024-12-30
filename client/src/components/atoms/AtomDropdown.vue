@@ -22,7 +22,6 @@ export default {
   },
   methods: {
     toggle() {
-      console.log('toggle');
       this.isOpen = !this.isOpen;
     },
     selectItem(item) {

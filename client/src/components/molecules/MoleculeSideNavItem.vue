@@ -3,6 +3,8 @@
     <div class="flex min-h-16 p-4 hover:bg-slate-400" :class="selected ? 'bg-slate-500' : ''">  
       <SunIcon v-if="value==='today'" class="h-8 w-8 mx-2 my-auto text-right"/>
       <MoonIcon v-else-if="value==='tomorrow'" class="h-8 w-8 mx-2 my-auto text-right"/>
+      <IconCircle v-else-if="value==='later'" class="h-8 w-8 mx-2 my-auto text-right"/>
+      <BellSnoozeIcon v-else-if="value==='snoozed'" class="h-8 w-8 mx-2 my-auto text-right"/>
       <InboxIcon v-else-if="value==='inbox'" class="h-8 w-8 mx-2 my-auto text-right"/>
       <FolderIcon v-else-if="value==='projects'" class="h-8 w-8 mx-2 my-auto text-right"/>
       <TagIcon v-else-if="value==='tags'" class="h-8 w-8 mx-2 my-auto text-right"/>
@@ -15,22 +17,21 @@
 </template>
 
 <script>
-import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon, BellSnoozeIcon } from '@heroicons/vue/24/outline';
+import IconCircle from '../icons/IconCircle.vue';
 import AtomText from '@/components/atoms/AtomText.vue';
 export default {
   props: [ "value", "selected" ],
   components: {
     SunIcon,
     MoonIcon,
+    IconCircle,
     FolderIcon,
     InboxIcon,
     TagIcon,
     MagnifyingGlassIcon,
-    AtomText
+    AtomText,
+    BellSnoozeIcon
   },
-  data() {
-    return {
-    }
-  }
 }
 </script>

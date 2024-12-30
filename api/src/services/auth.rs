@@ -29,3 +29,16 @@ pub fn validate_token_and_get_user(token: &str) -> Result<User> {
     let user = User { id: user_id };
     Ok(user)
 }
+
+pub struct ApiKey(pub String);
+
+impl ApiKey {
+    pub fn validate(&self) -> Result<()> {
+        let api_key = std::env::var("API_KEY")?;
+        if self.0 == api_key {
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Invalid API key"))
+        }
+    }
+}

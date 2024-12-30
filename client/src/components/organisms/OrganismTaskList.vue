@@ -3,7 +3,7 @@
       <div class="w-full h-full">
         <ul>
           <AtomAddTaskInput v-model="showAdd" :saveFunction="addTask" ref="focusRef"/>
-          <MoleculeTaskListItem v-for="(_, index) in tasks" :key="index" v-model="tasks[index]" @click="$emit('selected', index)"/>
+          <MoleculeTaskListItem v-for="(task, index) in tasks" :key="index" :taskId="task.id" @click.stop="$emit('selected', task.id)"/>
         </ul>
       </div>
       <div class="absolute bottom-0 right-0 p-4">
@@ -16,8 +16,8 @@
 import MoleculeTaskListItem from '@/components/molecules/MoleculeTaskListItem.vue';
 import AtomAddButtonLarge from '@/components/atoms/AtomAddButtonLarge.vue';
 import AtomAddTaskInput from '@/components/atoms/AtomAddTaskInput.vue';
-import { addTask } from '@/api/helperApi';
-import { mapGetters } from 'vuex';
+import { addTask } from '@/api/tasks';
+import { mapGetters, mapMutations } from 'vuex';
 
 export default {
   components: {
@@ -26,10 +26,6 @@ export default {
     AtomAddTaskInput
   },
   props: {
-    modelValue: {
-      type: Array,
-      required: true
-    },
     projectId: {
       type: Number,
       required: false
@@ -45,7 +41,7 @@ export default {
   },
   data() {
     return {
-      showAdd: false
+      showAdd: false,
     }
   },
   methods: {
@@ -55,7 +51,7 @@ export default {
     async addTask(taskName) {
       const task = {
         name: taskName,
-        completed: false,
+        completed: null,
         project: this.projectId ? this.projectId : 0,
         tags: this.tag ? [this.tag] : [],
         depends: [],
@@ -65,29 +61,21 @@ export default {
       if (!token) {
         return;
       }
-      await addTask(task, token);
-      this.tasks.unshift(task);
+      this.$store.dispatch('addTask', task);
     },
     handleKeyDown(event) {
       if (event.key === 'a') {
         this.showAdd = true;
-        console.log("a");
-      }
-    }
-  },
-  computed: {
-    tasks: {
-      get() {
-        return this.modelValue
-      },
-      set(value) {
-        this.$emit('update:modelValue', value)
       }
     }
   },
   mounted() {
     document.addEventListener('keyUp', this.handleKeyUp);
-    console.log("modelValue", this.modelValue);
-  }
+  },
+  computed: {
+    tasks() {
+      return this.$store.getters.getAllTasks;
+    }
+  },
 }
 </script>

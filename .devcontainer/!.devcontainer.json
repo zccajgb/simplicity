@@ -1,0 +1,6 @@
+{
+	"image": "ghcr.io/devcontainers/templates/javascript-node:4.0.2",
+	"features": {
+		"ghcr.io/devcontainers/features/rust:1": {}
+	}
+}

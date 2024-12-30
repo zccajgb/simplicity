@@ -1,18 +1,37 @@
 <template>
 
 <li class="w-full">
-    <div class="flex w-full min-h-16 p-2 border border-slate-300">
+    <div v-if="task" class="flex w-full min-h-16 p-2 border border-slate-300">
         <div class="flex my-auto mx-2 w-full">
-            <AtomCheckbox 
-            :done="value.done" 
-            @clicked="handleClickCheck" 
-            class="h-7 w-7" 
-            :class="value.done ? 'text-slate-300' : 'text-slate-400'"
-            />
-            <div class="flex items-center min-w-0 mx-8 flex-auto">
-                <p class="text-lg leading-6" :class="value.done ? 'line-through text-slate-300' : 'text-slate-500'">{{value.name}}</p>
-            </div>
-            <AtomTTL  class="flex items-center justify-end right-0 " :class="value.done ? 'text-slate-200' : 'text-slate-500'" :ttl="value.ttl" @clicked="handleClickIcon"/>
+          <AtomCheckbox 
+          :done="task.completed" 
+          @click.stop="handleClickCheck" 
+          class="h-7 w-7" 
+          :class="[
+                  task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
+                  task.completed ? 'line-through' : '',
+                ]"
+          />
+          <div class="flex items-center min-w-0 mx-8 flex-auto">
+              <p 
+                class="text-lg leading-6" 
+                :class="[
+                  task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
+                  task.completed ? 'line-through' : '',
+                ]" 
+              >
+                {{ task.name }}
+              </p>
+          </div>
+          <AtomTTL
+            class="flex items-center justify-end right-0 "
+            :class="[
+                  task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
+                  task.completed ? 'line-through' : '',
+            ]"
+            :ttl="task.ttl"
+            @click.stop="handleClickIcon"
+          />
         </div>
     </div>
   </li>
@@ -24,35 +43,44 @@ import AtomCheckbox from '../atoms/AtomCheckbox.vue';
 import AtomTTL from '../atoms/AtomTTL.vue';
 
 export default {
-  props: ['modelValue'],
+  props: [ 'taskId' ],
   components: {
     AtomCheckbox,
     AtomTTL
   },
-  methods: {
-    handleClickIcon() {
-        let ttl_next = {
-            'today': 'tomorrow',
-            'tomorrow': 'later',
-            'later': 'today'
-        }
-        this.value.ttl = ttl_next[this.value.ttl];
-    },
-    handleClickCheck() {
-        this.value.done = !this.value.done;
+  data() {
+    return {
     }
   },
-  computed: {
-    value: {
-      get() {
-        return this.modelValue
-      },
-      set(value) {
-        this.$emit('update:modelValue', value)
+  methods: {
+    async handleClickIcon() {
+      let ttl_next = {
+          'today': 'tomorrow',
+          'tomorrow': 'later',
+          'later': 'today'
       }
+      this.task.ttl = ttl_next[this.task.ttl];
+      this.updateTask();
+    },
+    async handleClickCheck() {
+      this.task.completed = !this.task.completed;
+      this.updateTask();
+    },
+    updateTask() {
+      this.$store.dispatch('updateTaskAndFilter', this.task);
+    },
+    filter() {
+      let filterVal = this.$store.getters.getFilter(this.task);
+      return filterVal;
     }
   },
   mounted() {
+    // this.task = this.$store.getters.getTaskById(this.taskId);
+  },
+  computed: {
+    task() {
+      return this.$store.getters.getTaskById(this.taskId);
+    }
   }
 }
 

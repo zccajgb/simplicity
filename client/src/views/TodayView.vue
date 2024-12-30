@@ -1,20 +1,15 @@
 <template>
-  <OrganismDayView v-model="tasks" ttl="today"/>
+  <OrganismDayView ttl="today"/>
 </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getTodayTasks } from '@/api/helperApi';
+import { getTodayTasks } from '@/api/tasks';
 import { mapGetters } from 'vuex';
 
 export default {
   components: {
     OrganismDayView,
-  },
-  data() {
-    return {
-      tasks: [],
-    }
   },
   methods: {
     ...mapGetters(
@@ -22,11 +17,16 @@ export default {
     ),
     async getTasks() {
       let token = this.getToken();
-      return await getTodayTasks(token);
+      const tasks = await getTodayTasks(token);
+      this.$store.commit('setTasks', tasks);
+      this.$store.commit('setFilter', (task) => {
+        return task.ttl === 'today';
+      });
     },
   },
   async mounted() {
-    this.tasks = await this.getTasks();
-  }
+    console.log("hello");
+    await this.getTasks();
+  },
 }
 </script>

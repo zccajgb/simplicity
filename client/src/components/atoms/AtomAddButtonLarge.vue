@@ -32,7 +32,6 @@ export default {
   },
   methods: {
     handleClick() {
-      console.log('clicked');
       this.notShow = true;
       this.$nextTick(() => {
         if (!this.focusRef) return;
@@ -46,7 +45,6 @@ export default {
         return this.modelValue;
       },
       set(value) {
-        console.log("Set value: ", value);
         this.$emit('update:modelValue', value);
       },
     },

@@ -9,7 +9,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Tag {
-    pub _id: ObjectId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub _id: Option<ObjectId>,
     pub user_id: String,
     pub name: String,
 }

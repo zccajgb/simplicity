@@ -2,7 +2,7 @@ use crate::repos::project_repo::create_inbox_for_user;
 use crate::repos::project_repo::does_inbox_exist_for_user;
 use anyhow::Result;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct User {
     pub id: String,
 }

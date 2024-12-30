@@ -11,10 +11,6 @@ export default {
   components: {
     AtomGoogleLoginButton,
   },
-  data() {
-    return {
-    }
-  },
   methods: {
   },
   mounted() {

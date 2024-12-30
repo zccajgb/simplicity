@@ -1,10 +1,12 @@
+use crate::domain::repeat::{RepeatDTO, RepeatModel};
 use crate::domain::user::User;
 use crate::repos::project_repo::{get_inbox_id_for_user, get_project_by_id_for_user};
 use crate::repos::tag_repo::get_tag_by_id_for_user;
 use crate::repos::task_repo::{
-    add_task_for_user, get_all_tasks_for_user, get_inbox_tasks_for_user, get_task_by_id_for_user,
-    get_tasks_by_project_for_user, get_tasks_by_tag_for_user, get_today_tasks_for_user,
-    get_tomorrow_tasks_for_user, update_task_for_user, TaskModel,
+    add_task_for_user, get_all_tasks_for_user, get_inbox_tasks_for_user, get_later_tasks_for_user,
+    get_snoozed_tasks_for_user, get_task_by_id_for_user, get_tasks_by_project_for_user,
+    get_tasks_by_tag_for_user, get_today_tasks_for_user, get_tomorrow_tasks_for_user,
+    update_task_for_user, TaskModel,
 };
 use crate::routes::tasks;
 use crate::services::api_error::ApiError;
@@ -21,36 +23,42 @@ pub struct TaskDTO {
     pub _id: Option<String>,
     pub user_id: Option<String>,
     pub name: Option<String>,
-    pub completed: Option<bool>,
+    pub completed: Option<String>,
     pub ttl: Option<String>,
     pub project_id: Option<String>,
     pub tags: Vec<String>,
-    pub date: Option<i64>,
-    pub snooze: Option<i64>,
+    pub date: Option<String>,
+    pub snooze: Option<String>,
+    pub repeat: Option<RepeatDTO>,
 }
 
 impl TaskDTO {
     fn from_task_model(task: TaskModel) -> Self {
         Self {
-            _id: Some(task._id.to_string()),
+            _id: task._id.map(|s| s.to_string()),
             name: Some(task.name),
             user_id: Some(task.user_id),
-            completed: Some(task.completed),
+            completed: task.completed.and_then(|d| d.try_to_rfc3339_string().ok()),
             ttl: Some(task.ttl),
             project_id: task.project_id.map(|id| id.to_string()),
             tags: task.tags.iter().map(|id| id.to_string()).collect(),
-            date: task.date.map(|d| d.timestamp_millis()),
-            snooze: task.snooze.map(|d| d.timestamp_millis()),
+            date: task.date.and_then(|d| d.try_to_rfc3339_string().ok()),
+            snooze: task.snooze.and_then(|d| d.try_to_rfc3339_string().ok()),
+            repeat: RepeatDTO::from_model(task.repeat),
         }
     }
 
     fn to_task_model(self: TaskDTO) -> Result<TaskModel> {
         Ok(TaskModel {
-            _id: ObjectId::parse_str(self._id.ok_or(anyhow!("no id"))?)?,
+            _id: self._id.and_then(|s| ObjectId::parse_str(s).ok()),
             name: self.name.context("name is required")?,
             user_id: self.user_id.context("user_id is required")?,
-            completed: self.completed.ok_or(false).unwrap(),
-            ttl: self.ttl.ok_or("ttl is required").unwrap(),
+            completed: self.completed.map(|d| {
+                DateTime::parse_rfc3339_str(d)
+                    .context("date parse failed")
+                    .unwrap()
+            }),
+            ttl: self.ttl.unwrap_or(String::from("later")),
             project_id: self.project_id.map(|id| {
                 ObjectId::parse_str(&id)
                     .context("string to ObjectId failed")
@@ -62,8 +70,21 @@ impl TaskDTO {
                 Ok::<Vec<ObjectId>, anyhow::Error>(acc)
             })?,
 
-            date: self.date.map(DateTime::from_millis),
-            snooze: self.snooze.map(DateTime::from_millis),
+            date: self.date.map(|d| {
+                DateTime::parse_rfc3339_str(d)
+                    .context("date parse failed")
+                    .unwrap()
+            }),
+            snooze: self.snooze.map(|d| {
+                DateTime::parse_rfc3339_str(d)
+                    .context("date parse failed")
+                    .unwrap()
+            }),
+            repeat: self
+                .repeat
+                .map(|r| r.to_model())
+                .unwrap_or(RepeatModel::None),
+            last_updated: Some(DateTime::now()),
         })
     }
     fn vec_from_task_model(tasks: Vec<TaskModel>) -> Vec<TaskDTO> {
@@ -86,12 +107,15 @@ pub fn get_routes() -> Vec<rocket::Route> {
         tasks::get_all_tasks,
         tasks::get_today_tasks,
         tasks::get_tomorrow_tasks,
+        tasks::get_later_tasks,
         tasks::get_inbox_tasks,
         tasks::get_task_by_id,
         tasks::get_tasks_by_project,
         tasks::get_tasks_by_tag,
+        tasks::get_snoozed_tasks,
         tasks::add_task,
         tasks::update_task,
+        tasks::complete_task
     ]
 }
 
@@ -110,6 +134,18 @@ pub async fn get_today_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
 #[get("/tasks/tomorrow")]
 pub async fn get_tomorrow_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
     let tasks = get_tomorrow_tasks_for_user(user).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/later")]
+pub async fn get_later_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tasks = get_later_tasks_for_user(user).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/snoozed")]
+pub async fn get_snoozed_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tasks = get_snoozed_tasks_for_user(user).await;
     map_and_return_tasks(tasks)
 }
 
@@ -147,7 +183,7 @@ pub async fn get_tasks_by_tag(user: User, tag: String) -> ApiJsonResult<Vec<Task
 }
 
 #[post("/tasks", data = "<task>")]
-pub async fn add_task(user: User, task: Json<TaskDTO>) -> ApiJsonResult<ObjectId> {
+pub async fn add_task(user: User, task: Json<TaskDTO>) -> ApiJsonResult<TaskDTO> {
     error!("Adding task: {:?}", task);
     let task = task.into_inner();
 
@@ -155,12 +191,13 @@ pub async fn add_task(user: User, task: Json<TaskDTO>) -> ApiJsonResult<ObjectId
     let task = task_result.map_api_err()?;
     let task_model = task.to_task_model().map_api_err()?;
 
-    let id = add_task_for_user(user, task_model).await;
-    id.map(Json).map_api_err()
+    let task_model = add_task_for_user(user, task_model).await;
+    let task = task_model.map(TaskDTO::from_task_model).map(Json);
+    task.map_api_err()
 }
 
 #[put("/tasks/<id>", data = "<task>")]
-pub async fn update_task(user: User, id: String, task: Json<TaskDTO>) -> ApiJsonResult<ObjectId> {
+pub async fn update_task(user: User, id: String, task: Json<TaskDTO>) -> ApiJsonResult<TaskDTO> {
     let task = task.into_inner();
     let Some(taskid) = task.clone()._id else {
         return Err(ApiError::new("Task ID must be set".into(), 400));
@@ -178,9 +215,23 @@ pub async fn update_task(user: User, id: String, task: Json<TaskDTO>) -> ApiJson
 
     let task_model = task.to_task_model().map_api_err()?;
     let object_id = ObjectId::parse_str(&id).map_api_err()?;
-    let new_id = update_task_for_user(user, object_id, task_model).await;
+    let task_model = update_task_for_user(user, object_id, task_model).await;
+    let task = task_model.map(TaskDTO::from_task_model).map(Json);
+    task.map_api_err()
+}
 
-    new_id.map(Json).map_api_err()
+#[put("/tasks/<id>/complete")]
+pub async fn complete_task(user: User, id: String) -> ApiJsonResult<TaskDTO> {
+    let object_id = ObjectId::parse_str(&id).map_api_err()?;
+    let task = get_task_by_id_for_user(user.clone(), id.clone()).await;
+    let mut task = task.map_api_err()?;
+    if !task.repeat.is_none() {
+        let new_task = task.repeat.create_repeat(&task);
+    }
+    task.completed = Some(DateTime::now());
+    let task = update_task_for_user(user, object_id, task).await;
+    let task = task.map(TaskDTO::from_task_model).map(Json);
+    task.map_api_err()
 }
 
 async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {

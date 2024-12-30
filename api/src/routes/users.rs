@@ -7,6 +7,7 @@ pub fn get_routes() -> Vec<rocket::Route> {
 
 #[get("/login")]
 pub async fn check_user_or_create_new(user: User) -> ApiResult<()> {
+    error!("hello");
     if (User::does_user_exist(&user).await).is_ok() {
         return Ok(());
     }

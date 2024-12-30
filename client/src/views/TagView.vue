@@ -1,10 +1,10 @@
 <template>
-  <OrganismDayView v-model="tasks" :tagId="tagId"/>
+  <OrganismDayView :tagId="tagId"/>
 </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getTasksByTagId } from '@/api/helperApi';
+import { getTasksByTagId } from '@/api/tasks';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -23,8 +23,11 @@ export default {
     ),
     async getTasks(tagId) {
       let token = this.getToken();
-      let tasks = await getTasksByTagId(tagId, token);
-      this.tasks = tasks;
+      const tasks = await getTasksByTagId(tagId, token);
+      this.$store.commit('setTasks', tasks);
+      this.$store.commit('setFilter', (task) => {
+        return task.tagId === tagId;
+      });
     },
   },
   async mounted() {
@@ -38,7 +41,7 @@ export default {
         this.tagId = id;
         this.getTasks(id)
       }
-    }
+    },
   }
 }
 </script>

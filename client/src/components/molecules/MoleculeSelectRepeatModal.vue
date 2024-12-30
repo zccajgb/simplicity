@@ -75,7 +75,6 @@ export default {
         this.selected = { key: "daily", freq: "daily", n: 1, nth: null, day: null };
       }
       else if (key === "everyn") {
-        console.log("everyn");
         this.selected = { key: "everyn", freq: this.freq_repeat, n: this.n_repeat, nth: null, day: null };
       }
       else if (key === "everynth") {
