@@ -7,6 +7,12 @@ services:
       - "9001:8000"
     environment:
       MONGO_URI: mongodb://mongodb:27017
+      GOOGLE_CLIENT_ID: something
+      API_URI: something
+      API_KEY: something
+      RUST_LOG: info
+      ROCKET_LOG_LEVEL: debug
+      PROD: true
 
   client:
     image: zccajgb/simplicity-client:latest
@@ -17,6 +23,8 @@ services:
       - "443:443"
     depends_on:
       - api
+    environment:
+      API_URI: something
 
   cron:
     image: zccajgb/simplicity-cron:latest

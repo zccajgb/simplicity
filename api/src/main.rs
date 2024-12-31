@@ -18,14 +18,19 @@ extern crate rocket;
 
 #[launch]
 fn rocket() -> _ {
-    dotenv().ok();
+    let is_prod = std::env::var("PROD").unwrap_or_else(|_| "false".to_string());
+    if is_prod != "true" {
+        error!("Loading .env file");
+        dotenv().ok();
+    } else {
+        error!("Running in production mode");
+    }
     rocket::build()
         .mount("/", tags::get_routes())
         .mount("/", tasks::get_routes())
         .mount("/", projects::get_routes())
         .mount("/", users::get_routes())
         .mount("/", scheduled::get_routes())
-        .attach(make_cors())
         .attach(AuthFairing)
 }
 

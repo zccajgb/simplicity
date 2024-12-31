@@ -61,9 +61,12 @@ pub async fn add_project(user: User, project: ProjectModel) -> Result<ObjectId> 
     if user.id != project.user_id {
         anyhow::bail!("Project user_id does not match user id");
     }
+    error!("Adding project");
     let collection = get_projects_collection().await?;
+    error!("Got collection");
     let project = collection.insert_one(project).await?;
-    Ok(project.inserted_id.as_object_id().unwrap())
+    error!("Inserted project");
+    Ok(project.inserted_id.as_object_id().ok_or(anyhow!("Failed to get inserted id"))?)
 }
 
 pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {

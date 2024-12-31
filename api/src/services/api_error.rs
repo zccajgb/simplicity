@@ -27,8 +27,10 @@ pub trait ResultExt<T, Error> {
 
 impl<T, E: std::fmt::Display> ResultExt<T, E> for Result<T, E> {
     fn map_api_err(self) -> Result<T, ApiError> {
-        self.inspect_err(|e| error!("Error: {}", e))
-            .map_err(|e| ApiError::new(format!("{}", e), 500))
+        self.map_err(|e| {
+                error!("Error: {}", e);
+                return ApiError::new(format!("{}", e), 500);
+            })
     }
 }
 

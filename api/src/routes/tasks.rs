@@ -56,13 +56,13 @@ impl TaskDTO {
             completed: self.completed.map(|d| {
                 DateTime::parse_rfc3339_str(d)
                     .context("date parse failed")
-                    .unwrap()
+                    .expect("date parse failed")
             }),
             ttl: self.ttl.unwrap_or(String::from("later")),
             project_id: self.project_id.map(|id| {
                 ObjectId::parse_str(&id)
                     .context("string to ObjectId failed")
-                    .unwrap()
+                    .expect("date parse failed")
             }),
             tags: self.tags.iter().try_fold(Vec::new(), |mut acc, item| {
                 let id = ObjectId::parse_str(item).context("string to ObjectId failed")?;
@@ -73,12 +73,12 @@ impl TaskDTO {
             date: self.date.map(|d| {
                 DateTime::parse_rfc3339_str(d)
                     .context("date parse failed")
-                    .unwrap()
+                    .expect("date parse failed")
             }),
             snooze: self.snooze.map(|d| {
                 DateTime::parse_rfc3339_str(d)
                     .context("date parse failed")
-                    .unwrap()
+                    .expect("date parse failed")
             }),
             repeat: self
                 .repeat
@@ -236,7 +236,7 @@ pub async fn complete_task(user: User, id: String) -> ApiJsonResult<TaskDTO> {
 
 async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
     let mut task = task;
-    if task.name.is_none() || task.clone().name.unwrap().is_empty() {
+    if task.name.is_none() || task.clone().name.expect("task guard").is_empty() {
         return Err(anyhow!("Cannot create a task with an empty name"));
     }
     if let Some(user_id) = task.clone().user_id {
@@ -257,7 +257,7 @@ async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
             .map(|id| id.to_string());
     };
 
-    let project_id = ObjectId::parse_str(task.clone().project_id.unwrap())
+    let project_id = ObjectId::parse_str(task.clone().project_id.expect("project_id is required"))
         .context("string to ObjectId failed")?;
     let project = get_project_by_id_for_user(&user, project_id).await;
 

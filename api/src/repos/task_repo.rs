@@ -30,7 +30,7 @@ pub struct TaskModel {
 
 impl TaskModel {
     fn to_update_doc(self) -> Document {
-        let mut task_doc = to_document(&self).unwrap();
+        let mut task_doc = to_document(&self).expect("Failed to convert to doc");
         task_doc.remove("_id"); // Remove the _id field
         doc! { "$set": task_doc }
     }
@@ -45,8 +45,8 @@ pub async fn get_tasks_collection() -> Result<Collection<TaskModel>> {
 
 async fn get_tasks_without_snoozed(filter: bson::Document) -> Result<Vec<TaskModel>> {
     let mut filter = filter;
-    let tomorrow = Utc::now().date_naive().succ_opt().unwrap();
-    let tomorrow = tomorrow.and_hms_opt(0, 0, 0).unwrap();
+    let tomorrow = Utc::now().date_naive().succ_opt().expect("could not get tomorrow");
+    let tomorrow = tomorrow.and_hms_opt(0, 0, 0).expect("could not get tomorrow");
     let tomorrow_millis = tomorrow.and_utc().timestamp_millis();
 
     let snooze = vec![
@@ -54,7 +54,7 @@ async fn get_tasks_without_snoozed(filter: bson::Document) -> Result<Vec<TaskMod
         doc! { "snooze": { "$exists": false } },
         doc! { "snooze": { "$lte": bson::DateTime::from_millis(tomorrow_millis) } },
     ];
-    filter.insert("$or", to_bson(&snooze).unwrap());
+    filter.insert("$or", to_bson(&snooze).expect("Failed to convert to bson"));
 
     error!("{:?}", filter);
     get_tasks_inner(filter).await
@@ -96,8 +96,8 @@ pub async fn get_later_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
 }
 
 pub async fn get_snoozed_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
-    let tomorrow = Utc::now().date_naive().succ_opt().unwrap();
-    let tomorrow = tomorrow.and_hms_opt(0, 0, 0).unwrap();
+    let tomorrow = Utc::now().date_naive().succ_opt().expect("could not get tomorrow");
+    let tomorrow = tomorrow.and_hms_opt(0, 0, 0).expect("could not get tomorrow");
     let tomorrow_millis = tomorrow.and_utc().timestamp_millis();
 
     let filter = doc! { "user_id": user.id, "snooze": { "$ne": null, "$gte": bson::DateTime::from_millis(tomorrow_millis) } };
