@@ -16,6 +16,7 @@
           header="projects"
           @filterItems="handleFilterProjects"
           @add="handleAddProject"
+          :showNavMobile="showNavMobile"
           />
         </div>
         <div v-else-if="type==='tags'">
@@ -27,7 +28,9 @@
           :addable="true"
           header="tags"
           @filterItems="handleFilterTags"
-          @add="handleAddTag"/>
+          @add="handleAddTag"
+          :showNavMobile="showNavMobile" 
+          />
         </div>
          <div v-else>
           <MoleculeSideNavGroup 

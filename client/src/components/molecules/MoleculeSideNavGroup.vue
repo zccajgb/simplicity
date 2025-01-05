@@ -8,7 +8,7 @@
         <p class="text-lg" >{{header}}</p>
       </div>
     </div>
-    <div class="">
+    <div class="sm:flex" :class="showNavMobile ? '' : 'hidden'">
       <AtomSearchBar @input="$emit('filterItems', $event)" ref="search" />
     </div>
   </div>

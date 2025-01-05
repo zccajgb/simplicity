@@ -1,5 +1,5 @@
 <template>
-  <aside v-if="task" class="fixed right-0 top-0 w-[25vw] h-screen bg-slate-500" @click="close()" @focusout="saveTask()" >
+  <aside v-if="task" class="fixed right-0 top-0 w-[75vw] sm:w-[25vw] h-screen bg-slate-500" @click="close()" @focusout="saveTask()" >
     <div class="flex px-6 pt-8 w-full">
       <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="task.completed = !task.completed"/>
       <div class="ml-6">
