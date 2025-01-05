@@ -8,6 +8,7 @@ import router from './router'
 
 import vue3GoogleLogin from 'vue3-google-login';
 import store from './store'
+import './registerServiceWorker'
 
 const app = createApp(App)
 
