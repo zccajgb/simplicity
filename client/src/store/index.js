@@ -3,6 +3,7 @@ import auth from '@/store/auth';
 import tasks from '@/store/tasks';
 
 import VuexPersistence from 'vuex-persist';
+import alerts from '@/store/alerts';
 
 const vuexLocal = new VuexPersistence({
   storage: window.localStorage
@@ -11,7 +12,8 @@ const vuexLocal = new VuexPersistence({
 export default createStore({
   modules: {
     auth,
-    tasks
+    tasks,
+    alerts
   },
   state: {
   },

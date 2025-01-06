@@ -9,7 +9,13 @@ services:
     # depends_on:
       # - mongodb
     environment:
-      MONGO_URI: mongodb://mongodb:27017
+      RUST_LOG: info
+      ROCKET_LOG: normal
+      MONGO_URL: ${MONGO_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      API_URI: ${API_URI}
+      API_KEY: ${API_KEY}
+      ROCKET_LOG_LEVEL: ${ROCKET_LOG_LEVEL}
 
   client:
     image: zccajgb/simplicity-client:latest

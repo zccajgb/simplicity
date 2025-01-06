@@ -28,7 +28,7 @@ import { getProjects, addProject } from '@/api/projects';
 import { getTags, addTag } from '@/api/tags';
 import { getAllTasks, addTask } from '@/api/tasks';
 import MoleculeMenuItem from './MoleculeMenuItem.vue';
-import { mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 export default {
   props: ['modelValue', 'itemtype', 'multiselect'],
   data() {
@@ -44,12 +44,12 @@ export default {
     MoleculeMenuItem,
   },
   methods: {
-    ...mapGetters(
+    ...mapActions(
       ['getToken']
     ),
     async getItems() {
       let items;
-      let token = this.getToken();
+      let token = await this.getToken();
       if (this.itemtype === 'project') {
         items = await getProjects(token);
       } else if (this.itemtype === 'tasks') {
@@ -61,7 +61,7 @@ export default {
     },
     async saveItem(newItem) {
       if (this.itemtype === 'project') {
-        const token = this.getToken();
+        const token = await this.getToken();
         await addProject(newItem, token);
       } else if (this.itemtype === 'tasks') {
         await this.$store.dispatch('addTask', newItem);

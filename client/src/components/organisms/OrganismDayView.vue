@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-screen">
+  <div class="w-full h-screen bg-white">
     <div class="flex flex-col h-screen w-full" :class="selectedTaskId? 'sm:w-[calc(75vw-16rem)]' : ''" @click="this.selectedTaskId=null">
       <OrganismTaskList 
         @selected="handleClickTask($event)"

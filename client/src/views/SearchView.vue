@@ -11,7 +11,7 @@
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getAllTasks } from '@/api/tasks';
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
-import { mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   components: {
@@ -19,11 +19,11 @@ export default {
     AtomSearchBar,
   },
   methods: {
-    ...mapGetters(
+    ...mapActions(
       ['getToken']
     ),
     async getTasks() {
-      let token = this.getToken();
+      let token = await this.getToken();
       let tasks = await getAllTasks(token);
       this.$store.commit('setTasks', tasks);
     },

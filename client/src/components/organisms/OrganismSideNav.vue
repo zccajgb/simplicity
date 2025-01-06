@@ -48,7 +48,7 @@
 <script>
 import { getProjectsWithoutInbox, addProject } from '@/api/projects';
 import { getTags, addTag } from '@/api/tags';
-import { mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
 export default {
@@ -76,7 +76,7 @@ export default {
     }
   },
   methods: {
-    ...mapGetters(
+    ...mapActions(
       ['getToken']
     ),
     handleBack() {
@@ -84,7 +84,7 @@ export default {
       this.selectedItemId = null;
     },
     async handleSelect(item) {
-      let token = this.getToken();
+      let token = await this.getToken();
       if (this.selectedItemId === item.id) return;
       if (item.name === 'projects') {
         this.type = 'projects';
@@ -109,7 +109,7 @@ export default {
       this.$router.push({ name: "tags", params: { tagId: item.id } });
     },
     async handleFilterProjects($event) {
-      let token = this.getToken();
+      let token = await this.getToken();
       if (!$event || $event === "") {
         this.projects = await getProjectsWithoutInbox(token);
         return;
@@ -117,7 +117,7 @@ export default {
       this.projects = await getProjectsWithoutInbox(token).filter(project => project.name.includes($event.target.value));
     },
     async handleFilterTags($event) {
-      let token = this.getToken();
+      let token = await this.getToken();
       if (!$event || $event === "") {
         this.tags = await getTags(token);
         return;
@@ -125,20 +125,20 @@ export default {
       this.tags = await getTags(token).filter(tag => tag.name.includes($event.target.value));
     },
     async getProjects() {
-      let token = this.getToken();
+      let token = await this.getToken();
       this.projects = await getProjectsWithoutInbox(token);
     },
     async getTags() {
-      let token = this.getToken();
+      let token = await this.getToken();
       this.tags = await getTags(token);
     },
     async handleAddProject(value) {
-      let token = this.getToken();
+      let token = await this.getToken();
       if (value.trim() === '') return;
       await addProject(value, token);
     },
     async handleAddTag(value) {
-      let token = this.getToken();
+      let token = await this.getToken();
       if (value.trim() === '') return;
       await addTag(value, token);
     },

@@ -118,7 +118,7 @@ import { getProjectById } from '@/api/projects';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
-import { mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   props: ['selectedTaskId'],
@@ -153,7 +153,7 @@ export default {
     clickOutside: vueClickOutside
   },
   methods: {
-    ...mapGetters(
+    ...mapActions(
       ['getToken']
     ),
     updateName(event) {
@@ -238,7 +238,7 @@ export default {
       $event.target.value = '';
     },
     async getProjectName(projectId) {
-      let token = this.getToken();
+      let token = await this.getToken();
       let projectIdString = projectId.toString();
       let project = await getProjectById(projectIdString, token);
       this.projectName = project.name;

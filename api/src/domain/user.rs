@@ -14,7 +14,7 @@ impl User {
 
     pub async fn create_user(user: User) -> Result<()> {
         let exists = User::does_user_exist(&user).await?;
-        error!("User exists: {}", exists);
+        info!("User exists: {}", exists);
         if !exists {
             create_inbox_for_user(user).await?;
         }

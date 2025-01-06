@@ -1,0 +1,48 @@
+export default {
+  state: {
+    messages: [
+    ],
+  },
+  mutations: {
+    addAlert(state, alert) {
+      state.messages.push(alert);
+    },
+    removeAlert(state, alert) {
+      state.messages = state.messages.filter((a) => a.id !== alert.id);
+    },
+  },
+  actions: {
+    SET_ALERT({ commit }, message) {
+      let alert = {
+        title: "Success",
+        type: "success",
+        message: message,
+        id: state.messages.length,
+      };
+
+      commit("addAlert", alert);
+      setTimeout(() => {
+        commit("removeAlert", alert);
+      }, 5000);
+    },
+    async SET_ERROR({ commit, state }, error) {
+      let alert = {
+        title: "Error",
+        type: "warning",
+        message: error,
+        id: state.messages.length,
+      };
+      commit("addAlert", alert);
+      setTimeout(() => {
+        commit("removeAlert", alert);
+      }, 5000);
+    },
+
+    REMOVE_ALERT({ commit }, alert) {
+      commit("removeAlert", alert);
+    },
+  },
+  getters: {
+    alerts: (state) => state.messages,
+  },
+};

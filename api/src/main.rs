@@ -1,4 +1,5 @@
-use dotenv::dotenv;
+use dotenvy::dotenv_override;
+use pretty_env_logger;
 use rocket_cors::Cors;
 use rocket_cors::{AllowedOrigins, CorsOptions};
 use routes::projects;
@@ -18,12 +19,13 @@ extern crate rocket;
 
 #[launch]
 fn rocket() -> _ {
+    pretty_env_logger::init();
     let is_prod = std::env::var("PROD").unwrap_or_else(|_| "false".to_string());
     if is_prod != "true" {
-        error!("Loading .env file");
-        dotenv().ok();
+        info!("Loading .env file");
+        dotenv_override().ok();
     } else {
-        error!("Running in production mode");
+        info!("Running in production mode");
     }
     rocket::build()
         .mount("/", tags::get_routes())

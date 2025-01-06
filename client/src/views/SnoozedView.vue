@@ -5,18 +5,18 @@
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getSnoozedTasks } from '@/api/tasks';
-import { mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   components: {
     OrganismDayView,
   },
   methods: {
-    ...mapGetters(
+    ...mapActions(
       ['getToken']
     ),
     async getTasks() {
-      let token = this.getToken();
+      let token = await this.getToken();
       const tasks = await getSnoozedTasks(token);
       console.log("tasks", tasks);
       this.$store.commit('setTasks', tasks);

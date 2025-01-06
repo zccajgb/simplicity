@@ -5,18 +5,18 @@
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getInboxTasks } from '@/api/tasks';
-import { mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   components: {
     OrganismDayView,
   },
   methods: {
-    ...mapGetters(
+    ...mapActions(
       ['getToken']
     ),
     async getTasks() {
-      let token = this.getToken();
+      let token = await this.getToken();
       let tasks = await getInboxTasks(token);
       this.$store.commit('setTasks', tasks);
       this.$store.commit('setFilter', (task) => {

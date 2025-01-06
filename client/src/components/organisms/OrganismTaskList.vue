@@ -17,7 +17,7 @@ import MoleculeTaskListItem from '@/components/molecules/MoleculeTaskListItem.vu
 import AtomAddButtonLarge from '@/components/atoms/AtomAddButtonLarge.vue';
 import AtomAddTaskInput from '@/components/atoms/AtomAddTaskInput.vue';
 import { addTask } from '@/api/tasks';
-import { mapGetters, mapMutations } from 'vuex';
+import { mapActions, mapMutations } from 'vuex';
 
 export default {
   components: {
@@ -45,7 +45,7 @@ export default {
     }
   },
   methods: {
-    ...mapGetters(
+    ...mapActions(
       ['getToken']
     ),
     async addTask(taskName) {
@@ -57,7 +57,7 @@ export default {
         depends: [],
         ttl: this.ttl ? this.ttl : "later"
       };
-      let token = this.getToken();
+      let token = await this.getToken();
       if (!token) {
         return;
       }
