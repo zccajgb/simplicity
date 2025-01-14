@@ -11,7 +11,7 @@
       <AtomTTLSegmentButton v-model="task"/>
     </div>
     
-    <div class="h-[calc(100vh-9rem)]">
+    <div class="h-[calc(100vh-9rem)] h-[calc(100dvh-9rem)]">
       <div class="overflow-y-auto h-full">
         <div class="grid mt-2">
           <div class="grid grid-cols-2 pb-1 px-6 gap-1">
