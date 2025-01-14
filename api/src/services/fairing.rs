@@ -1,4 +1,4 @@
-use super::auth::validate_token;
+use super::auth::{get_user_from_session_token, validate_token};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Status;
 use rocket::request::Request;
@@ -18,12 +18,19 @@ impl Fairing for AuthFairing {
         if request.uri().path().contains("/public") {
             return;
         }
-        let Some(auth_token) = request.headers().get_one("Authorization") else {
+        if request.uri().path().contains("/login") {
+            return;
+        }
+
+        let cookie = request.cookies().get("session_token");
+        let Some(cookie) = cookie else {
+            error!("Error in fairing, No token found");
             request.local_cache(|| Status::Unauthorized);
             return;
         };
-        let auth_token = &auth_token[7..];
-        let Ok(_) = validate_token(auth_token) else {
+
+        let session_token = cookie.value();
+        let Ok(_) = get_user_from_session_token(session_token).await else {
             request.local_cache(|| Status::Unauthorized);
             return;
         };

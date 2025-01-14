@@ -1,7 +1,7 @@
 <template>
   <aside v-if="task" class="fixed right-0 top-0 w-[75vw] sm:w-[25vw] h-screen bg-slate-500" @click="close()" @focusout="saveTask()" >
     <div class="flex px-6 pt-8 w-full">
-      <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="task.completed = !task.completed"/>
+      <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="handleClickCheck"/>
       <div class="ml-6">
         <p class="text-xl text-white" :class="task.completed ? 'line-through' : ''" contenteditable @blur="updateName"
         v-text="task.name"></p>
@@ -118,7 +118,7 @@ import { getProjectById } from '@/api/projects';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
-import { mapActions } from 'vuex';
+import { completeTask } from '@/api/tasks';
 
 export default {
   props: ['selectedTaskId'],
@@ -153,14 +153,15 @@ export default {
     clickOutside: vueClickOutside
   },
   methods: {
-    ...mapActions(
-      ['getToken']
-    ),
     updateName(event) {
       this.task.name = event.target.innerText
     },
     handleClickCheck() {
-        this.task.completed = !this.task.completed;
+      if (this.task.completed) {
+        this.task.completed = null;
+        return;
+      }
+      this.task.completed = new Date();
     },
     getRepeatText() {
       if (!this.task.repeat) {
@@ -238,18 +239,14 @@ export default {
       $event.target.value = '';
     },
     async getProjectName(projectId) {
-      let token = await this.getToken();
       let projectIdString = projectId.toString();
-      let project = await getProjectById(projectIdString, token);
+      let project = await getProjectById(projectIdString);
       this.projectName = project.name;
-      console.log("project name", this.projectName);
     },
     close() {
-      console.log(this.task);
       this.selector = null;
     },
     async saveTask() {
-      console.log("saving task");
       this.$store.dispatch('updateTask', this.task);
     },
   },
@@ -278,7 +275,6 @@ export default {
     await this.getProjectName(this.task.projectId);
   },
   beforeUnmount() {
-    console.log('unmounting');
     this.saveTask();
   },
   watch: {

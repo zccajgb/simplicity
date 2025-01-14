@@ -1,9 +1,7 @@
 import { addTask, updateTask } from "@/api/tasks";
 
 const sort = (tasks) => {
-  console.log("tasks", tasks);
   if (!tasks || !tasks.length) return [];
-  console.log(tasks);
   return tasks.sort((a, b) => {
     if (a.completed === b.completed) return 0;
     return a.completed ? 1 : -1;
@@ -55,27 +53,24 @@ export default {
     }
   },
   actions: {
-    async addTask({ commit, rootState }, task) {
-      let token = rootState.auth.token;
-      let taskRes = await addTask(task, token);
+    async addTask({ commit }, task) {
+      let taskRes = await addTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);
         return;
       }
       commit("addTask", taskRes);
     },
-    async updateTask({ commit, rootState }, task) {
-      let token = rootState.auth.token;
-      let taskRes = await updateTask(task, token);
+    async updateTask({ commit }, task) {
+      let taskRes = await updateTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);
         return;
       }
       commit("updateTask", taskRes);
     },
-    async updateTaskAndFilter({ commit, rootState }, task) {
-      let token = rootState.auth.token;
-      let taskRes = await updateTask(task, token);
+    async updateTaskAndFilter({ commit }, task) {
+      let taskRes = await updateTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);
         return;

@@ -35,9 +35,8 @@ export default {
       commit("addAlert", alert);
       setTimeout(() => {
         commit("removeAlert", alert);
-      }, 5000);
+      }, 3000);
     },
-
     REMOVE_ALERT({ commit }, alert) {
       commit("removeAlert", alert);
     },

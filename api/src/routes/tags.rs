@@ -1,4 +1,3 @@
-use crate::domain::user::User;
 use crate::repos::tag_repo::{
     add_tag_for_user, get_all_tags_for_user, get_tag_by_id_for_user, Tag,
 };
@@ -7,6 +6,8 @@ use anyhow::{anyhow, Context, Result};
 use bson::oid::ObjectId;
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
+
+use super::users::User;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TagDTO {
@@ -68,14 +69,14 @@ pub async fn get_tag_by_id(user: User, id: String) -> ApiJsonResult<TagDTO> {
 pub async fn add_tag(user: User, tag: Json<TagDTO>) -> ApiJsonResult<ObjectId> {
     let mut tag: TagDTO = tag.into_inner();
     if let Some(user_id) = tag.clone().user_id {
-        if user_id != user.id {
+        if user_id != user.user_id {
             return Err(ApiError::new(
                 String::from("Cannot create a project for another user"),
                 400,
             ));
         }
     } else {
-        tag.user_id = Some(user.id.clone());
+        tag.user_id = Some(user.user_id.clone());
     }
 
     let tag_model = tag.to_tag().map_api_err()?;

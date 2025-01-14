@@ -1,55 +1,51 @@
 import { helperGet, helperPost, helperPut } from '@/api/helperApi';
 
-export async function getAllTasks(token) {
-  return await helperGet(`tasks`, token);
+export async function getAllTasks() {
+  return await helperGet(`tasks`);
 }
 
-export async function getTodayTasks(token) {
-  let task = await helperGet(`tasks/today`, token);
-  console.log(task);
+export async function getTodayTasks() {
+  let task = await helperGet(`tasks/today`);
   return task;
 }
 
-export async function getTomorrowTasks(token) {
-  return await helperGet(`tasks/tomorrow`, token);
+export async function getTomorrowTasks() {
+  return await helperGet(`tasks/tomorrow`);
 }
 
-export async function getLaterTasks(token) {
-  return await helperGet(`tasks/later`, token);
+export async function getLaterTasks() {
+  return await helperGet(`tasks/later`);
 }
 
-export async function getSnoozedTasks(token) {
-  return await helperGet(`tasks/snoozed`, token);
+export async function getSnoozedTasks() {
+  return await helperGet(`tasks/snoozed`);
 }
 
-export async function getTasksByProjectId(projectId, token) {
-  return await helperGet(`tasks/project/${projectId}`, token);
+export async function getTasksByProjectId(projectId) {
+  return await helperGet(`tasks/project/${projectId}`);
 }
-export async function getTasksByTagId(tagId, token) {
-  return await helperGet(`tasks/tag/${tagId}`, token);
-}
-
-
-export async function getTaskById(taskId, token) {
-  return await helperGet(`tasks/${taskId}`, token);
+export async function getTasksByTagId(tagId) {
+  return await helperGet(`tasks/tag/${tagId}`);
 }
 
-export async function updateTask(task, token) {
-  console.log(task);
+export async function getTaskById(taskId) {
+  return await helperGet(`tasks/${taskId}`);
+}
+
+export async function updateTask(task) {
   let uri = `tasks/${task.id}`;
-  return await helperPut(uri, task, token);
+  return await helperPut(uri, task);
 }
 
-export async function completeTask(taskId, token) {
+export async function completeTask(taskId) {
   let uri = `tasks/${taskId}/complete`;
-  return await helperPut(uri, {}, token);
-}
- 
-export async function addTask(task, token) {
-  return await helperPost(`tasks`, task, token);
+  return await helperPut(uri, {});
 }
 
+export async function addTask(task) {
+  return await helperPost(`tasks`, task);
+}
 
-export async function getInboxTasks(token) {
-  return await helperGet(`tasks/inbox`, token);
+export async function getInboxTasks() {
+  return await helperGet(`tasks/inbox`);
 }

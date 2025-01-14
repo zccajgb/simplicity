@@ -16,6 +16,7 @@
         <FolderIcon v-else-if="value==='projects'"/>
         <TagIcon v-else-if="value==='tags'"/>
         <MagnifyingGlassIcon v-else-if="value==='search'"/>
+        <ArrowTopRightOnSquareIcon v-else-if="value==='logout'"/>
       </div>
       <div 
         class="sm:flex items-center my-auto mx-2 w-full"
@@ -28,7 +29,7 @@
 </template>
 
 <script>
-import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon, BellSnoozeIcon } from '@heroicons/vue/24/outline';
+import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon, BellSnoozeIcon, ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline';
 import IconCircle from '../icons/IconCircle.vue';
 import AtomText from '@/components/atoms/AtomText.vue';
 export default {
@@ -42,7 +43,18 @@ export default {
     TagIcon,
     MagnifyingGlassIcon,
     AtomText,
-    BellSnoozeIcon
+    BellSnoozeIcon,
+    ArrowTopRightOnSquareIcon
   },
+  data() {
+    return {
+      logoutIcon: null
+    }
+  },
+  mounted() {
+    if (this.value === 'logout') {
+      this.logoutIcon = this.$store.getters.userIcon;
+    }
+  }
 }
 </script>

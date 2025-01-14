@@ -44,6 +44,7 @@ export default {
     },
     handleBlur($event) {
       if (!$event.target.value) {
+        this.$emit('blur');
         return;
       }
       this.saveFunction($event.target.value);

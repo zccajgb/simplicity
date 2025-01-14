@@ -21,10 +21,10 @@ export default {
 
 <template>
   <div class="flex w-screen h-screen">
-    <OrganismSideNav />
-    <div class="flex h-full w-full">
+    <OrganismSideNav class="h-screen" v-if="$store.getters.isLoggedIn"/>
+    <div class="h-full w-full">
       <MoleculeAlert
-      class="relative top-2 z-50 left-2 max-h-16"
+      class="absolute top-2 z-50 left-2 max-h-16"
       :alerts="alerts"
       ></MoleculeAlert>
       <RouterView/>

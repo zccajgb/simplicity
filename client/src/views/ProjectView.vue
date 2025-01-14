@@ -5,7 +5,7 @@
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getTasksByProjectId } from '@/api/tasks';
-import { mapActions } from 'vuex';
+
 export default {
   components: {
     OrganismDayView,
@@ -16,12 +16,8 @@ export default {
     }
   },
   methods: {
-    ...mapActions(
-      ['getToken']
-    ),
     async getTasks(projectId) {
-      let token = await this.getToken();
-      let tasks = await getTasksByProjectId(projectId, token);
+      let tasks = await getTasksByProjectId(projectId);
       this.$store.commit('setTasks', tasks);
       this.$store.commit('setFilter', (task) => {
         return task.projectId === projectId;

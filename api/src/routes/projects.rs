@@ -1,4 +1,3 @@
-use crate::domain::user::User;
 use crate::repos::project_repo;
 use crate::repos::project_repo::{
     get_all_projects_for_user, get_project_by_id_for_user, ProjectModel,
@@ -8,6 +7,8 @@ use anyhow::{anyhow, Context, Result};
 use bson::oid::ObjectId;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
+
+use super::users::User;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProjectDTO {
@@ -99,14 +100,14 @@ pub async fn add_project(user: User, project: Json<ProjectDTO>) -> ApiJsonResult
     }
 
     if let Some(user_id) = project.clone().user_id {
-        if user_id != user.id {
+        if user_id != user.user_id {
             return Err(ApiError::new(
                 String::from("Cannot create a project for another user"),
                 400,
             ));
         }
     } else {
-        project.user_id = Some(user.id.clone());
+        project.user_id = Some(user.user_id.clone());
     }
 
     let project_model = project.to_project().map_api_err()?;

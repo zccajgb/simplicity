@@ -1,5 +1,4 @@
-use crate::domain::user::User;
-use crate::services::mongo::get_client;
+use crate::{routes::users::User, services::mongo::get_client};
 use anyhow::Result;
 use bson::oid::ObjectId;
 use futures::stream::TryStreamExt;
@@ -34,14 +33,14 @@ async fn get_tags_inner(filter: bson::Document) -> Result<Vec<Tag>> {
 }
 
 pub async fn get_all_tags_for_user(user: User) -> Result<Vec<Tag>> {
-    let filter = doc! { "user_id": user.id };
+    let filter = doc! { "user_id": user.user_id };
 
     get_tags_inner(filter).await
 }
 
 pub async fn get_tag_by_id_for_user(user: &User, id: ObjectId) -> Result<Tag> {
     let collection = get_tags_collection().await?;
-    let filter = doc! { "_id": id, "user_id": user.id.clone() };
+    let filter = doc! { "_id": id, "user_id": user.user_id.clone() };
     let tag = collection.find_one(filter).await?;
     match tag {
         Some(tag) => Ok(tag),
@@ -50,7 +49,7 @@ pub async fn get_tag_by_id_for_user(user: &User, id: ObjectId) -> Result<Tag> {
 }
 
 pub async fn add_tag_for_user(user: User, tag: Tag) -> Result<ObjectId> {
-    if tag.user_id != user.id {
+    if tag.user_id != user.user_id {
         anyhow::bail!("Tag user_id does not match user id");
     }
     let collection = get_tags_collection().await?;

@@ -26,8 +26,8 @@
         <AtomAddButton v-model="showAdd" :focusRef="$refs.addItem" :lightMode="false"/>
     </div>
   </div>
-  <div class="flex">
-    <MoleculeSideNavItem class='mt-auto' value="logout" @click="logout" />
+  <div class="absolute bottom-0">
+  <MoleculeSideNavItem class='w-14 sm:w-64' value="logout" @click="logout" />
   </div>
 </template>
 
@@ -79,8 +79,9 @@ export default {
     handleAdd($event) {
       this.$emit("add", $event.target.value);
     },
-    logout() {
-      this.$store.dispatch('logout');
+    async logout() {
+      await this.$store.dispatch('logout');
+      window.location.reload();
     }
   },
   computed: {

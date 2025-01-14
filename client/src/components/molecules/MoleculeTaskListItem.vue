@@ -63,7 +63,11 @@ export default {
       this.updateTask();
     },
     async handleClickCheck() {
-      this.task.completed = !this.task.completed;
+      if (!this.task.completed) {
+        this.task.completed = new Date();
+      } else {
+        this.task.completed = null;
+      }
       this.updateTask();
     },
     updateTask() {

@@ -1,5 +1,5 @@
-use super::auth::validate_token_and_get_user;
-use crate::domain::user::User;
+use super::auth::get_user_from_session_token;
+use crate::routes::users::User;
 use crate::services::auth::ApiKey;
 use log::error;
 use rocket::http::Status;
@@ -10,16 +10,20 @@ impl<'r> FromRequest<'r> for User {
     type Error = ();
 
     async fn from_request(request: &'r rocket::Request<'_>) -> request::Outcome<Self, Self::Error> {
-        let token = request.headers().get_one("Authorization");
-        let Some(token) = token else {
+        let cookie = request.cookies().get("session_token");
+        let Some(cookie) = cookie else {
             error!("No token found");
             return Outcome::Error((Status::Unauthorized, ()));
         };
-        let token = &token[7..];
-        return match validate_token_and_get_user(token) {
-            Ok(user) => Outcome::Success(user),
+
+        let session_token = cookie.value();
+        error!("Session token: {}", session_token);
+        let user = get_user_from_session_token(session_token).await;
+        error!("user: {:?}", user);
+        match user {
+            Ok(user) => Outcome::Success(User::from_user_model(user)),
             Err(_) => Outcome::Error((Status::Unauthorized, ())),
-        };
+        }
     }
 }
 

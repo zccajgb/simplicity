@@ -6,13 +6,15 @@ services:
     ports:
       - "9001:8000"
     environment:
-      MONGO_URI: mongodb://mongodb:27017
-      GOOGLE_CLIENT_ID: something
-      API_URI: something
-      API_KEY: something
       RUST_LOG: info
-      ROCKET_LOG_LEVEL: debug
+      ROCKET_LOG_LEVEL: normal
+      MONGO_URL: ${MONGO_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      API_URI: ${API_URI}
+      API_KEY: ${API_KEY}
       PROD: true
+      REDIRECT_URL: https://simplicity.buckleyresearch.com
 
   client:
     image: zccajgb/simplicity-client:latest

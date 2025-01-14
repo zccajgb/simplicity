@@ -1,4 +1,3 @@
-use crate::domain::user::User;
 use crate::services::mongo::get_client;
 
 use super::task_repo::{get_tasks_collection, get_tasks_inner, update_task_for_user, TaskModel};

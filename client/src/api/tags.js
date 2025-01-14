@@ -1,10 +1,10 @@
 import { helperGet, helperPost } from '@/api/helperApi';
 
 
-export async function getTags(token) {
-  return await helperGet(`tags`, token);
+export async function getTags() {
+  return await helperGet(`tags`);
 }
   
-export async function addTag(tag, token) {
-  return await helperPost(`tags`, tag, token);
+export async function addTag(tag) {
+  return await helperPost(`tags`, tag);
 }

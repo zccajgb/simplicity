@@ -2,7 +2,7 @@
   <!-- <div class="flex"> -->
     <aside class="top-0 left-0 p-0 m-0">
     <div class="top-0 left-0 w-14 sm:w-64 m-0 h-full bg-slate-800 text-white" :class="showNavMobile ? 'w-64' : 'w-14'">
-      <ul>
+      <ul class="h-full">
         <div class="flex sm:hidden" @click="showNavMobile = !showNavMobile">
           <Bars3Icon class="h-8 w-8 my-4" :class="showNavMobile ? 'mx-4' : 'mx-auto'"/>
         </div> 
@@ -48,7 +48,6 @@
 <script>
 import { getProjectsWithoutInbox, addProject } from '@/api/projects';
 import { getTags, addTag } from '@/api/tags';
-import { mapActions } from 'vuex';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
 export default {
@@ -76,24 +75,20 @@ export default {
     }
   },
   methods: {
-    ...mapActions(
-      ['getToken']
-    ),
     handleBack() {
       this.type = "main";
       this.selectedItemId = null;
     },
     async handleSelect(item) {
-      let token = await this.getToken();
       if (this.selectedItemId === item.id) return;
       if (item.name === 'projects') {
         this.type = 'projects';
-        await this.getProjects(token);
+        await this.getProjects();
         return;
       }
       if (item.name === 'tags') {
         this.type = 'tags';
-        await this.getTags(token);
+        await this.getTags();
         return;
       }
       this.type = "main";
@@ -109,38 +104,32 @@ export default {
       this.$router.push({ name: "tags", params: { tagId: item.id } });
     },
     async handleFilterProjects($event) {
-      let token = await this.getToken();
       if (!$event || $event === "") {
-        this.projects = await getProjectsWithoutInbox(token);
+        this.projects = await getProjectsWithoutInbox();
         return;
       }
-      this.projects = await getProjectsWithoutInbox(token).filter(project => project.name.includes($event.target.value));
+      this.projects = await getProjectsWithoutInbox().filter(project => project.name.includes($event.target.value));
     },
     async handleFilterTags($event) {
-      let token = await this.getToken();
       if (!$event || $event === "") {
-        this.tags = await getTags(token);
+        this.tags = await getTags();
         return;
       }
-      this.tags = await getTags(token).filter(tag => tag.name.includes($event.target.value));
+      this.tags = await getTags().filter(tag => tag.name.includes($event.target.value));
     },
     async getProjects() {
-      let token = await this.getToken();
-      this.projects = await getProjectsWithoutInbox(token);
+      this.projects = await getProjectsWithoutInbox();
     },
     async getTags() {
-      let token = await this.getToken();
-      this.tags = await getTags(token);
+      this.tags = await getTags();
     },
     async handleAddProject(value) {
-      let token = await this.getToken();
       if (value.trim() === '') return;
-      await addProject(value, token);
+      await addProject(value);
     },
     async handleAddTag(value) {
-      let token = await this.getToken();
       if (value.trim() === '') return;
-      await addTag(value, token);
+      await addTag(value);
     },
   },
   mounted() {

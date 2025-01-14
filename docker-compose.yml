@@ -10,12 +10,13 @@ services:
       # - mongodb
     environment:
       RUST_LOG: info
-      ROCKET_LOG: normal
       MONGO_URL: ${MONGO_URL}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       API_URI: ${API_URI}
       API_KEY: ${API_KEY}
       ROCKET_LOG_LEVEL: ${ROCKET_LOG_LEVEL}
+      REDIRECT_URL: http://localhost:8080
 
   client:
     image: zccajgb/simplicity-client:latest

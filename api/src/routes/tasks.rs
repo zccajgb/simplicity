@@ -1,5 +1,4 @@
 use crate::domain::repeat::{RepeatDTO, RepeatModel};
-use crate::domain::user::User;
 use crate::repos::project_repo::{get_inbox_id_for_user, get_project_by_id_for_user};
 use crate::repos::tag_repo::get_tag_by_id_for_user;
 use crate::repos::task_repo::{
@@ -16,6 +15,8 @@ use bson::oid::ObjectId;
 use bson::DateTime;
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
+
+use super::users::User;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -241,13 +242,13 @@ async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
     }
     if let Some(user_id) = task.clone().user_id {
         if user_id.is_empty() {
-            task.user_id = Some(user.id.clone());
+            task.user_id = Some(user.user_id.clone());
         }
-        if user_id != user.id {
+        if user_id != user.user_id {
             return Err(anyhow!("Cannot create a task for another user"));
         }
     } else {
-        task.user_id = Some(user.id.clone());
+        task.user_id = Some(user.user_id.clone());
     }
 
     if task.project_id.is_none() {

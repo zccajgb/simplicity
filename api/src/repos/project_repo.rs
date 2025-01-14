@@ -1,5 +1,4 @@
-use crate::domain::user::User;
-use crate::services::mongo::get_client;
+use crate::{routes::users::User, services::mongo::get_client};
 use anyhow::{anyhow, Result};
 use bson::oid::ObjectId;
 use futures::stream::TryStreamExt;
@@ -25,7 +24,7 @@ pub async fn get_projects_collection() -> Result<Collection<ProjectModel>> {
 
 pub async fn get_all_projects_for_user(user: User) -> Result<Vec<ProjectModel>> {
     let collection = get_projects_collection().await?;
-    let filter = doc! { "user_id": user.id };
+    let filter = doc! { "user_id": user.user_id };
     let mut cursor = collection.find(filter).await?;
 
     let mut projects = Vec::new();
@@ -37,7 +36,7 @@ pub async fn get_all_projects_for_user(user: User) -> Result<Vec<ProjectModel>> 
 
 pub async fn get_all_projects_without_inbox(user: User) -> Result<Vec<ProjectModel>> {
     let collection = get_projects_collection().await?;
-    let filter = doc! { "user_id": user.id, "name": { "$ne": "Inbox" } };
+    let filter = doc! { "user_id": user.user_id, "name": { "$ne": "Inbox" } };
     let mut cursor = collection.find(filter).await?;
 
     let mut projects = Vec::new();
@@ -49,7 +48,7 @@ pub async fn get_all_projects_without_inbox(user: User) -> Result<Vec<ProjectMod
 
 pub async fn get_project_by_id_for_user(user: &User, id: ObjectId) -> Result<ProjectModel> {
     let collection = get_projects_collection().await?;
-    let filter = doc! { "_id":id, "user_id": user.id.clone() };
+    let filter = doc! { "_id":id, "user_id": user.user_id.clone() };
     let project = collection.find_one(filter).await?;
     match project {
         Some(project) => Ok(project),
@@ -58,7 +57,7 @@ pub async fn get_project_by_id_for_user(user: &User, id: ObjectId) -> Result<Pro
 }
 
 pub async fn add_project(user: User, project: ProjectModel) -> Result<ObjectId> {
-    if user.id != project.user_id {
+    if user.user_id != project.user_id {
         anyhow::bail!("Project user_id does not match user id");
     }
     error!("Adding project");
@@ -66,12 +65,15 @@ pub async fn add_project(user: User, project: ProjectModel) -> Result<ObjectId> 
     error!("Got collection");
     let project = collection.insert_one(project).await?;
     error!("Inserted project");
-    Ok(project.inserted_id.as_object_id().ok_or(anyhow!("Failed to get inserted id"))?)
+    Ok(project
+        .inserted_id
+        .as_object_id()
+        .ok_or(anyhow!("Failed to get inserted id"))?)
 }
 
 pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
     let collection = get_projects_collection().await?;
-    let filter = doc! { "user_id": user.id.clone(), "name": "inbox" };
+    let filter = doc! { "user_id": user.user_id.clone(), "name": "inbox" };
     let project = collection.find_one(filter).await?;
     let project_id = project.and_then(|p| p._id);
     match project_id {
@@ -79,7 +81,7 @@ pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
         None => {
             let project = ProjectModel {
                 _id: Some(ObjectId::new()),
-                user_id: user.id.clone(),
+                user_id: user.user_id.clone(),
                 name: "inbox".into(),
                 completed: false,
             };
@@ -92,7 +94,7 @@ pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
 
 pub async fn does_inbox_exist_for_user(user: &User) -> Result<bool> {
     let collection = get_projects_collection().await?;
-    let filter = doc! { "user_id": user.id.clone(), "name": "inbox" };
+    let filter = doc! { "user_id": user.user_id.clone(), "name": "inbox" };
     let project = collection.find_one(filter).await?;
     match project {
         Some(_) => Ok(true),
@@ -103,7 +105,7 @@ pub async fn does_inbox_exist_for_user(user: &User) -> Result<bool> {
 pub async fn create_inbox_for_user(user: User) -> Result<ObjectId> {
     let project = ProjectModel {
         _id: Some(ObjectId::new()),
-        user_id: user.id.clone(),
+        user_id: user.user_id.clone(),
         name: "inbox".into(),
         completed: false,
     };

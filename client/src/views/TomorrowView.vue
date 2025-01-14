@@ -5,19 +5,14 @@
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getTomorrowTasks } from '@/api/tasks';
-import { mapActions } from 'vuex';
 
 export default {
   components: {
     OrganismDayView,
   },
   methods: {
-    ...mapActions(
-      ['getToken']
-    ),
     async getTasks() {
-      let token = await this.getToken();
-      const tasks = await getTomorrowTasks(token);
+      const tasks = await getTomorrowTasks();
       this.$store.commit('setTasks', tasks);
       this.$store.commit('setFilter', (task) => {
         return task.ttl === 'tomorrow';
