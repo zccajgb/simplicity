@@ -5,7 +5,6 @@ axios.defaults.withCredentials = true;
 const apiUri = import.meta.env.VITE_API_URL;
 export async function helperGet(uri) {
   const url = `${apiUri}/${uri}`;
-  console.log("request url", url);
   let headers = {};  
   try {
     let result = await axios.get(url, {
@@ -19,7 +18,6 @@ export async function helperGet(uri) {
 
 export async function helperPost(uri, data) {
   const url = `${apiUri}/${uri}`;
-  console.log("request url", url);
   try { 
     let result = await axios.post(url, data);
     return result.data;

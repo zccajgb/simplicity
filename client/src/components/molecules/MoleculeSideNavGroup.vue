@@ -1,33 +1,41 @@
 <template>
-  <div v-show="header">
-    <div class="inline-flex items-center w-full min-h-8 bg-slate-700 mb-0">  
-      <div class="h-full p-4 hover:bg-slate-400" @click="$emit('back')">
-        <ArrowLeftIcon class="h-6 w-6"/>
+  <div class="h-full flex flex-col">
+    <div v-show="header" class="mb-2">
+      <div class="inline-flex items-center w-full min-h-8 bg-slate-700 mb-0">  
+        <div class="h-full p-4 hover:bg-slate-400" @click="$emit('back')">
+          <ArrowLeftIcon class="h-6 w-6"/>
+        </div>
+        <div class="inline-flex ml-6 items-center justify-center">  
+          <p class="text-lg" >{{header}}</p>
+        </div>
       </div>
-      <div class="inline-flex ml-6 items-center justify-center">  
-        <p class="text-lg" >{{header}}</p>
+      <div class="sm:flex" :class="showNavMobile ? '' : 'hidden'">
+        <AtomSearchBar @input="$emit('filterItems', $event)" ref="search" />
       </div>
     </div>
-    <div class="sm:flex" :class="showNavMobile ? '' : 'hidden'">
-      <AtomSearchBar @input="$emit('filterItems', $event)" ref="search" />
+    <MoleculeSideNavItem
+    v-for="item in items" 
+    :key="item.id" 
+    :value="item.name"
+    :selected="selectedItemId === item.id"
+    @click="$emit('select', item)"
+    :showNavMobile="showNavMobile"
+    />
+    <div v-if="addable" class="">
+      <AtomAddInput 
+        ref="addItem" 
+        :saveFunction="handleAdd" 
+        :defaultText="$refs?.search?.$refs?.input" 
+        v-model="showAdd" 
+        class="bg-slate-700"
+      />
     </div>
-  </div>
-  <MoleculeSideNavItem
-  v-for="item in items" 
-  :key="item.id" 
-  :value="item.name"
-  :selected="selectedItemId === item.id"
-  @click="$emit('select', item)"
-  :showNavMobile="showNavMobile"
-  />
-  <div v-if="addable" class="">
-    <AtomAddInput ref="addItem" :saveFunction="handleAdd" :defaultText="$refs?.search?.$refs?.input" v-model="showAdd" class="bg-slate-700"/>
-    <div class="absolute bottom-0 w-1/3 pb-6 px-4">
+    <div class="mb-0 mt-auto">
+      <div v-if="addable" class="w-1/3 mb-10 ml-auto mr-6">
         <AtomAddButton v-model="showAdd" :focusRef="$refs.addItem" :lightMode="false"/>
+      </div>
+      <MoleculeSideNavItem class='w-14 sm:w-64' value="logout" @click="logout" />
     </div>
-  </div>
-  <div class="absolute bottom-0">
-  <MoleculeSideNavItem class='w-14 sm:w-64' value="logout" @click="logout" />
   </div>
 </template>
 

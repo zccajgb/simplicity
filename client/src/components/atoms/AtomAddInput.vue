@@ -3,7 +3,7 @@
     v-show="model" 
     type="text"
     ref="input" 
-    class="w-full h-8 rounded px-2"
+    class="w-full h-8 rounded px-2 pl-20 text-lg py-6"
     @blur="handleBlur" 
     @keyup.enter="handleEnter"
     :value="defaultValue"

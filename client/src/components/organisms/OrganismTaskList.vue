@@ -54,7 +54,7 @@ export default {
       const task = {
         name: taskName,
         completed: null,
-        project: this.projectId ? this.projectId : 0,
+        projectId: this.projectId ? this.projectId : 0,
         tags: this.tag ? [this.tag] : [],
         depends: [],
         ttl: this.ttl ? this.ttl : "later"

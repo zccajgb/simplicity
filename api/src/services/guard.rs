@@ -17,9 +17,7 @@ impl<'r> FromRequest<'r> for User {
         };
 
         let session_token = cookie.value();
-        error!("Session token: {}", session_token);
         let user = get_user_from_session_token(session_token).await;
-        error!("user: {:?}", user);
         match user {
             Ok(user) => Outcome::Success(User::from_user_model(user)),
             Err(_) => Outcome::Error((Status::Unauthorized, ())),

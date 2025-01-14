@@ -28,7 +28,6 @@ pub fn validate_token_and_get_user(token: &str, refresh_token: &Option<&str>) ->
     let client = Client::new(&client_id);
     let token_info = client.verify_id_token(token).map_err(|e| {
         error!("Error verifying token: {:?}", e);
-        error!("token: {}", token);
         anyhow::anyhow!("Token not valid")
     })?;
     let user_id = token_info.claims.subject;
@@ -150,7 +149,10 @@ pub async fn get_user_from_session_token(session_token: &str) -> Result<UserMode
     let user = users_repo::find_user_by_session_token(session_token).await;
     let mut user = user.ok_or(anyhow::anyhow!("User not found"))?;
     if (user.token_expiry - chrono::Utc::now().timestamp()) < 0 {
-        user = refresh_token(user, session_token.to_string()).await?;
+        warn!("Token expired, refreshing");
+        user = refresh_token(user, session_token.to_string())
+            .await
+            .inspect_err(|e| error!("Error refreshing token: {:?}", e))?;
     }
     Ok(user)
 }

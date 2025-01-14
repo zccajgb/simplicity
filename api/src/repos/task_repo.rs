@@ -60,7 +60,6 @@ async fn get_tasks_without_snoozed(filter: bson::Document) -> Result<Vec<TaskMod
     ];
     filter.insert("$or", to_bson(&snooze).expect("Failed to convert to bson"));
 
-    error!("{:?}", filter);
     get_tasks_inner(filter).await
 }
 
@@ -160,7 +159,6 @@ pub async fn add_task_for_user(user: User, task: TaskModel) -> Result<TaskModel>
     if task.user_id != user.user_id {
         return Err(anyhow::anyhow!("Task user_id does not match user id"));
     }
-    error!("Adding task: {:?}", task);
     let collection = get_tasks_collection().await?;
     let res = collection.insert_one(task).await?;
     let id = res

@@ -85,8 +85,6 @@ pub async fn get_project_by_id(user: User, id: &str) -> ApiJsonResult<ProjectDTO
 
 #[post("/projects", data = "<project>")]
 pub async fn add_project(user: User, project: Json<ProjectDTO>) -> ApiJsonResult<ObjectId> {
-    error!("Adding project: {:?}", project);
-    error!("For user {:?}", user);
     let mut project = project.into_inner();
     let project_name = project.name.clone().ok_or(ApiError::new(
         String::from("Cannot create a project with an empty name"),

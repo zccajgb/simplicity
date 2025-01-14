@@ -1,5 +1,5 @@
 <template>
-  <li>
+  <!-- <li> -->
     <div 
       class="flex min-h-16 sm:p-4 hover:bg-slate-400" 
       :class="[selected ? 'bg-slate-500' : '', showNavMobile ? 'p-4' : '']"
@@ -25,7 +25,7 @@
           <AtomText>{{value}}</AtomText>
         </div>
     </div>
-  </li>
+  <!-- </li> -->
 </template>
 
 <script>

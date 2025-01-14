@@ -22,7 +22,7 @@ pub fn get_routes() -> Vec<rocket::Route> {
 
 #[get("/dailyupdate")]
 pub async fn dailyupdate(_key: ApiKey) -> ApiJsonResult<()> {
-    error!("dailyupdate");
+    info!("dailyupdate");
     let last_update = get_last_update().await.map_api_err()?;
     let last_update_date = last_update.last_update;
     let is_updated_today = last_update_date.map_or_else(
@@ -34,12 +34,8 @@ pub async fn dailyupdate(_key: ApiKey) -> ApiJsonResult<()> {
         return Ok(Json(()));
     }
     update_tasks_for_today_by_date().await.map_api_err()?;
-    error!("updated today");
     update_tasks_for_today_from_tomorrow().await.map_api_err()?;
-    error!("updated today by tomorrow");
     update_tasks_for_tomorrow_by_date().await.map_api_err()?;
-    error!("updated tomorrow");
     set_last_update().await.map_api_err()?;
-    error!("updated lat update");
     Ok(Json(()))
 }

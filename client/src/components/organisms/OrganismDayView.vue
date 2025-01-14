@@ -11,6 +11,9 @@
     <div v-if="selectedTaskId!=null">
       <OrganismSelectedTask :selectedTaskId="selectedTaskId" @close="selectedTaskId=null"/>
     </div>
+    <div v-if="dev" class="fixed bottom-10 right-24 text-4xl uppercase text-slate-500">
+      DEVELOPMENT
+    </div>
   </div>
 </template>
   
@@ -40,7 +43,8 @@ export default {
   },
   data() {
     return {
-      selectedTaskId: null
+      selectedTaskId: null,
+      dev: import.meta.env.DEV
     }
   },
   methods: {

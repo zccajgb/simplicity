@@ -185,7 +185,7 @@ pub async fn get_tasks_by_tag(user: User, tag: String) -> ApiJsonResult<Vec<Task
 
 #[post("/tasks", data = "<task>")]
 pub async fn add_task(user: User, task: Json<TaskDTO>) -> ApiJsonResult<TaskDTO> {
-    error!("Adding task: {:?}", task);
+    info!("Adding task: {:?}", task);
     let task = task.into_inner();
 
     let task_result = task_guard(user.clone(), task.clone()).await;
@@ -250,7 +250,6 @@ async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
     } else {
         task.user_id = Some(user.user_id.clone());
     }
-
     if task.project_id.is_none() {
         task.project_id = get_inbox_id_for_user(user.clone())
             .await

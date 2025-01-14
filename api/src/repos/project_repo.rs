@@ -36,7 +36,7 @@ pub async fn get_all_projects_for_user(user: User) -> Result<Vec<ProjectModel>> 
 
 pub async fn get_all_projects_without_inbox(user: User) -> Result<Vec<ProjectModel>> {
     let collection = get_projects_collection().await?;
-    let filter = doc! { "user_id": user.user_id, "name": { "$ne": "Inbox" } };
+    let filter = doc! { "user_id": user.user_id, "name": { "$ne": "inbox" } };
     let mut cursor = collection.find(filter).await?;
 
     let mut projects = Vec::new();
@@ -60,11 +60,8 @@ pub async fn add_project(user: User, project: ProjectModel) -> Result<ObjectId> 
     if user.user_id != project.user_id {
         anyhow::bail!("Project user_id does not match user id");
     }
-    error!("Adding project");
     let collection = get_projects_collection().await?;
-    error!("Got collection");
     let project = collection.insert_one(project).await?;
-    error!("Inserted project");
     Ok(project
         .inserted_id
         .as_object_id()

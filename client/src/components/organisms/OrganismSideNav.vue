@@ -6,8 +6,9 @@
         <div class="flex sm:hidden" @click="showNavMobile = !showNavMobile">
           <Bars3Icon class="h-8 w-8 my-4" :class="showNavMobile ? 'mx-4' : 'mx-auto'"/>
         </div> 
-        <div v-if="type==='projects'">
+        <div v-if="type==='projects'" class="h-full">
           <MoleculeSideNavGroup 
+          ref="projects"
           v-model="projects" 
           :selectedItemId="selectedItemId" 
           @select="handleSelectProject" 
@@ -19,8 +20,9 @@
           :showNavMobile="showNavMobile"
           />
         </div>
-        <div v-else-if="type==='tags'">
+        <div v-else-if="type==='tags'" class="h-full">
           <MoleculeSideNavGroup 
+          ref="tags"
           v-model="tags" 
           :selectedItemId="selectedItemId" 
           @select="handleSelectTag" 
@@ -32,7 +34,7 @@
           :showNavMobile="showNavMobile" 
           />
         </div>
-         <div v-else>
+         <div v-else class="h-full">
           <MoleculeSideNavGroup 
             v-model="items"
             :selectedItemId="selectedItemId"
@@ -125,11 +127,17 @@ export default {
     },
     async handleAddProject(value) {
       if (value.trim() === '') return;
-      await addProject(value);
+      const project = { name: value };
+      await addProject(project);
+      this.projects = await getProjectsWithoutInbox();
+      this.$refs.projects.showAdd = false;
     },
     async handleAddTag(value) {
       if (value.trim() === '') return;
-      await addTag(value);
+      const tag = { name: value };
+      await addTag(tag);
+      this.tags = await getTags();
+      this.$refs.tags.showAdd = false;
     },
   },
   mounted() {

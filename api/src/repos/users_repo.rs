@@ -43,7 +43,7 @@ pub async fn add_user(user: UserModel) -> Result<UserModel> {
         .inserted_id
         .as_object_id()
         .ok_or(anyhow!("No id found"))?;
-    error!("Inserted user with id: {:?}", id);
+    info!("Inserted user with id: {:?}", id);
     let inserted_user = find_user_by_id(&id.to_string()).await;
     inserted_user.ok_or(anyhow!("User not found in db after adding"))
 }

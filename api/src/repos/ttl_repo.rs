@@ -57,11 +57,8 @@ pub async fn update_tasks_for_ttl_by_date(
       }
     };
 
-    error!("{:?}", filter);
     let update_doc = doc! { "$set": {"ttl": ttl.clone(), "last_updated": DateTime::now() } };
-    error!("{:?}", update_doc);
     let update_result = collection.update_many(filter, update_doc).await?;
-    error!("{:?}", update_result);
     if update_result.modified_count == 0 {
         warn!("No tasks found for {} by date", ttl);
     }

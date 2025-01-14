@@ -3,7 +3,7 @@
     <div class="flex px-6 pt-8 w-full">
       <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="handleClickCheck"/>
       <div class="ml-6">
-        <p class="text-xl text-white" :class="task.completed ? 'line-through' : ''" contenteditable @blur="updateName"
+        <p class="text-xl text-white min-w-16" :class="task.completed ? 'line-through' : ''" contenteditable @blur="updateName"
         v-text="task.name"></p>
       </div>
     </div>
