@@ -26,6 +26,10 @@ export default {
     OrganismSelectedTask,
   },
   props: {
+    selectedList: { 
+      type: Text,
+      required: true
+    },
     projectId: {
       type: Number,
       required: false
@@ -69,7 +73,16 @@ export default {
       } else if (!this.selectedTaskId) {
         document.removeEventListener('keyup', this.handleKeyUp);
       }
-    }
+    },
+    selectedList() {
+      this.selectedTaskId = null;
+    },
+    projectId() {
+      this.selectedTaskId = null;
+    },
+    tagId() {
+      this.selectedTaskId = null;
+    },
   }
 }
 </script>

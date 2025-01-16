@@ -1,11 +1,11 @@
 <template>
   <!-- <div class="flex"> -->
     <aside class="top-0 left-0 p-0 m-0">
-    <div class="top-0 left-0 w-14 sm:w-64 m-0 h-full bg-slate-800 text-white" :class="showNavMobile ? 'w-64' : 'w-14'">
-      <ul class="h-full">
-        <div class="flex sm:hidden" @click="showNavMobile = !showNavMobile">
-          <Bars3Icon class="h-8 w-8 my-4" :class="showNavMobile ? 'mx-4' : 'mx-auto'"/>
-        </div> 
+    <div class="top-0 left-0 w-14 sm:w-64 m-0 h-full bg-slate-800 text-white flex flex-col" :class="showNavMobile ? 'w-64' : 'w-14'">
+      <div class="flex sm:hidden" @click="showNavMobile = !showNavMobile">
+        <Bars3Icon class="h-8 w-8 my-4" :class="showNavMobile ? 'mx-4' : 'mx-auto'"/>
+      </div> 
+      <ul class="overflow-y-scroll h-full">
         <div v-if="type==='projects'" class="h-full">
           <MoleculeSideNavGroup 
           ref="projects"
@@ -43,6 +43,9 @@
           />
         </div>
       </ul>
+      <div class="mt-auto">
+        <MoleculeSideNavItem class='w-14 sm:w-64 bg-slate-800' value="logout" @click="logout" :showNavMobile="showNavMobile"/>
+      </div>
     </div>
   </aside>
 </template>
@@ -51,10 +54,12 @@
 import { getProjectsWithoutInbox, addProject } from '@/api/projects';
 import { getTags, addTag } from '@/api/tags';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
+import MoleculeSideNavItem from '../molecules/MoleculeSideNavItem.vue';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
 export default {
   components: {
     MoleculeSideNavGroup,
+    MoleculeSideNavItem,
     Bars3Icon
   },
   data() {
@@ -138,6 +143,10 @@ export default {
       await addTag(tag);
       this.tags = await getTags();
       this.$refs.tags.showAdd = false;
+    },
+    async logout() {
+      await this.$store.dispatch('logout');
+      window.location.reload();
     },
   },
   mounted() {

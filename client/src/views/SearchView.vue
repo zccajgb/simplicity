@@ -3,7 +3,7 @@
     <div class="p-1">
       <AtomSearchBar @input="filterTasks"/>
     </div>
-  <OrganismDayView/>
+  <OrganismDayView selectedList="search"/>
   </div>
   </template>
   

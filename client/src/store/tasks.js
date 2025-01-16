@@ -61,6 +61,10 @@ export default {
       }
       commit("addTask", taskRes);
     },
+    async reorderTask({ dispatch, commit }, task) {
+      commit("updateTask", task);
+      await dispatch("updateTask", task);
+    },
     async updateTask({ commit }, task) {
       let taskRes = await updateTask(task);
       if (taskRes.error) {

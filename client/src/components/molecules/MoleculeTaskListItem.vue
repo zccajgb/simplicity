@@ -6,23 +6,30 @@
           <AtomCheckbox 
           :done="task.completed" 
           @click.stop="handleClickCheck" 
-          class="h-7 w-7" 
+          class="h-7 w-7 my-auto py-2" 
           :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
                 ]"
           />
-          <div class="flex items-center min-w-0 mx-8 flex-auto">
+          <div class="flex items-center mx-6 flex-auto my-auto">
               <p 
-                class="text-lg leading-6" 
+                class="text-lg leading-6 min-w-16 px-2 pl-2 pr-4" 
                 :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
-                ]" 
+                ]"
+                contenteditable
+                @focus="addEventListener"
+                @blur="updateName"
+                @click.stop=""
+                v-text="task.name"
               >
-                {{ task.name }}
               </p>
-          </div>
+            </div>
+            <div v-if="task.snooze" class="flex items-center mr-10">
+              <BellSnoozeIcon class="h-4 w-4"/>
+            </div>
           <AtomTTL
             class="flex items-center justify-end right-0 "
             :class="[
@@ -41,12 +48,14 @@
 <script>
 import AtomCheckbox from '../atoms/AtomCheckbox.vue';
 import AtomTTL from '../atoms/AtomTTL.vue';
+import { BellSnoozeIcon } from '@heroicons/vue/24/solid';
 
 export default {
   props: [ 'taskId' ],
   components: {
     AtomCheckbox,
-    AtomTTL
+    AtomTTL,
+    BellSnoozeIcon
   },
   data() {
     return {
@@ -69,6 +78,22 @@ export default {
         this.task.completed = null;
       }
       this.updateTask();
+    },
+    handleEnterClick(event) {
+      if (event.key === 'Enter') {
+        this.updateName(event); 
+      }
+    },
+    addEventListener(event) {
+      event.target.addEventListener('keyup', this.handleEnterClick);
+    },
+    removeEventListener(event) {
+      event.target.removeEventListener('keyup', this.handleEnterClick);
+    },
+    updateName(event) {
+      this.task.name = event.target.innerText;
+      this.updateTask();
+      this.removeEventListener(event);
     },
     updateTask() {
       this.$store.dispatch('updateTaskAndFilter', this.task);

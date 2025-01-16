@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col overflow-y-scroll">
+  <div class="flex flex-col overflow-y-scroll h-full">
     <div v-show="header" class="mb-2">
       <div class="inline-flex items-center w-full min-h-8 bg-slate-700 mb-0">  
         <div class="h-full p-4 hover:bg-slate-400" @click="$emit('back')">
@@ -34,7 +34,6 @@
       <div v-if="addable" class="w-1/3 mb-10 ml-auto mr-6">
         <AtomAddButton v-model="showAdd" :focusRef="$refs.addItem" :lightMode="false"/>
       </div>
-      <MoleculeSideNavItem class='w-14 sm:w-64' value="logout" @click="logout" />
     </div>
   </div>
 </template>
@@ -87,10 +86,6 @@ export default {
     handleAdd($event) {
       this.$emit("add", $event.target.value);
     },
-    async logout() {
-      await this.$store.dispatch('logout');
-      window.location.reload();
-    }
   },
   computed: {
     items: {

@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView ttl="later"/>
+  <OrganismDayView selectedList="later" ttl="later"/>
 </template>
   
 <script>

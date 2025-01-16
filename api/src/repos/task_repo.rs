@@ -62,8 +62,8 @@ async fn get_tasks_without_snoozed(
         doc! { "snooze": { "$exists": false } },
         doc! { "snooze": { "$lte": bson::DateTime::from_millis(tomorrow_millis) } },
     ];
-    filter.insert("$or", to_bson(&snooze).expect("Failed to convert to bson"));
 
+    filter.insert("$or", to_bson(&snooze).expect("Failed to convert to bson"));
     get_tasks_inner(filter, completed).await
 }
 
@@ -73,12 +73,13 @@ pub fn add_completed_filter(mut filter: bson::Document) -> bson::Document {
         .and_hms_opt(0, 0, 0)
         .expect("could not get today")
         .and_utc();
-    let doc = vec![
+    let completed = vec![
         doc! { "completed": null },
         doc! { "completed": { "$exists": false } },
         doc! { "completed": { "$gte": bson::DateTime::from_chrono(today) } },
     ];
-    filter.insert("$or", to_bson(&doc).expect("Failed to convert to bson"));
+    let doc = vec![doc! { "$or": completed }];
+    filter.insert("$and", to_bson(&doc).expect("Failed to convert to bson"));
     filter
 }
 
@@ -136,7 +137,7 @@ pub async fn get_inbox_tasks_for_user(
     inbox_id: ObjectId,
     completed: bool,
 ) -> Result<Vec<TaskModel>> {
-    let filter = doc! { "user_id": user.user_id, "project_id": { "$eq": inbox_id },  "snoozed": { "$eq": null } };
+    let filter = doc! { "user_id": user.user_id, "project_id": { "$eq": inbox_id }};
     get_tasks_without_snoozed(filter, completed).await
 }
 
@@ -165,8 +166,7 @@ pub async fn get_tasks_by_project_for_user(
     project: ObjectId,
     completed: bool,
 ) -> Result<Vec<TaskModel>> {
-    let filter =
-        doc! { "user_id": user.user_id, "project_id": project,  "snoozed": { "$eq": null } };
+    let filter = doc! { "user_id": user.user_id, "project_id": project};
     get_tasks_without_snoozed(filter, completed).await
 }
 
@@ -175,8 +175,7 @@ pub async fn get_tasks_by_tag_for_user(
     tag: ObjectId,
     completed: bool,
 ) -> Result<Vec<TaskModel>> {
-    let filter =
-        doc! { "user_id": user.user_id, "tags": { "$contains": tag }, "snoozed": { "$eq": null } };
+    let filter = doc! { "user_id": user.user_id, "tags": { "$contains": tag }};
     get_tasks_without_snoozed(filter, completed).await
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView :tagId="tagId"/>
+  <OrganismDayView :tagId="tagId" selectedList="tags"/>
 </template>
   
 <script>

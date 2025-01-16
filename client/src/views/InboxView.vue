@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView/>
+  <OrganismDayView selectedList="inbox"/>
 </template>
   
 <script>

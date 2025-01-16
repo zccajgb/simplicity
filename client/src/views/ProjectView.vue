@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView v-model="tasks" :projectId="projectId"/>
+  <OrganismDayView v-model="tasks" selectedList="project" :projectId="projectId"/>
 </template>
   
 <script>

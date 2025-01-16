@@ -7,6 +7,7 @@
       <div 
         class="flex h-8 w-8 mx-auto sm:mx-2 my-auto text-right"
         :class="[showNavMobile ? 'mx-2' : '']"
+        v-if="iconList.includes(value)"
       >
         <SunIcon v-if="value==='today'"/>
         <MoonIcon v-else-if="value==='tomorrow'"/>
@@ -18,8 +19,9 @@
         <MagnifyingGlassIcon v-else-if="value==='search'"/>
         <ArrowTopRightOnSquareIcon v-else-if="value==='logout'"/>
       </div>
+      <div v-if="!showNavMobile && !iconList.includes(value)" class="sm:hidden text-sm text-center text-balance px-1 my-auto">{{value}}</div>
       <div 
-        class="sm:flex items-center my-auto mx-2 w-full"
+        class="sm:flex items-center my-auto mx-2 w-full bg"
         :class="showNavMobile ? 'flex' : 'hidden'"
       >
           <AtomText>{{value}}</AtomText>
@@ -48,7 +50,10 @@ export default {
   },
   data() {
     return {
-      logoutIcon: null
+      logoutIcon: null,
+      iconList: [
+        'today', 'tomorrow', 'later', 'snoozed', 'inbox', 'projects', 'tags', 'search', 'logout'
+      ]
     }
   },
   mounted() {

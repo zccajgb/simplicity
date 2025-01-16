@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView snoozed/>
+  <OrganismDayView snoozed selectedList="snoozed"/>
 </template>
   
 <script>

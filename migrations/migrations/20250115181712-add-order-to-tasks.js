@@ -1,11 +1,11 @@
-let { ObjectId } = require('mongodb');
+let { ObjectId, Long } = require('mongodb');
 
 module.exports = {
   async up(db, client) {
-    let tasks = await db.collection('tasks').find({ _id: new ObjectId("6786a2e31e37256eff04076a") }).toArray();
+    let tasks = await db.collection('tasks').find({}).toArray();
     let bulkOps = tasks.map(task => {
       let task_order = task.last_updated.getTime();
-      return { updateOne: { filter: { _id: task._id }, update: { $set: { order: task_order } } } };
+      return { updateOne: { filter: { _id: task._id }, update: { $set: { order: new Long(task_order) } } } };
     });
 
     await db.collection('tasks').bulkWrite(bulkOps);

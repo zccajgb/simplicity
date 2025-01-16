@@ -42,22 +42,22 @@
 
         <div ref="selector" v-if="selector" class="absolute mt-4 mx-4">
           <div v-if="selector === 'project'">
-            <MoleculeSelectProjectModal @close="close()" v-model="task.projectId" itemtype="project"/>
+            <MoleculeSelectProjectModal @close="close" v-model="task.projectId" itemtype="project"/>
           </div>
           <div v-else-if="selector === 'tags'">
-            <MoleculeSelectProjectModal @close="close()" v-model="task.tags" itemtype="tags" multiselect="true"/>
+            <MoleculeSelectProjectModal @close="close" v-model="task.tags" itemtype="tags" multiselect="true"/>
           </div>
           <div v-else-if="selector === 'depends'">
-            <MoleculeSelectProjectModal @close="close()" v-model="task.depends" itemtype="tasks" multiselect="true"/>
+            <MoleculeSelectProjectModal @close="close" v-model="task.depends" itemtype="tasks" multiselect="true"/>
           </div>
           <div v-else-if="selector === 'date'">
-            <MoleculeDatePickerModal @close="close()" v-model="task.date"/>
+            <MoleculeDatePickerModal @close="close" v-model="task.date"/>
           </div>
           <div v-else-if="selector === 'repeat'">
-            <MoleculeSelectRepeatModal @close="close()" @selectedProject="handleSelectProject" v-model="task.repeat"/>
+            <MoleculeSelectRepeatModal @close="close" @selectedProject="handleSelectProject" v-model="task.repeat"/>
           </div>
           <div v-else-if="selector === 'snooze'">
-            <MoleculeDatePickerModal @close="close()" v-model="task.snooze"/>
+            <MoleculeDatePickerModal @close="close" v-model="task.snooze"/>
           </div>
         </div>
 
@@ -118,7 +118,6 @@ import { getProjectById } from '@/api/projects';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
-import { completeTask } from '@/api/tasks';
 
 export default {
   props: ['selectedTaskId'],
@@ -245,6 +244,7 @@ export default {
     },
     close() {
       this.selector = null;
+      this.$store.dispatch('updateTask', this.task);
     },
     async saveTask() {
       this.$store.dispatch('updateTask', this.task);
