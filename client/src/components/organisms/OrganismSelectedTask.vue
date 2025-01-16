@@ -1,9 +1,9 @@
 <template>
-  <aside v-if="task" class="fixed right-0 top-0 w-[75vw] sm:w-[25vw] h-screen bg-slate-500" @click="close()" @focusout="saveTask()" >
+  <aside v-if="task" class="fixed right-0 top-0 w-[75vw] sm:w-[25vw] h-screen bg-slate-500 text-slate-800" @click="close()" @focusout="saveTask()" >
     <div class="flex px-6 pt-8 w-full">
       <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="handleClickCheck"/>
-      <div class="ml-6">
-        <p class="text-xl text-white min-w-16" :class="task.completed ? 'line-through' : ''" contenteditable @blur="updateName"
+      <div class="ml-6 mr-6 w-full">
+        <p class="text-xl text-white w-full" :class="task.completed ? 'line-through' : ''" contenteditable @blur="updateName"
         v-text="task.name"></p>
       </div>
     </div>

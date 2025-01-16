@@ -3,7 +3,7 @@ import { addTask, updateTask } from "@/api/tasks";
 const sort = (tasks) => {
   if (!tasks || !tasks.length) return [];
   return tasks.sort((a, b) => {
-    if (a.completed === b.completed) return 0;
+    if (a.completed === b.completed) return a.order - b.order;
     return a.completed ? 1 : -1;
   });
 };
@@ -43,7 +43,7 @@ export default {
       if (!item) return;
       Object.assign(item, newItem);
   
-      state.tasks = sortWithFilter(state.tasks, state.filter);
+      state.tasks = sort(state.tasks, state.filter);
     },
     addTask(state, newItem) {
       state.tasks.unshift(newItem);

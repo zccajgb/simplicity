@@ -20,12 +20,10 @@
 <script>
 import OrganismTaskList from '@/components/organisms/OrganismTaskList.vue';
 import OrganismSelectedTask from '@/components/organisms/OrganismSelectedTask.vue';
-import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 export default {
   components: {
     OrganismTaskList,
     OrganismSelectedTask,
-    AtomAddButton,
   },
   props: {
     projectId: {

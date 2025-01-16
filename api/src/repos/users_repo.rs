@@ -91,7 +91,7 @@ pub async fn update_tokens_for_user(
 ) -> Result<UserModel> {
     let collection = get_users_collection().await?;
     let filter = doc! { "user_id": user_id };
-    let update = doc! {
+    let mut update = doc! {
         "$set":
             {
                 "access_token": access_token.clone(),
@@ -100,6 +100,18 @@ pub async fn update_tokens_for_user(
             },
         "$push": { "session_token": session_token.clone() }
     };
+
+    if refresh_token.is_none() {
+        update = doc! {
+            "$set":
+                {
+                    "access_token": access_token.clone(),
+                    "token_expiry": token_expiry
+                },
+            "$push": { "session_token": session_token.clone() }
+        };
+    }
+
     collection.update_one(filter, update).await?;
     let user = find_user_by_user_id(user_id)
         .await
@@ -109,9 +121,6 @@ pub async fn update_tokens_for_user(
     }
     if user.access_token != access_token {
         anyhow::bail!("Access token not updated")
-    }
-    if user.refresh_token != refresh_token {
-        anyhow::bail!("Refresh token not updated");
     }
     if !user.session_token.contains(&session_token) {
         anyhow::bail!("Refresh token not updated");

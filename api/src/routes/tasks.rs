@@ -31,6 +31,7 @@ pub struct TaskDTO {
     pub date: Option<String>,
     pub snooze: Option<String>,
     pub repeat: Option<RepeatDTO>,
+    pub order: Option<i64>,
 }
 
 impl TaskDTO {
@@ -46,6 +47,7 @@ impl TaskDTO {
             date: task.date.and_then(|d| d.try_to_rfc3339_string().ok()),
             snooze: task.snooze.and_then(|d| d.try_to_rfc3339_string().ok()),
             repeat: RepeatDTO::from_model(task.repeat),
+            order: Some(task.order),
         }
     }
 
@@ -86,6 +88,7 @@ impl TaskDTO {
                 .map(|r| r.to_model())
                 .unwrap_or(RepeatModel::None),
             last_updated: Some(DateTime::now()),
+            order: self.order.unwrap_or(DateTime::now().timestamp_millis()),
         })
     }
     fn vec_from_task_model(tasks: Vec<TaskModel>) -> Vec<TaskDTO> {
@@ -116,37 +119,45 @@ pub fn get_routes() -> Vec<rocket::Route> {
         tasks::get_snoozed_tasks,
         tasks::add_task,
         tasks::update_task,
-        tasks::complete_task
+        tasks::complete_task,
+        tasks::get_all_tasks_with_completed,
+        tasks::get_today_tasks_with_completed,
+        tasks::get_tomorrow_tasks_with_completed,
+        tasks::get_later_tasks_with_completed,
+        tasks::get_inbox_tasks_with_completed,
+        tasks::get_tasks_by_project_with_completed,
+        tasks::get_tasks_by_tag_with_completed,
+        tasks::get_snoozed_tasks_with_completed
     ]
 }
 
 #[get("/tasks")]
 pub async fn get_all_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
-    let tasks = get_all_tasks_for_user(user).await;
+    let tasks = get_all_tasks_for_user(user, false).await;
     map_and_return_tasks(tasks)
 }
 
 #[get("/tasks/today")]
 pub async fn get_today_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
-    let tasks = get_today_tasks_for_user(user).await;
+    let tasks = get_today_tasks_for_user(user, false).await;
     map_and_return_tasks(tasks)
 }
 
 #[get("/tasks/tomorrow")]
 pub async fn get_tomorrow_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
-    let tasks = get_tomorrow_tasks_for_user(user).await;
+    let tasks = get_tomorrow_tasks_for_user(user, false).await;
     map_and_return_tasks(tasks)
 }
 
 #[get("/tasks/later")]
 pub async fn get_later_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
-    let tasks = get_later_tasks_for_user(user).await;
+    let tasks = get_later_tasks_for_user(user, false).await;
     map_and_return_tasks(tasks)
 }
 
 #[get("/tasks/snoozed")]
 pub async fn get_snoozed_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
-    let tasks = get_snoozed_tasks_for_user(user).await;
+    let tasks = get_snoozed_tasks_for_user(user, false).await;
     map_and_return_tasks(tasks)
 }
 
@@ -155,7 +166,7 @@ pub async fn get_inbox_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
     let inbox_id = get_inbox_id_for_user(user.clone()).await;
     match inbox_id {
         Ok(inbox_id) => {
-            let tasks = get_inbox_tasks_for_user(user, inbox_id).await;
+            let tasks = get_inbox_tasks_for_user(user, inbox_id, false).await;
             map_and_return_tasks(tasks)
         }
         Err(err) => Err(ApiError::new(err.to_string(), 400)),
@@ -171,14 +182,77 @@ pub async fn get_task_by_id(user: User, id: String) -> ApiJsonResult<TaskDTO> {
 #[get("/tasks/project/<project>")]
 pub async fn get_tasks_by_project(user: User, project: String) -> ApiJsonResult<Vec<TaskDTO>> {
     let project_id = ObjectId::parse_str(&project).map_api_err()?;
-    let tasks = get_tasks_by_project_for_user(user, project_id).await;
+    let tasks = get_tasks_by_project_for_user(user, project_id, false).await;
     map_and_return_tasks(tasks)
 }
 
 #[get("/tasks/tags/<tag>")]
 pub async fn get_tasks_by_tag(user: User, tag: String) -> ApiJsonResult<Vec<TaskDTO>> {
     let tag_id = ObjectId::parse_str(&tag).map_api_err()?;
-    let tasks = get_tasks_by_tag_for_user(user, tag_id).await;
+    let tasks = get_tasks_by_tag_for_user(user, tag_id, false).await;
+
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/all")]
+pub async fn get_all_tasks_with_completed(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tasks = get_all_tasks_for_user(user, true).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/today/all")]
+pub async fn get_today_tasks_with_completed(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tasks = get_today_tasks_for_user(user, true).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/tomorrow/all")]
+pub async fn get_tomorrow_tasks_with_completed(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tasks = get_tomorrow_tasks_for_user(user, true).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/later/all")]
+pub async fn get_later_tasks_with_completed(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tasks = get_later_tasks_for_user(user, true).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/snoozed/all")]
+pub async fn get_snoozed_tasks_with_completed(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tasks = get_snoozed_tasks_for_user(user, true).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/inbox/all")]
+pub async fn get_inbox_tasks_with_completed(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
+    let inbox_id = get_inbox_id_for_user(user.clone()).await;
+    match inbox_id {
+        Ok(inbox_id) => {
+            let tasks = get_inbox_tasks_for_user(user, inbox_id, true).await;
+            map_and_return_tasks(tasks)
+        }
+        Err(err) => Err(ApiError::new(err.to_string(), 400)),
+    }
+}
+
+#[get("/tasks/project/<project>/all")]
+pub async fn get_tasks_by_project_with_completed(
+    user: User,
+    project: String,
+) -> ApiJsonResult<Vec<TaskDTO>> {
+    let project_id = ObjectId::parse_str(&project).map_api_err()?;
+    let tasks = get_tasks_by_project_for_user(user, project_id, true).await;
+    map_and_return_tasks(tasks)
+}
+
+#[get("/tasks/tags/<tag>/all")]
+pub async fn get_tasks_by_tag_with_completed(
+    user: User,
+    tag: String,
+) -> ApiJsonResult<Vec<TaskDTO>> {
+    let tag_id = ObjectId::parse_str(&tag).map_api_err()?;
+    let tasks = get_tasks_by_tag_for_user(user, tag_id, true).await;
 
     map_and_return_tasks(tasks)
 }
@@ -227,7 +301,7 @@ pub async fn complete_task(user: User, id: String) -> ApiJsonResult<TaskDTO> {
     let task = get_task_by_id_for_user(user.clone(), id.clone()).await;
     let mut task = task.map_api_err()?;
     if !task.repeat.is_none() {
-        let new_task = task.repeat.create_repeat(&task);
+        let _new_task = task.repeat.create_repeat(&task);
     }
     task.completed = Some(DateTime::now());
     let task = update_task_for_user(user, object_id, task).await;

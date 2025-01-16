@@ -25,6 +25,7 @@ pub struct TaskModel {
     pub snooze: Option<DateTime>,
     pub repeat: RepeatModel,
     pub last_updated: Option<DateTime>,
+    pub order: i64,
 }
 
 impl TaskModel {
@@ -42,7 +43,10 @@ pub async fn get_tasks_collection() -> Result<Collection<TaskModel>> {
     Ok(collection)
 }
 
-async fn get_tasks_without_snoozed(filter: bson::Document) -> Result<Vec<TaskModel>> {
+async fn get_tasks_without_snoozed(
+    filter: bson::Document,
+    completed: bool,
+) -> Result<Vec<TaskModel>> {
     let mut filter = filter;
     let tomorrow = Utc::now()
         .date_naive()
@@ -60,10 +64,29 @@ async fn get_tasks_without_snoozed(filter: bson::Document) -> Result<Vec<TaskMod
     ];
     filter.insert("$or", to_bson(&snooze).expect("Failed to convert to bson"));
 
-    get_tasks_inner(filter).await
+    get_tasks_inner(filter, completed).await
 }
 
-pub async fn get_tasks_inner(filter: bson::Document) -> Result<Vec<TaskModel>> {
+pub fn add_completed_filter(mut filter: bson::Document) -> bson::Document {
+    let today = Utc::now()
+        .date_naive()
+        .and_hms_opt(0, 0, 0)
+        .expect("could not get today")
+        .and_utc();
+    let doc = vec![
+        doc! { "completed": null },
+        doc! { "completed": { "$exists": false } },
+        doc! { "completed": { "$gte": bson::DateTime::from_chrono(today) } },
+    ];
+    filter.insert("$or", to_bson(&doc).expect("Failed to convert to bson"));
+    filter
+}
+
+pub async fn get_tasks_inner(filter: bson::Document, completed: bool) -> Result<Vec<TaskModel>> {
+    let mut filter = filter;
+    if !completed {
+        filter = add_completed_filter(filter);
+    }
     let collection = get_tasks_collection().await?;
     let mut cursor = collection.find(filter).await?;
 
@@ -74,31 +97,27 @@ pub async fn get_tasks_inner(filter: bson::Document) -> Result<Vec<TaskModel>> {
     Ok(tasks)
 }
 
-pub async fn get_all_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
+pub async fn get_all_tasks_for_user(user: User, completed: bool) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.user_id };
-
-    get_tasks_inner(filter).await
+    get_tasks_inner(filter, completed).await
 }
 
-pub async fn get_today_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
+pub async fn get_today_tasks_for_user(user: User, completed: bool) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.user_id, "ttl": { "$eq": "today" } };
-
-    get_tasks_without_snoozed(filter).await
+    get_tasks_without_snoozed(filter, completed).await
 }
 
-pub async fn get_tomorrow_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
+pub async fn get_tomorrow_tasks_for_user(user: User, completed: bool) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.user_id, "ttl": { "$eq": "tomorrow" } };
-
-    get_tasks_without_snoozed(filter).await
+    get_tasks_without_snoozed(filter, completed).await
 }
 
-pub async fn get_later_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
+pub async fn get_later_tasks_for_user(user: User, completed: bool) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.user_id, "ttl": { "$eq": "later" } };
-
-    get_tasks_without_snoozed(filter).await
+    get_tasks_without_snoozed(filter, completed).await
 }
 
-pub async fn get_snoozed_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
+pub async fn get_snoozed_tasks_for_user(user: User, completed: bool) -> Result<Vec<TaskModel>> {
     let tomorrow = Utc::now()
         .date_naive()
         .succ_opt()
@@ -109,13 +128,16 @@ pub async fn get_snoozed_tasks_for_user(user: User) -> Result<Vec<TaskModel>> {
     let tomorrow_millis = tomorrow.and_utc().timestamp_millis();
 
     let filter = doc! { "user_id": user.user_id, "snooze": { "$ne": null, "$gte": bson::DateTime::from_millis(tomorrow_millis) } };
-    get_tasks_inner(filter).await
+    get_tasks_inner(filter, completed).await
 }
 
-pub async fn get_inbox_tasks_for_user(user: User, inbox_id: ObjectId) -> Result<Vec<TaskModel>> {
+pub async fn get_inbox_tasks_for_user(
+    user: User,
+    inbox_id: ObjectId,
+    completed: bool,
+) -> Result<Vec<TaskModel>> {
     let filter = doc! { "user_id": user.user_id, "project_id": { "$eq": inbox_id },  "snoozed": { "$eq": null } };
-
-    get_tasks_without_snoozed(filter).await
+    get_tasks_without_snoozed(filter, completed).await
 }
 
 pub async fn get_task_by_id_for_user(user: User, id: String) -> Result<TaskModel> {
@@ -141,18 +163,21 @@ async fn get_task_by_id(id: ObjectId) -> Result<TaskModel> {
 pub async fn get_tasks_by_project_for_user(
     user: User,
     project: ObjectId,
+    completed: bool,
 ) -> Result<Vec<TaskModel>> {
     let filter =
         doc! { "user_id": user.user_id, "project_id": project,  "snoozed": { "$eq": null } };
-
-    get_tasks_without_snoozed(filter).await
+    get_tasks_without_snoozed(filter, completed).await
 }
 
-pub async fn get_tasks_by_tag_for_user(user: User, tag: ObjectId) -> Result<Vec<TaskModel>> {
+pub async fn get_tasks_by_tag_for_user(
+    user: User,
+    tag: ObjectId,
+    completed: bool,
+) -> Result<Vec<TaskModel>> {
     let filter =
         doc! { "user_id": user.user_id, "tags": { "$contains": tag }, "snoozed": { "$eq": null } };
-
-    get_tasks_without_snoozed(filter).await
+    get_tasks_without_snoozed(filter, completed).await
 }
 
 pub async fn add_task_for_user(user: User, task: TaskModel) -> Result<TaskModel> {

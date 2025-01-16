@@ -1,9 +1,25 @@
 <template>
     <div class="relative h-full">
-      <div class="w-full h-full">
+      <div class="w-full max-h-screen overflow-y-scroll" dropzone @drop="drop" @dragover="(event) => event.preventDefault()">
         <ul>
           <AtomAddTaskInput v-model="showAdd" :saveFunction="addTask" ref="addTaskInput" @blur="showAdd=false"/>
-          <MoleculeTaskListItem v-for="(task, index) in tasks" :key="index" :taskId="task.id" @click.stop="$emit('selected', task.id)"/>
+          <MoleculeTaskListItem 
+            v-for="(task, index) in tasks" 
+            :id="task.id"
+            :key="index" 
+            :taskId="task.id" 
+            @click.stop="$emit('selected', task.id)"
+            draggable="true"
+            @dragend="($event) => dragEnd($event, task.id)"
+            @dragstart="dragStart"
+            @dragover="($event) => dragover($event, task.id)"
+            class="w-full min-w-96"
+            :class="{ 
+              'mt-16': dropTarget === task.id,
+              'mx-0 px-0 left-0 fixed': dragTarget === task.id
+            }"
+          />
+
         </ul>
         <div v-if="!tasks || tasks.length == 0" class="flex flex-col w-full h-full">
           <div class="border border-slate-300 w-full min-h-16 flex">
@@ -12,7 +28,7 @@
           <img src="@/assets/logo-no-background.svg" class="w-1/4 mx-auto mt-auto opacity-50"/>   
       </div>
       </div>
-      <div class="absolute bottom-0 right-0 p-4">
+      <div class="fixed bottom-0 right-0 p-4">
         <AtomAddButtonLarge ref="addButton" v-model="showAdd" :focusRef="$refs.addTaskInput" :lightMode="false"/>
       </div>
     </div>
@@ -46,6 +62,8 @@ export default {
   data() {
     return {
       showAdd: false,
+      dropTarget: '',
+      dragTarget: '',
     }
   },
   methods: {
@@ -54,7 +72,7 @@ export default {
       const task = {
         name: taskName,
         completed: null,
-        projectId: this.projectId ? this.projectId : 0,
+        projectId: this.projectId ? this.projectId : null,
         tags: this.tag ? [this.tag] : [],
         depends: [],
         ttl: this.ttl ? this.ttl : "later"
@@ -65,6 +83,36 @@ export default {
       if (event.key === 'a') {
         this.showAdd = true;
       }
+    },
+    dragEnd(event, id) {
+      event.preventDefault();
+      let afterTask = this.tasks.find(task => task.id === this.dropTarget);
+      let afterTaskElement = document.getElementById(this.dropTarget);
+      let beforeTaskId = afterTaskElement.previousElementSibling.id;
+      let beforeTaskOrder = this.tasks.find(task => task.id === beforeTaskId)?.order ?? 0;
+      let newOrder = Math.round((afterTask.order + beforeTaskOrder) / 2);
+      let thisTask = this.tasks.find(task => task.id === id);
+      thisTask.order = newOrder;
+      this.$store.dispatch('updateTask', thisTask);
+      afterTaskElement.before(event.target);
+      console.log(afterTask, beforeTaskOrder);
+      this.dropTarget = '';
+    },
+    dragStart(event) {
+      this.dragTarget = event.target.id;
+      event.dataTransfer.setData("text", event.target.id);
+      event.dataTransfer.dragEffect = "move";
+      event.target.parentNode.removeChild(event.target);
+      document.body.appendChild(event.target);
+    },
+    drop(event) {
+      event.preventDefault();
+      console.log("drop", event.target.id);
+    },
+    dragover(event, id) {
+      event.preventDefault();
+      event.dropEffect = "move";
+      this.dropTarget = id;
     }
   },
   mounted() {
@@ -77,3 +125,5 @@ export default {
   },
 }
 </script>
+<style scoped>
+</style>

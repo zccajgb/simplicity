@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col">
+  <div class="h-full flex flex-col overflow-y-scroll">
     <div v-show="header" class="mb-2">
       <div class="inline-flex items-center w-full min-h-8 bg-slate-700 mb-0">  
         <div class="h-full p-4 hover:bg-slate-400" @click="$emit('back')">

@@ -132,9 +132,9 @@ fn create_auth_client() -> BasicClient {
     let google_client_secret = ClientSecret::new(
         std::env::var("GOOGLE_CLIENT_SECRET").expect("GOOGLE_CLIENT_SECRET must be set"),
     );
-    let auth_url =
-        AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string()).unwrap();
-    let token_url = TokenUrl::new("https://oauth2.googleapis.com/token".to_string()).unwrap();
+    let auth_url = AuthUrl::new("https://www.googleapis.com/oauth2/v4/auth".to_string()).unwrap();
+    let token_url =
+        TokenUrl::new("https://www.googleapis.com/oauth2/v4/token".to_string()).unwrap();
     let redirect_url = std::env::var("REDIRECT_URL").expect("REDIRECT_URL must be set");
     BasicClient::new(
         google_client_id,
@@ -172,12 +172,10 @@ async fn refresh_token(user: UserModel, session_token: String) -> Result<UserMod
         })?;
 
     let access_token = token.access_token().secret().as_str();
-    let refresh_token = token.refresh_token().map(|t| t.secret().as_str());
-    let _token_user = validate_token_and_get_user(access_token, &refresh_token)?;
     let user = users_repo::update_tokens_for_user(
         &user.user_id,
         access_token.to_string(),
-        refresh_token.map(|s| s.to_string()),
+        None,
         user.token_expiry,
         session_token,
     )
