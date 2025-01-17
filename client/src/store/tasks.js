@@ -1,4 +1,4 @@
-import { addTask, updateTask } from "@/api/tasks";
+import { addTask, updateTask, deleteTask } from "@/api/tasks";
 
 const sort = (tasks) => {
   if (!tasks || !tasks.length) return [];
@@ -38,6 +38,16 @@ export default {
       Object.assign(item, newItem);
       state.tasks = sort(state.tasks);
     },
+    reorderTask(state, newItem) {
+      let item = state?.tasks?.find(task => task.id === newItem.id);
+      if (!item) return;
+      item.order = newItem.order;
+      Object.assign(item, item);
+      state.tasks = sort(state.tasks);
+    },
+    deleteTask(state, id) {
+      state.tasks = state.tasks.filter(task => task.id !== id);
+    },
     updateTaskAndFilter(state, newItem) {
       let item = state?.tasks?.find(task => task.id === newItem.id);
       if (!item) return;
@@ -53,6 +63,10 @@ export default {
     }
   },
   actions: {
+    async deleteTask({ commit }, taskId) {
+      await deleteTask(taskId);
+      commit("deleteTask", taskId);
+    },
     async addTask({ commit }, task) {
       let taskRes = await addTask(task);
       if (taskRes.error) {
@@ -62,10 +76,13 @@ export default {
       commit("addTask", taskRes);
     },
     async reorderTask({ dispatch, commit }, task) {
-      commit("updateTask", task);
+      commit("reorderTask", task);
       await dispatch("updateTask", task);
     },
     async updateTask({ commit }, task) {
+      task.name = task.name.replace(/[\r\n]+/g, " ");
+      if (!task.name) return;
+
       let taskRes = await updateTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);
@@ -74,6 +91,8 @@ export default {
       commit("updateTask", taskRes);
     },
     async updateTaskAndFilter({ commit }, task) {
+      task.name = task.name.replace(/[\r\n]+/g, " ");
+      if (!task.name) return;
       let taskRes = await updateTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);

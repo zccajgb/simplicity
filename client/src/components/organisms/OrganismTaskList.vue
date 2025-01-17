@@ -12,7 +12,8 @@
                   class="w-full"
                   :class="{ 
                     'mt-16': dropTarget === task.id,
-                    'mx-0 px-0 left-0 fixed': dragTarget === task.id
+                    'mx-0 px-0 left-0 fixed': dragTarget === task.id,
+                    'hide': !filter(task),
                   }"
                 />
             </Draggable>
@@ -101,9 +102,22 @@ export default {
   computed: {
     tasks() {
       return this.$store.getters.getAllTasks;
-    }
+    },
+    filter() {
+      return this.$store.getters.getFilter;
+    },
   },
 }
 </script>
 <style scoped>
+@keyframes cssAnimation {
+    to {
+        width:0;
+        height:0;
+        overflow:hidden;
+    }
+}
+.hide {
+  animation: cssAnimation 0s ease-in 30s forwards;
+}
 </style>

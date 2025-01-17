@@ -16,6 +16,7 @@ services:
       API_URI: ${API_URI}
       API_KEY: ${API_KEY}
       ROCKET_LOG_LEVEL: ${ROCKET_LOG_LEVEL}
+      RUST_LOG_STYLE: pretty
       REDIRECT_URL: http://localhost:8080
 
   client:
@@ -41,7 +42,7 @@ services:
     build:
       context: ./cron
     environment:
-      API_URL: ${API_URL}
+      API_URL: ${CRON_API_URL}
       API_KEY: ${API_KEY}
 
 

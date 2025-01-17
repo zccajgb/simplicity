@@ -148,7 +148,7 @@ fn create_auth_client() -> BasicClient {
 pub async fn get_user_from_session_token(session_token: &str) -> Result<UserModel> {
     let user = users_repo::find_user_by_session_token(session_token).await;
     let mut user = user.ok_or(anyhow::anyhow!("User not found"))?;
-    if (user.token_expiry - chrono::Utc::now().timestamp()) < 0 {
+    if (user.token_expiry < chrono::Utc::now().timestamp()) {
         warn!("Token expired, refreshing");
         user = refresh_token(user, session_token.to_string())
             .await

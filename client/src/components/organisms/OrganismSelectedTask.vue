@@ -93,14 +93,28 @@
         </div>
       </div>
     </div>
-
+    
     <div class="absolute bottom-0 w-full h-12">
-      <div @click="$emit('close')" class="flex w-12 h-12 hover:bg-slate-300">
-        <ArrowRightIcon class="h-6 w-6 m-auto text-slate-100"/>
+      <div class="flex"> 
+        <div @click="$emit('close')" class="w-12 h-12 hover:bg-slate-300 flex">
+          <ArrowRightIcon class="h-6 w-6 m-auto text-slate-100"/>
+        </div>
+        <div class="ml-auto w-12 h-12 flex hover:bg-slate-300" @click.stop="() => showDelete = !showDelete">
+          <TrashIcon class="h-4 w-4 m-auto text-red-500"/>
+        </div>
+      </div>
+      <div 
+        v-if="showDelete"
+        class="absolute bottom-12 flex w-full px-4"
+      >
+        <div class="px-3 py-1 bg-slate-100 rounded-md mx-auto w-full mx-1 text-center">
+          <div class="inline-flex text-sm mr-2"> are you sure? </div>
+          <div class="inline-flex bg-slate-300 rounded-full ml-auto px-3 text-sm z-10 cursor-pointer" @click.stop="deleteTask">
+             <span class="text-center">delete</span>
+          </div>
+        </div>
       </div>
     </div>
-
-    
   </aside>
 </template>
 
@@ -114,6 +128,7 @@ import MoleculeSelectProjectModal from '@/components/molecules/MoleculeSelectPro
 import MoleculeSelectRepeatModal from '@/components/molecules/MoleculeSelectRepeatModal.vue';
 import MoleculeDatePickerModal from '@/components/molecules/MoleculeDatePickerModal.vue';
 import { FolderIcon, BellSnoozeIcon, CalendarIcon, ArrowPathIcon, ArrowRightIcon, TagIcon, Square2StackIcon } from '@heroicons/vue/24/outline';
+import { TrashIcon } from '@heroicons/vue/20/solid';
 import { getProjectById } from '@/api/projects';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
@@ -127,6 +142,8 @@ export default {
       selector: null,
       showAddSubtask: false,
       projectName: "",
+      showDelete: false,
+      preventUpdate: false,
     }
   },
   components: {
@@ -140,6 +157,7 @@ export default {
     MoleculeSelectRepeatModal,
     AtomAddButton,
     AtomAddInput,
+    TrashIcon,
     ArrowRightIcon,
     FolderIcon,
     BellSnoozeIcon,
@@ -152,6 +170,11 @@ export default {
     clickOutside: vueClickOutside
   },
   methods: {
+    deleteTask() {
+      this.$store.dispatch('deleteTask', this.task.id);
+      this.preventUpdate = true;
+      this.$emit("close");
+    },
     updateName(event) {
       this.task.name = event.target.innerText
     },
@@ -243,10 +266,15 @@ export default {
       this.projectName = project.name;
     },
     close() {
+      this.showDelete = false;
       this.selector = null;
+      this.saveTask();
       this.$store.dispatch('updateTask', this.task);
     },
     async saveTask() {
+      if (this.preventUpdate) {
+        return;
+      }
       this.$store.dispatch('updateTask', this.task);
     },
   },

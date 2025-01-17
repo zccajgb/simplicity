@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-screen bg-white">
+  <div class="w-full h-screen bg-white relative">
     <div class="flex flex-col h-screen w-full" :class="selectedTaskId? 'sm:w-[calc(75vw-16rem)]' : ''" @click="this.selectedTaskId=null">
       <OrganismTaskList 
         @selected="handleClickTask($event)"
@@ -11,9 +11,9 @@
     <div v-if="selectedTaskId!=null">
       <OrganismSelectedTask :selectedTaskId="selectedTaskId" @close="selectedTaskId=null"/>
     </div>
-    <div v-if="dev" class="fixed bottom-10 right-24 text-4xl uppercase text-slate-500">
+    <!-- <div v-if="dev" class="sticky bottom-10 right-24 text-4xl uppercase text-slate-500">
       DEVELOPMENT
-    </div>
+    </div> -->
   </div>
 </template>
   

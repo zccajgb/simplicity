@@ -8,6 +8,7 @@ use routes::tags;
 use routes::tasks;
 use routes::users;
 use services::fairing::AuthFairing;
+use services::logger::TimestampLogger;
 
 mod domain;
 mod repos;
@@ -19,7 +20,11 @@ extern crate rocket;
 
 #[launch]
 fn rocket() -> _ {
-    pretty_env_logger::init();
+    log::set_boxed_logger(Box::new(TimestampLogger))
+        .inspect_err(|e| error!("Error setting logger {}", e))
+        .unwrap();
+    log::set_max_level(log::LevelFilter::Info);
+
     let is_prod = std::env::var("PROD").unwrap_or_else(|_| "false".to_string());
     if is_prod != "true" {
         info!("Loading .env file");

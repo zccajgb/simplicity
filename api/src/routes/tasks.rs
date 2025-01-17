@@ -2,13 +2,13 @@ use crate::domain::repeat::{RepeatDTO, RepeatModel};
 use crate::repos::project_repo::{get_inbox_id_for_user, get_project_by_id_for_user};
 use crate::repos::tag_repo::get_tag_by_id_for_user;
 use crate::repos::task_repo::{
-    add_task_for_user, get_all_tasks_for_user, get_inbox_tasks_for_user, get_later_tasks_for_user,
-    get_snoozed_tasks_for_user, get_task_by_id_for_user, get_tasks_by_project_for_user,
-    get_tasks_by_tag_for_user, get_today_tasks_for_user, get_tomorrow_tasks_for_user,
-    update_task_for_user, TaskModel,
+    add_task_for_user, delete_task_for_user, get_all_tasks_for_user, get_inbox_tasks_for_user,
+    get_later_tasks_for_user, get_snoozed_tasks_for_user, get_task_by_id_for_user,
+    get_tasks_by_project_for_user, get_tasks_by_tag_for_user, get_today_tasks_for_user,
+    get_tomorrow_tasks_for_user, update_task_for_user, TaskModel,
 };
 use crate::routes::tasks;
-use crate::services::api_error::ApiError;
+use crate::services::api_error::{ApiError, ApiResult};
 use crate::services::api_error::{ApiJsonResult, ResultExt};
 use anyhow::{anyhow, Context, Result};
 use bson::oid::ObjectId;
@@ -127,7 +127,8 @@ pub fn get_routes() -> Vec<rocket::Route> {
         tasks::get_inbox_tasks_with_completed,
         tasks::get_tasks_by_project_with_completed,
         tasks::get_tasks_by_tag_with_completed,
-        tasks::get_snoozed_tasks_with_completed
+        tasks::get_snoozed_tasks_with_completed,
+        tasks::delete_task
     ]
 }
 
@@ -262,7 +263,7 @@ pub async fn add_task(user: User, task: Json<TaskDTO>) -> ApiJsonResult<TaskDTO>
     info!("Adding task: {:?}", task);
     let task = task.into_inner();
 
-    let task_result = task_guard(user.clone(), task.clone()).await;
+    let task_result = create_task_guard(user.clone(), task.clone()).await;
     let task = task_result.map_api_err()?;
     let task_model = task.to_task_model().map_api_err()?;
 
@@ -271,20 +272,30 @@ pub async fn add_task(user: User, task: Json<TaskDTO>) -> ApiJsonResult<TaskDTO>
     task.map_api_err()
 }
 
+#[delete("/tasks/<id>")]
+pub async fn delete_task(user: User, id: String) -> ApiResult<()> {
+    delete_task_for_user(user.clone(), id.clone())
+        .await
+        .map_api_err()
+}
+
 #[put("/tasks/<id>", data = "<task>")]
 pub async fn update_task(user: User, id: String, task: Json<TaskDTO>) -> ApiJsonResult<TaskDTO> {
     let task = task.into_inner();
     let Some(taskid) = task.clone()._id else {
+        error!("Task ID must be set");
         return Err(ApiError::new("Task ID must be set".into(), 400));
     };
     if id != taskid {
+        error!("Cannot update a task with a different ID");
         return Err(ApiError::new(
             "Cannot update a task with a different ID".into(),
             400,
         ));
     }
 
-    if let Err(guard) = task_guard(user.clone(), task.clone()).await {
+    if let Err(guard) = create_task_guard(user.clone(), task.clone()).await {
+        error!("Task guard failed: {:?}", guard);
         return Err(ApiError::new(guard.to_string(), 400));
     }
 
@@ -309,7 +320,7 @@ pub async fn complete_task(user: User, id: String) -> ApiJsonResult<TaskDTO> {
     task.map_api_err()
 }
 
-async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
+async fn create_task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
     let mut task = task;
     if task.name.is_none() || task.clone().name.expect("task guard").is_empty() {
         return Err(anyhow!("Cannot create a task with an empty name"));
@@ -340,6 +351,45 @@ async fn task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
             "Cannot create a task for a project that does not exist"
         ));
     }
+
+    if !task.tags.is_empty() {
+        for tag_id in task.tags.clone() {
+            let tag_id = ObjectId::parse_str(&tag_id).context("string to ObjectId failed")?;
+            let tag = get_tag_by_id_for_user(&user, tag_id).await;
+            if tag.is_err() {
+                return Err(anyhow!(
+                    "Cannot create a task with a tag that does not exist"
+                ));
+            }
+        }
+    }
+
+    Ok(task)
+}
+
+async fn update_task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
+    let mut task = task;
+    if let Some(user_id) = task.clone().user_id {
+        if user_id.is_empty() {
+            task.user_id = Some(user.user_id.clone());
+        }
+        if user_id != user.user_id {
+            return Err(anyhow!("Cannot create a task for another user"));
+        }
+    } else {
+        task.user_id = Some(user.user_id.clone());
+    }
+
+    if let Some(project_id) = task.project_id.clone() {
+        let project_id = ObjectId::parse_str(project_id).context("string to ObjectId failed")?;
+        let project = get_project_by_id_for_user(&user, project_id).await;
+
+        if project.is_err() {
+            return Err(anyhow!(
+                "Cannot create a task for a project that does not exist"
+            ));
+        }
+    };
 
     if !task.tags.is_empty() {
         for tag_id in task.tags.clone() {

@@ -14,7 +14,7 @@
           />
           <div class="flex items-center mx-6 flex-auto my-auto">
               <p 
-                class="text-lg leading-6 min-w-16 px-2 pl-2 pr-4" 
+                class="text-lg leading-6 min-w-12 px-2 pl-2 mr-6 pr-3" 
                 :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
@@ -22,6 +22,7 @@
                 contenteditable
                 @focus="addEventListener"
                 @blur="updateName"
+                @keydown.enter.prevent="handleEnterClick"
                 @click.stop=""
                 v-text="task.name"
               >
@@ -81,19 +82,27 @@ export default {
     },
     handleEnterClick(event) {
       if (event.key === 'Enter') {
+        console.log('Enter clicked');
         this.updateName(event); 
+        event.target.blur();
       }
     },
-    addEventListener(event) {
-      event.target.addEventListener('keyup', this.handleEnterClick);
-    },
-    removeEventListener(event) {
-      event.target.removeEventListener('keyup', this.handleEnterClick);
-    },
+    // addEventListener(event) {
+    //   event.target.addEventListener('keyup', this.handleEnterClick);
+    // },
+    // removeEventListener(event) {
+    //   event.target.removeEventListener('keyup', this.handleEnterClick);
+    // },
     updateName(event) {
+      if (!event.target.innerText) {
+        event.target.innerText = this.task.name;
+        // this.removeEventListener(event);
+        return;
+      }
       this.task.name = event.target.innerText;
+      console.log('updateName', this.task.name);
       this.updateTask();
-      this.removeEventListener(event);
+      // this.removeEventListener(event);
     },
     updateTask() {
       this.$store.dispatch('updateTaskAndFilter', this.task);

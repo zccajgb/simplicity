@@ -20,7 +20,10 @@ impl<'r> FromRequest<'r> for User {
         let user = get_user_from_session_token(session_token).await;
         match user {
             Ok(user) => Outcome::Success(User::from_user_model(user)),
-            Err(_) => Outcome::Error((Status::Unauthorized, ())),
+            Err(e) => {
+                error!("Error in guard: {:?}", e);
+                Outcome::Error((Status::Unauthorized, ()))
+            }
         }
     }
 }

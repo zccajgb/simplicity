@@ -1,4 +1,4 @@
-import { helperGet, helperPost, helperPut } from '@/api/helperApi';
+import { helperGet, helperPost, helperPut, helperDelete } from '@/api/helperApi';
 
 export async function getAllTasks() {
   return await helperGet(`tasks`);
@@ -65,6 +65,10 @@ export async function getTaskById(taskId) {
 }
 
 export async function updateTask(task) {
+  if (!task.name) {
+    console.error("updateTask: task name is not set. Task: ", task);
+    return;
+  }
   let uri = `tasks/${task.id}`;
   return await helperPut(uri, task);
 }
@@ -76,4 +80,8 @@ export async function completeTask(taskId) {
 
 export async function addTask(task) {
   return await helperPost(`tasks`, task);
+}
+
+export async function deleteTask(taskId) {
+  return await helperDelete(`tasks/${taskId}`);
 }

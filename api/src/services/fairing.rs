@@ -30,7 +30,8 @@ impl Fairing for AuthFairing {
         };
 
         let session_token = cookie.value();
-        let Ok(_) = get_user_from_session_token(session_token).await else {
+        if let Err(e) = get_user_from_session_token(session_token).await {
+            error!("Error in fairing, Invalid token. {:?}", e);
             request.local_cache(|| Status::Unauthorized);
             return;
         };

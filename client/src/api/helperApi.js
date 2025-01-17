@@ -32,6 +32,17 @@ export async function helperPut(uri, data) {
     let result = await axios.put(url, data);
     return result.data;
   } catch (error) {
+    console.log("helperPut error", error);
+    console.log("data", data);
+    return handleError(error);
+  }
+}
+
+export async function helperDelete(uri) {
+  const url = `${apiUri}/${uri}`;
+  try {
+    await axios.delete(url);
+  } catch (error) {
     return handleError(error);
   }
 }
@@ -50,11 +61,17 @@ export async function handleLogout() {
   return await helperGet('logout');
 }
 
-function handleError(error) {
+async function handleError(error) {
   if (error.status === 401) {
-    store.dispatch('SET_ERROR', error.message);
-    store.dispatch("logout");
-    return { error: error.message, data: null };
+    store.dispatch('SET_ERROR', "request failed, testing authentication");
+    await setTimeout(() => {}, 500);
+    try {
+      await axios.get(`${apiUri}/ping`);
+    } catch (error) {
+      store.dispatch("logout");
+      store.dispatch('SET_ERROR', "authentication failed, logging out");
+      return { error: error.message, data: null };
+    }
   }
   store.dispatch('SET_ERROR', error.message);
   return { error: error.message, data: null };

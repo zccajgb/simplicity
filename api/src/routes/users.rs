@@ -1,6 +1,4 @@
 use rand::Rng;
-use rocket::data::FromData;
-use rocket::http::Cookie;
 use rocket::http::CookieJar;
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
@@ -11,7 +9,7 @@ use crate::services::api_error::ApiJsonResult;
 use crate::services::api_error::{ApiResult, ResultExt};
 use crate::services::auth::{generate_session_cookie, get_user_from_auth_code};
 pub fn get_routes() -> Vec<rocket::Route> {
-    routes![public, login_with_auth_code, logout]
+    routes![public, login_with_auth_code, logout, ping]
 }
 
 #[derive(Serialize, Deserialize)]
@@ -87,4 +85,9 @@ pub async fn logout(user: User, jar: &CookieJar<'_>) -> ApiResult<()> {
 #[get("/public")]
 pub async fn public() -> &'static str {
     "Hello, world!"
+}
+
+#[get("/ping")]
+pub async fn ping() -> &'static str {
+    "pong"
 }

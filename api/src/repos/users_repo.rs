@@ -119,9 +119,6 @@ pub async fn update_tokens_for_user(
     if user.token_expiry != token_expiry {
         anyhow::bail!("Token expiry not updated")
     }
-    if user.access_token != access_token {
-        anyhow::bail!("Access token not updated")
-    }
     if !user.session_token.contains(&session_token) {
         anyhow::bail!("Refresh token not updated");
     }

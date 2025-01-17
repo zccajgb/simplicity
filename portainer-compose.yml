@@ -13,6 +13,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       API_URI: ${API_URI}
       API_KEY: ${API_KEY}
+      RUST_LOG_STYLE: pretty
       PROD: true
       REDIRECT_URL: https://simplicity.buckleyresearch.com
 

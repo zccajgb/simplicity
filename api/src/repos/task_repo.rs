@@ -201,3 +201,13 @@ pub async fn update_task_for_user(user: User, id: ObjectId, task: TaskModel) -> 
     }
     get_task_by_id(id).await
 }
+
+pub async fn delete_task_for_user(user: User, id: String) -> Result<()> {
+    let collection = get_tasks_collection().await?;
+    let filter = doc! { "_id": ObjectId::parse_str(id)?, "user_id": &user.user_id };
+    let res = collection.delete_one(filter).await?;
+    if res.deleted_count == 0 {
+        warn!("Task not updated, likely nothing has changed");
+    }
+    Ok(())
+}
