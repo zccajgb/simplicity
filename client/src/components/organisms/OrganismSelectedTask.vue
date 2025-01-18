@@ -1,5 +1,5 @@
 <template>
-  <aside v-if="task" class="fixed right-0 top-0 w-[75vw] sm:w-[25vw] h-screen bg-slate-500 text-slate-800" @click="close()" @focusout="saveTask()" >
+  <aside v-if="task" class="fixed right-0 top-0 w-[75vw] max-w-80 h-screen bg-slate-500 text-slate-800" @click="close()" @focusout="saveTask()" >
     <div class="flex px-6 pt-8 w-full">
       <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="handleClickCheck"/>
       <div class="ml-6 mr-6 w-full">
@@ -40,27 +40,46 @@
           </div>
         </div>
 
-        <div ref="selector" v-if="selector" class="absolute mt-4 mx-4">
-          <div v-if="selector === 'project'">
-            <MoleculeSelectProjectModal @close="close" v-model="task.projectId" itemtype="project"/>
-          </div>
-          <div v-else-if="selector === 'tags'">
-            <MoleculeSelectProjectModal @close="close" v-model="task.tags" itemtype="tags" multiselect="true"/>
-          </div>
-          <div v-else-if="selector === 'depends'">
-            <MoleculeSelectProjectModal @close="close" v-model="task.depends" itemtype="tasks" multiselect="true"/>
-          </div>
-          <div v-else-if="selector === 'date'">
-            <MoleculeDatePickerModal @close="close" v-model="task.date"/>
-          </div>
-          <div v-else-if="selector === 'repeat'">
-            <MoleculeSelectRepeatModal @close="close" @selectedProject="handleSelectProject" v-model="task.repeat"/>
-          </div>
-          <div v-else-if="selector === 'snooze'">
-            <MoleculeDatePickerModal @close="close" v-model="task.snooze"/>
-          </div>
+        <div class="absolute w-full flex mt-4 px-4">
+          <MoleculeSelectProjectModal 
+            class="mx-auto"
+            v-if="selector==='project'" 
+            @close="close" 
+            v-model="task.projectId"
+            itemtype="project"
+          />
+          <MoleculeSelectProjectModal 
+            v-else-if="selector === 'tags'"
+            @close="close" 
+            v-model="task.tags" 
+            itemtype="tags" 
+            multiselect="true"
+          />
+          <!-- <MoleculeSelectProjectModal 
+            v-else-if="selector === 'depends'" 
+            @close="close" 
+            v-model="task.depends"
+            itemtype="tasks" 
+            multiselect="true"
+          /> -->
+          <MoleculeSelectProjectModal v-else-if="selector === 'depends'" @close="close" v-model="task.depends" itemtype="tasks" multiselect="true"/>
+          <MoleculeDatePickerModal 
+            @close="close"
+            v-model="task.date" 
+            v-else-if="selector === 'date'"
+          />
+          <MoleculeSelectRepeatModal
+            @close="close" 
+            @selectedProject="handleSelectProject" 
+            v-model="task.repeat"
+            v-else-if="selector === 'repeat'"
+          />
+          <MoleculeDatePickerModal 
+            @close="close" 
+            v-model="task.snooze" 
+            v-else-if="selector === 'snooze'"
+          />
         </div>
-
 
         <AtomHorizontalSeperator/>
 
@@ -129,7 +148,6 @@ import MoleculeSelectRepeatModal from '@/components/molecules/MoleculeSelectRepe
 import MoleculeDatePickerModal from '@/components/molecules/MoleculeDatePickerModal.vue';
 import { FolderIcon, BellSnoozeIcon, CalendarIcon, ArrowPathIcon, ArrowRightIcon, TagIcon, Square2StackIcon } from '@heroicons/vue/24/outline';
 import { TrashIcon } from '@heroicons/vue/20/solid';
-import { getProjectById } from '@/api/projects';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
@@ -141,9 +159,9 @@ export default {
       showCommentPlaceholder: true,
       selector: null,
       showAddSubtask: false,
-      projectName: "",
       showDelete: false,
       preventUpdate: false,
+      modalVModel: {},
     }
   },
   components: {
@@ -260,11 +278,6 @@ export default {
       });
       $event.target.value = '';
     },
-    async getProjectName(projectId) {
-      let projectIdString = projectId.toString();
-      let project = await getProjectById(projectIdString);
-      this.projectName = project.name;
-    },
     close() {
       this.showDelete = false;
       this.selector = null;
@@ -291,6 +304,9 @@ export default {
       set(value) {
         this.$store.dispatch('updateTask', value);
       }
+    },
+    projectName() {
+      return this.$store.getters.getProjectNameById(this.task.projectId);
     }
   },
   async mounted() {
@@ -300,16 +316,10 @@ export default {
     if (this.task.comments) {
       this.showCommentPlaceholder = false;
     }
-    await this.getProjectName(this.task.projectId);
   },
   beforeUnmount() {
     this.saveTask();
   },
-  watch: {
-    'task.projectId': function(val) {
-      this.getProjectName(val);
-    },
-  }
 }
 
 </script>

@@ -1,10 +1,10 @@
 <template>
-  <div class="flex flex-wrap w-full min-h-16 rounded-md bg-slate-100 max-h-[50vh] overflow-y-auto" @click.stop>
+  <div class="flex flex-wrap rounded-md bg-slate-100 max-h-[50vh] overflow-y-auto" @click.stop>
     <AtomSearchBar @input="handleFilter" ref="search"/>
     <div class="w-full px-4 pb-2 overflow-y-auto">
-      <div v-for="item in items" :key="item.id">
+      <div v-for="item in items" :key="item.id" class="w-full">
         <MoleculeMenuItem 
-          class="rounded-md hover:bg-slate-300 max-h-12 max-w-[20vw]"
+          class="rounded-md hover:bg-slate-300 max-h-12 overflow-hidden"
           :class="isSelected(item.id) ? 'bg-slate-400 text-white' : ''"
           @click="handleSelect(item.id)">
           {{item.name }}
@@ -24,9 +24,8 @@
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
-import { getProjects, addProject } from '@/api/projects';
 import { getTags, addTag } from '@/api/tags';
-import { getAllTasks, addTask } from '@/api/tasks';
+import { getAllTasks } from '@/api/tasks';
 import MoleculeMenuItem from './MoleculeMenuItem.vue';
 export default {
   props: ['modelValue', 'itemtype', 'multiselect'],
@@ -46,7 +45,7 @@ export default {
     async getItems() {
       let items;
       if (this.itemtype === 'project') {
-        items = await getProjects();
+        items = this.$store.getters.getAllProjects;
       } else if (this.itemtype === 'tasks') {
         items = await getAllTasks();
       } else  {
@@ -56,7 +55,7 @@ export default {
     },
     async saveItem(newItem) {
       if (this.itemtype === 'project') {
-        await addProject(newItem);
+        await this.$store.dispatch('addProject', newItem);
       } else if (this.itemtype === 'tasks') {
         await this.$store.dispatch('addTask', newItem);
       } else  {

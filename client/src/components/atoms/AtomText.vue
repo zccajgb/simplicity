@@ -1,6 +1,7 @@
 <template>
-  <div class="flex items-center min-w-0 mx-4 flex-auto">
-    <p class="text-lg leading-6" :class="{ truncate: truncate }">
+  <div class="flex items-center min-w-0 mx-4 flex-auto max-w-full w-full">
+    <p class="text-lg leading-6 max-w-full w-full" 
+    :class="{ 'truncate w-full w-[400px]': truncate }">
       <slot></slot>
     </p>
   </div>

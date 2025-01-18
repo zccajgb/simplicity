@@ -51,7 +51,6 @@
 </template>
 
 <script>
-import { getProjectsWithoutInbox, addProject } from '@/api/projects';
 import { getTags, addTag } from '@/api/tags';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
 import MoleculeSideNavItem from '../molecules/MoleculeSideNavItem.vue';
@@ -112,10 +111,10 @@ export default {
     },
     async handleFilterProjects($event) {
       if (!$event || $event === "") {
-        this.projects = await getProjectsWithoutInbox();
+        this.projects = this.$store.getters.getProjectsWithoutInbox;
         return;
       }
-      this.projects = await getProjectsWithoutInbox().filter(project => project.name.includes($event.target.value));
+      this.projects = this.$store.getters.getProjectsWithoutInbox.filter(project => project.name.includes($event.target.value));
     },
     async handleFilterTags($event) {
       if (!$event || $event === "") {
@@ -124,8 +123,8 @@ export default {
       }
       this.tags = await getTags().filter(tag => tag.name.includes($event.target.value));
     },
-    async getProjects() {
-      this.projects = await getProjectsWithoutInbox();
+    getProjects() {
+      this.projects = this.$store.getters.getProjectsWithoutInbox
     },
     async getTags() {
       this.tags = await getTags();
@@ -133,8 +132,8 @@ export default {
     async handleAddProject(value) {
       if (value.trim() === '') return;
       const project = { name: value };
-      await addProject(project);
-      this.projects = await getProjectsWithoutInbox();
+      this.$store.dispatch('addProject', project);
+      this.projects = this.$store.getters.getProjectsWithoutInbox;
       this.$refs.projects.showAdd = false;
     },
     async handleAddTag(value) {
@@ -150,6 +149,7 @@ export default {
     },
   },
   mounted() {
+    this.$store.dispatch('getProjects');
     let selected = this.items.find(item => item.name === window.location.pathname.replace("/",""));
     if (selected) {
       this.selectedItemId = selected.id;

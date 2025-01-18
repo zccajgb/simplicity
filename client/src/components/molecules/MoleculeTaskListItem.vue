@@ -19,11 +19,11 @@
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
                 ]"
-                contenteditable
-                @focus="addEventListener"
+                :contenteditable="allowEdit"
                 @blur="updateName"
+                @focusout="updateName"
                 @keydown.enter.prevent="handleEnterClick"
-                @click.stop=""
+                @click.stop="() => allowEdit = true"
                 v-text="task.name"
               >
               </p>
@@ -60,6 +60,7 @@ export default {
   },
   data() {
     return {
+      allowEdit: !this.$isMobile()
     }
   },
   methods: {
@@ -87,22 +88,21 @@ export default {
         event.target.blur();
       }
     },
-    // addEventListener(event) {
-    //   event.target.addEventListener('keyup', this.handleEnterClick);
-    // },
-    // removeEventListener(event) {
-    //   event.target.removeEventListener('keyup', this.handleEnterClick);
-    // },
+    disallowEdit() {
+      if (this.$isMobile()) {
+        this.allowEdit = false;
+      }
+    },
     updateName(event) {
       if (!event.target.innerText) {
         event.target.innerText = this.task.name;
-        // this.removeEventListener(event);
+        this.disallowEdit();
         return;
       }
       this.task.name = event.target.innerText;
       console.log('updateName', this.task.name);
       this.updateTask();
-      // this.removeEventListener(event);
+      this.disallowEdit();
     },
     updateTask() {
       this.$store.dispatch('updateTaskAndFilter', this.task);

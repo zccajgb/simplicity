@@ -80,6 +80,7 @@ export default {
       await dispatch("updateTask", task);
     },
     async updateTask({ commit }, task) {
+      commit("updateTask", task);
       task.name = task.name.replace(/[\r\n]+/g, " ");
       if (!task.name) return;
 
