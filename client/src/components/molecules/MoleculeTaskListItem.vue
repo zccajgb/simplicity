@@ -23,7 +23,6 @@
                 @blur="updateName"
                 @focusout="updateName"
                 @keydown.enter.prevent="handleEnterClick"
-                @click.stop="() => allowEdit = true"
                 v-text="task.name"
               >
               </p>
@@ -88,21 +87,21 @@ export default {
         event.target.blur();
       }
     },
-    disallowEdit() {
-      if (this.$isMobile()) {
-        this.allowEdit = false;
-      }
-    },
+    // disallowEdit() {
+    //   if (this.$isMobile()) {
+    //     this.allowEdit = false;
+    //   }
+    // },
     updateName(event) {
       if (!event.target.innerText) {
         event.target.innerText = this.task.name;
-        this.disallowEdit();
+        // this.disallowEdit();
         return;
       }
       this.task.name = event.target.innerText;
       console.log('updateName', this.task.name);
       this.updateTask();
-      this.disallowEdit();
+      // this.disallowEdit();
     },
     updateTask() {
       this.$store.dispatch('updateTaskAndFilter', this.task);

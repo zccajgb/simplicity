@@ -1,7 +1,7 @@
 <template>
   <!-- <li> -->
     <div 
-      class="flex min-h-16 sm:p-4 hover:bg-slate-400 relative" 
+      class="flex h-16 sm:p-4 hover:bg-slate-400 relative truncate" 
       :class="[selected ? 'bg-slate-500' : '', showNavMobile ? 'p-4' : '']"
     >  
       <div 
@@ -18,7 +18,12 @@
         <TagIcon v-else-if="value==='tags'"/>
         <MagnifyingGlassIcon v-else-if="value==='search'"/>
         <ArrowTopRightOnSquareIcon v-else-if="value==='logout'"/>
-        <div v-else class="sm:hidden text-sm text-center text-balance px-1 my-auto">{{value}}</div>
+      </div>
+      <div 
+        v-if="!showNavMobile && !iconList.includes(value)"
+        class="sm:hidden text-sm text-left text-balance px-[5px] my-auto truncate"
+      >
+        {{value}}
       </div>
       <div 
         class="sm:flex items-center my-auto mx-2 w-full bg"
@@ -34,6 +39,7 @@
       </div>
       <div v-if="showCount()"
         class="bg-slate-400 items-center rounded-full w-5 h-5 absolute right-[3px] flex flex-shrink-0 sm:hidden"
+        :class="showNavMobile ? 'hidden' : 'flex'"
       >
         <p class="mx-auto my-auto text-xs"> {{ taskCount }} </p>
       </div>
@@ -71,14 +77,15 @@ export default {
   },
   methods: {
     showCount() {
-      return !this.selected && this.taskCount > 0;
+      // return !this.selected && this.taskCount > 0;
+      return this.taskCount > 0;
     },
     async getCount() {
       if (this.value === 'inbox') {
         let tasks = await getInboxTasks();
         this.taskCount = tasks.length;
       } else if (this.value === 'today') {
-        this.taskCount = (await getTodayTasks()).length;
+        this.taskCount = (await getTodayTasks()).filter((task) => !task.completed).length;
       }
     }
   },
@@ -88,6 +95,12 @@ export default {
     }
     this.getCount();
     console.log("count", this.taskCount);
+    this.$store.subscribe((mutation,) => {
+      const mutations = ["setTasks", "updateTask", "deleteTask", "updateTaskAndFilter", "addTask",]
+      if (mutations.includes(mutation.type)) {
+        this.getCount();
+      }
+    });
   },
 }
 </script>

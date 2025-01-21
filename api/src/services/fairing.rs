@@ -21,6 +21,9 @@ impl Fairing for AuthFairing {
         if request.uri().path().contains("/login") {
             return;
         }
+        if request.uri().path().contains("/dailyupdate") {
+            return;
+        }
 
         let cookie = request.cookies().get("session_token");
         let Some(cookie) = cookie else {

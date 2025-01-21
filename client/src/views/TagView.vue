@@ -1,15 +1,17 @@
 <template>
-  <OrganismDayView :tagId="tagId" selectedList="tags"/>
+  <OrganismDayView v-if="loading" :tagId="tagId" selectedList="tags"/>
 </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getTasksByTagId } from '@/api/tasks';
+import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
   components: {
     OrganismDayView,
   },
+  mixins: [getTasksMixin],
   data() {
     return {
       tagId: null,
@@ -17,17 +19,12 @@ export default {
     }
   },
   methods: {
-    async getTasks(tagId) {
-      const tasks = await getTasksByTagId(tagId);
-      this.$store.commit('setTasks', tasks);
-      this.$store.commit('setFilter', (task) => {
-        return task.tagId === tagId;
-      });
-    },
   },
   async mounted() {
     this.tagId = this.$route.params.tagId;
-    await this.getTasks(this.tagId);
+    await this.getTasks(() => getTasksByTagId(this.tagId), (task) => {
+        return task.tagId === this.tagId;
+    });
   },
   watch: {
     '$route.params.tagId': {

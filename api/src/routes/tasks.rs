@@ -315,6 +315,10 @@ pub async fn complete_task(user: User, id: String) -> ApiJsonResult<TaskDTO> {
         let _new_task = task.repeat.create_repeat(&task);
     }
     task.completed = Some(DateTime::now());
+    task.order = task
+        .completed
+        .map(|x| x.timestamp_millis())
+        .expect("explicity set above");
     let task = update_task_for_user(user, object_id, task).await;
     let task = task.map(TaskDTO::from_task_model).map(Json);
     task.map_api_err()

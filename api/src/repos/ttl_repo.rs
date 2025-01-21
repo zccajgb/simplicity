@@ -41,6 +41,11 @@ pub async fn update_tasks_for_today_from_tomorrow() -> Result<()> {
         warn!("No tasks found for today by ttl");
     }
 
+    info!(
+        "updated {} tasks for today because tomorrow",
+        update_result.modified_count
+    );
+
     Ok(())
 }
 
@@ -62,6 +67,7 @@ pub async fn update_tasks_for_ttl_by_date(
     if update_result.modified_count == 0 {
         warn!("No tasks found for {} by date", ttl);
     }
+    info!("updated {} tasks for {}", update_result.modified_count, ttl);
 
     Ok(())
 }

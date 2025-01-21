@@ -59,6 +59,7 @@ pub async fn login_with_auth_code(
         .await
         .map_api_err()?;
         jar.add(cookie);
+        info!("returning login");
         return Ok(Json(User::from_user_model(user)));
     }
 

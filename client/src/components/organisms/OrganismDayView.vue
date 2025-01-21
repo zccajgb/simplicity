@@ -1,6 +1,9 @@
 <template>
-  <div class="w-full h-screen bg-white relative">
-    <div class="flex flex-col h-screen w-full" :class="selectedTaskId? 'sm:w-[calc(75vw-16rem)]' : ''" @click="this.selectedTaskId=null">
+  <div class="md:flex w-full h-screen bg-white relative">
+    <div 
+      class="flex flex-col h-screen grow" 
+      @click="this.selectedTaskId=null"
+    >
       <OrganismTaskList 
         @selected="handleClickTask($event)"
         :projectId="projectId"
@@ -9,7 +12,11 @@
       />
     </div>
     <div v-if="selectedTaskId!=null">
-      <OrganismSelectedTask :selectedTaskId="selectedTaskId" @close="selectedTaskId=null"/>
+      <OrganismSelectedTask 
+        :selectedTaskId="selectedTaskId"
+        @close="selectedTaskId=null"
+        class="w-[75vw] max-w-80"
+      />
     </div>
     <!-- <div v-if="dev" class="sticky bottom-10 right-24 text-4xl uppercase text-slate-500">
       DEVELOPMENT

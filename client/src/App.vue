@@ -14,8 +14,18 @@ export default {
       return this.$store.getters.alerts;
     }
   },
-  mounted() {
+  methods: {
+    handleVisibilityChange() {
+      this.$store.dispatch("refreshTasks");
+    },
   },
+  mounted() {
+    document.addEventListener("visibilitychange", this.handleVisibilityChange);
+    setTimeout(() => this.$store.dispatch("refreshTasks"), 10000);
+  },
+  beforeUnmount() {
+    document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+  }
 }
 </script>
 

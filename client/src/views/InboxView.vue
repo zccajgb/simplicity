@@ -1,26 +1,21 @@
 <template>
-  <OrganismDayView selectedList="inbox"/>
+  <OrganismDayView v-if="!loading" selectedList="inbox"/>
 </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getInboxTasks } from '@/api/tasks';
+import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
   components: {
     OrganismDayView,
   },
+  mixins: [ getTasksMixin ],
   methods: {
-    async getTasks() {
-      let tasks = await getInboxTasks();
-      this.$store.commit('setTasks', tasks);
-      this.$store.commit('setFilter', (task) => {
-        return task.projectId === tasks[0].projectId;
-      });
-    },
   },
   async mounted() {
-    await this.getTasks();
+    await this.getTasks(getInboxTasks, "inbox");
   },
 }
 </script>

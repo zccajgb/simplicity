@@ -3,7 +3,7 @@
     <div class="p-1">
       <AtomSearchBar @input="filterTasks"/>
     </div>
-  <OrganismDayView selectedList="search"/>
+  <OrganismDayView v-if="!loading" selectedList="search"/>
   </div>
   </template>
   
@@ -11,17 +11,15 @@
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getAllTasks } from '@/api/tasks';
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
+import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
   components: {
     OrganismDayView,
     AtomSearchBar,
   },
+  mixins: [getTasksMixin],
   methods: {
-    async getTasks() {
-      let tasks = await getAllTasks();
-      this.$store.commit('setTasks', tasks);
-    },
     async filterTasks($event) {
       if (!$event || $event === "") {
         this.tasks = await this.getTasks();
@@ -32,12 +30,12 @@ export default {
     }
   },
   async mounted() {
-    await this.getTasks();
+    await this.getTasks(getAllTasks, (tasks) => tasks); 
   },
   computed: {
     tasks: {
       get() {
-        this.$store.getters.getAllTasks;
+        return this.$store.getters.getAllTasks;
       },
       set(value) {
         this.$store.commit('setTasks', value);

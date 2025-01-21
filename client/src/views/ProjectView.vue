@@ -1,10 +1,11 @@
 <template>
-  <OrganismDayView v-model="tasks" selectedList="project" :projectId="projectId"/>
+  <OrganismDayView v-if="!loading" v-model="tasks" selectedList="project" :projectId="projectId"/>
 </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getTasksByProjectId } from '@/api/tasks';
+import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
   components: {
@@ -15,25 +16,21 @@ export default {
       projectId: null,
     }
   },
-  methods: {
-    async getTasks(projectId) {
-      let tasks = await getTasksByProjectId(projectId);
-      this.$store.commit('setTasks', tasks);
-      this.$store.commit('setFilter', (task) => {
-        return task.projectId === projectId;
-      });
-    },
-  },
+  mixins: [getTasksMixin],
   async mounted() {
     this.projectId = this.$route.params.projectId;
-    await this.getTasks(this.projectId);
+    this.getTasks(() => getTasksByProjectId(this.projectId), (task) => {
+        return task.projectId === this.projectId;
+    });
   },
   watch: {
     '$route.params.projectId': {
       immediate: true,
       handler(id) {
         this.projectId = id;
-        this.getTasks(id)
+        this.getTasks(() => getTasksByProjectId(id), (task) => {
+          return task.projectId === id;
+        });
       }
     },
   }

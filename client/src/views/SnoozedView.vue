@@ -14,6 +14,7 @@ export default {
     async getTasks() {
       const tasks = await getSnoozedTasks();
       this.$store.commit('setTasks', tasks);
+      this.$store.commit('setGetter', getSnoozedTasks);
       this.$store.commit('setFilter', (task) => {
         return !!task.snooze;
       });

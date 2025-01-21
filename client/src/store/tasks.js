@@ -3,7 +3,7 @@ import { addTask, updateTask, deleteTask } from "@/api/tasks";
 const sort = (tasks) => {
   if (!tasks || !tasks.length) return [];
   return tasks.sort((a, b) => {
-    if (a.completed === b.completed) return a.order - b.order;
+    if (a.completed === b.completed) return b.order - a.order;
     return a.completed ? 1 : -1;
   });
 };
@@ -27,9 +27,11 @@ export default {
   state: {
     tasks: [],
     filter: () => { return true },
+    getter: () => {},
+    timeout: null
   },
   mutations: {
-    setTasks(state, value) {
+    setTasks( state , value) {
       state.tasks = sort(value);
     },
     updateTask(state, newItem) {
@@ -59,7 +61,18 @@ export default {
       state.tasks.unshift(newItem);
     },
     setFilter(state, filter) {
+      console.log("filter", filter);
+      if (filter === "inbox") {
+        let inboxId = state.tasks[0]?.projectId;
+        console.log("inboxId: ", inboxId);
+        filter = (task) => {
+          return task.projectId === inboxId;
+        };
+      }
       state.filter = filter;
+    },
+    setGetter(state, getter) {
+      state.getter = getter;
     }
   },
   actions: {
@@ -100,7 +113,18 @@ export default {
         return;
       }
       commit("updateTaskAndFilter", taskRes);
-    }
+    },
+    async refreshTasks({ commit, state, dispatch }) {
+      try {
+        let tasks = await state.getter();
+        commit("setTasks", tasks);
+        this.timeout = setTimeout(() => { dispatch("refreshTasks") }, 10000);    
+      }
+      catch (e) {
+        console.error("could not get tasks: ", e);
+      }
+    },
+    
   },
   getters: {
     getAllTasks: state => state.tasks,

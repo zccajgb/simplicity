@@ -1,26 +1,23 @@
 <template>
-  <OrganismDayView ttl="tomorrow" selectedList="tomorrow"/>
+  <OrganismDayView v-if="!loading" ttl="tomorrow" selectedList="tomorrow"/>
 </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
 import { getTomorrowTasks } from '@/api/tasks';
+import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
   components: {
     OrganismDayView,
   },
+  mixins: [getTasksMixin],
   methods: {
-    async getTasks() {
-      const tasks = await getTomorrowTasks();
-      this.$store.commit('setTasks', tasks);
-      this.$store.commit('setFilter', (task) => {
-        return task.ttl === 'tomorrow';
-      });
-    },
   },
   async mounted() {
-    await this.getTasks();
+    await this.getTasks(getTomorrowTasks, (task) => {
+        return task.ttl === 'tomorrow';
+      });
   },
 }
 </script>
