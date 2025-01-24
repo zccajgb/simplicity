@@ -18,6 +18,7 @@ pub struct UserModel {
     pub image_url: Option<String>,
     pub token_expiry: i64,
     pub session_token: Vec<String>,
+    pub inbox_id: Option<ObjectId>,
 }
 
 impl UserModel {
@@ -48,14 +49,32 @@ pub async fn add_user(user: UserModel) -> Result<UserModel> {
     inserted_user.ok_or(anyhow!("User not found in db after adding"))
 }
 
-pub async fn find_user_by_user_id(user_id: &str) -> Option<UserModel> {
-    let collection = get_users_collection().await;
-    let collection = collection
-        .inspect_err(|e| error!("Error getting collection: {:?}", e))
-        .ok()?;
+pub async fn set_inbox_id_for_user(user_id: &str, inbox_id: &str) -> Result<UserModel> {
+    let collection = get_users_collection().await?;
     let filter = doc! { "user_id": user_id };
-    let user = collection.find_one(filter).await.ok()?;
-    user
+    let oid = ObjectId::parse_str(inbox_id).inspect_err(|e| error!("Error parsing id: {:?}", e))?;
+    let update = doc! {
+        "$set": { "inbox_id": oid }
+    };
+    collection.update_one(filter, update).await?;
+    let user = find_user_by_user_id(user_id)
+        .await?
+        .ok_or(anyhow!("User not found"))?;
+    if user.inbox_id.map(|x| x.to_string()) != Some(inbox_id.to_string()) {
+        anyhow::bail!("Inbox id not updated");
+    }
+    Ok(user)
+}
+
+pub async fn find_user_by_user_id(user_id: &str) -> Result<Option<UserModel>> {
+    let collection = get_users_collection().await;
+    let collection = collection.inspect_err(|e| error!("Error getting collection: {:?}", e))?;
+    let filter = doc! { "user_id": user_id };
+    collection
+        .find_one(filter)
+        .await
+        .inspect_err(|e| error!("Error finding user: {:?}", e))
+        .map_err(Into::into)
 }
 
 pub async fn find_user_by_id(_id: &str) -> Option<UserModel> {
@@ -114,7 +133,7 @@ pub async fn update_tokens_for_user(
 
     collection.update_one(filter, update).await?;
     let user = find_user_by_user_id(user_id)
-        .await
+        .await?
         .ok_or(anyhow!("User not found"))?;
     if user.token_expiry != token_expiry {
         anyhow::bail!("Token expiry not updated")
@@ -133,7 +152,7 @@ pub async fn logout(user_id: &str, session_token: &str) -> Result<()> {
     };
     collection.update_one(filter.clone(), update).await?;
     let user = find_user_by_user_id(user_id)
-        .await
+        .await?
         .ok_or(anyhow!("User not found"))?;
     if user.session_token.is_empty() {
         let update = doc! {

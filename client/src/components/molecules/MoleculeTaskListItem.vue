@@ -82,7 +82,6 @@ export default {
     },
     handleEnterClick(event) {
       if (event.key === 'Enter') {
-        console.log('Enter clicked');
         this.updateName(event); 
         event.target.blur();
       }
@@ -99,7 +98,6 @@ export default {
         return;
       }
       this.task.name = event.target.innerText;
-      console.log('updateName', this.task.name);
       this.updateTask();
       // this.disallowEdit();
     },

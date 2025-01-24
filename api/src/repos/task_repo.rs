@@ -1,9 +1,8 @@
-use core::error;
-
+use crate::domain::subtask::SubTaskModel;
 use crate::services::mongo::get_client;
 use crate::{domain::repeat::RepeatModel, routes::users::User};
 use anyhow::Result;
-use bson::{document, oid::ObjectId, to_bson, to_document, DateTime, Document};
+use bson::{oid::ObjectId, to_bson, to_document, DateTime, Document};
 use chrono::Utc;
 use futures::stream::TryStreamExt;
 use mongodb::bson;
@@ -26,6 +25,8 @@ pub struct TaskModel {
     pub repeat: RepeatModel,
     pub last_updated: Option<DateTime>,
     pub order: i64,
+    pub subtasks: Vec<SubTaskModel>,
+    pub comments: String,
 }
 
 impl TaskModel {
@@ -141,9 +142,9 @@ pub async fn get_inbox_tasks_for_user(
     get_tasks_without_snoozed(filter, completed).await
 }
 
-pub async fn get_task_by_id_for_user(user: User, id: String) -> Result<TaskModel> {
+pub async fn get_task_by_id_for_user(user: &User, id: &str) -> Result<TaskModel> {
     let collection = get_tasks_collection().await?;
-    let filter = doc! { "_id": ObjectId::parse_str(&id)?, "user_id": user.user_id };
+    let filter = doc! { "_id": ObjectId::parse_str(id)?, "user_id": user.user_id.clone() };
     let task = collection.find_one(filter).await?;
     match task {
         Some(task) => Ok(task),
@@ -179,7 +180,7 @@ pub async fn get_tasks_by_tag_for_user(
     get_tasks_without_snoozed(filter, completed).await
 }
 
-pub async fn add_task_for_user(user: User, task: TaskModel) -> Result<TaskModel> {
+pub async fn add_task_for_user(user: &User, task: TaskModel) -> Result<TaskModel> {
     if task.user_id != user.user_id {
         return Err(anyhow::anyhow!("Task user_id does not match user id"));
     }

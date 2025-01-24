@@ -1,5 +1,8 @@
+use std::thread;
+
 use crate::repos::users_repo::{self, UserModel};
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
+use delay::{Delay, Waiter};
 use google_jwt_signin::Client;
 use log::error;
 use oauth2::{
@@ -42,6 +45,7 @@ pub fn validate_token_and_get_user(token: &str, refresh_token: &Option<&str>) ->
         image_url: user_image,
         token_expiry: token_expiry as i64,
         session_token: vec![],
+        inbox_id: None,
     };
     Ok(user)
 }
@@ -72,9 +76,7 @@ pub async fn get_user_from_auth_code(auth_code: &str) -> Result<UserModel> {
     let refresh_token = token.refresh_token().map(|t| t.secret().as_str());
     let expires_in = token.expires_in().map(|x| x.as_secs()).unwrap_or(0);
     let token_expiry = expires_in as i64 + chrono::Utc::now().timestamp();
-    info!("got tokens and expiry");
     let user: UserModel = get_user_from_token(access_token, &refresh_token, token_expiry).await?;
-    info!("got user from token");
 
     Ok(user)
 }
@@ -109,6 +111,7 @@ pub async fn get_user_from_token(
         image_url,
         token_expiry,
         session_token: vec![],
+        inbox_id: None,
     };
     Ok(user)
 }
@@ -149,7 +152,7 @@ pub async fn get_user_from_session_token(session_token: &str) -> Result<UserMode
     let user = users_repo::find_user_by_session_token(session_token).await;
     let mut user = user.ok_or(anyhow::anyhow!("User not found"))?;
     if (user.token_expiry < chrono::Utc::now().timestamp()) {
-        warn!("Token expired, refreshing");
+        info!("Token expired, refreshing");
         user = refresh_token(user, session_token.to_string())
             .await
             .inspect_err(|e| error!("Error refreshing token: {:?}", e))?;
@@ -158,8 +161,24 @@ pub async fn get_user_from_session_token(session_token: &str) -> Result<UserMode
 }
 
 async fn refresh_token(user: UserModel, session_token: String) -> Result<UserModel> {
+    let mut result = refresh_token_inner(&user, &session_token).await;
+    let mut counter = 0;
+    let wait = Delay::exponential_backoff(std::time::Duration::from_millis(100), 2.0);
+    while result.is_err() {
+        result = refresh_token_inner(&user, &session_token).await;
+        counter += 1;
+        if counter > 3 {
+            break;
+        }
+        wait.wait();
+    }
+    result
+}
+
+async fn refresh_token_inner(user: &UserModel, session_token: &String) -> Result<UserModel> {
     let client = create_auth_client();
     let refresh_token = user
+        .clone()
         .refresh_token
         .ok_or(anyhow::anyhow!("No refresh token"))?;
     let token = client
@@ -177,7 +196,7 @@ async fn refresh_token(user: UserModel, session_token: String) -> Result<UserMod
         access_token.to_string(),
         None,
         user.token_expiry,
-        session_token,
+        session_token.clone(),
     )
     .await?;
     Ok(user)

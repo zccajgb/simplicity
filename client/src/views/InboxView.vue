@@ -15,7 +15,10 @@ export default {
   methods: {
   },
   async mounted() {
-    await this.getTasks(getInboxTasks, "inbox");
+    const inboxId = this.$store.getters.userInboxId;
+    await this.getTasks(getInboxTasks, (task) => {
+      return task.projectId === inboxId;
+    });
   },
 }
 </script>

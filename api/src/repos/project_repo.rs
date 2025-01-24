@@ -1,3 +1,4 @@
+use crate::repos::users_repo;
 use crate::{routes::users::User, services::mongo::get_client};
 use anyhow::{anyhow, Result};
 use bson::oid::ObjectId;
@@ -62,10 +63,10 @@ pub async fn add_project(user: User, project: ProjectModel) -> Result<ObjectId> 
     }
     let collection = get_projects_collection().await?;
     let project = collection.insert_one(project).await?;
-    Ok(project
+    project
         .inserted_id
         .as_object_id()
-        .ok_or(anyhow!("Failed to get inserted id"))?)
+        .ok_or(anyhow!("Failed to get inserted id"))
 }
 
 pub async fn get_inbox_id_for_user(user: User) -> Result<ObjectId> {
@@ -100,11 +101,14 @@ pub async fn does_inbox_exist_for_user(user: &User) -> Result<bool> {
 }
 
 pub async fn create_inbox_for_user(user: User) -> Result<ObjectId> {
+    let user_id = user.user_id.clone();
     let project = ProjectModel {
         _id: Some(ObjectId::new()),
         user_id: user.user_id.clone(),
         name: "inbox".into(),
         completed: false,
     };
-    add_project(user, project).await
+    let inbox_id = add_project(user, project).await?;
+    users_repo::set_inbox_id_for_user(&user_id, &inbox_id.to_string()).await?;
+    Ok(inbox_id)
 }

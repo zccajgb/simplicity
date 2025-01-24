@@ -19,11 +19,11 @@ pub enum RepeatModel {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RepeatDTO {
-    key: String,
-    freq: String,
-    day: String,
-    nth: String,
-    n: u32,
+    key: Option<String>,
+    freq: Option<String>,
+    day: Option<String>,
+    nth: Option<String>,
+    n: Option<u32>,
 }
 
 impl RepeatDTO {
@@ -31,46 +31,46 @@ impl RepeatDTO {
         match model {
             RepeatModel::None => None,
             RepeatModel::Daily => Some(RepeatDTO {
-                key: "daily".to_string(),
-                freq: "".to_string(),
-                day: "".to_string(),
-                nth: "0".to_string(),
-                n: 0,
+                key: Some("daily".to_string()),
+                freq: None,
+                day: None,
+                nth: None,
+                n: None,
             }),
             RepeatModel::Weekly => Some(RepeatDTO {
-                key: "weekly".to_string(),
-                freq: "".to_string(),
-                day: "".to_string(),
-                nth: "0".to_string(),
-                n: 0,
+                key: Some("weekly".to_string()),
+                freq: None,
+                day: None,
+                nth: None,
+                n: None,
             }),
             RepeatModel::Monthly => Some(RepeatDTO {
-                key: "monthly".to_string(),
-                freq: "".to_string(),
-                day: "".to_string(),
-                nth: "0".to_string(),
-                n: 0,
+                key: Some("monthly".to_string()),
+                freq: None,
+                day: None,
+                nth: None,
+                n: None,
             }),
             RepeatModel::Yearly => Some(RepeatDTO {
-                key: "yearly".to_string(),
-                freq: "".to_string(),
-                day: "".to_string(),
-                nth: "0".to_string(),
-                n: 0,
+                key: Some("yearly".to_string()),
+                freq: None,
+                day: None,
+                nth: None,
+                n: None,
             }),
             RepeatModel::EveryN { n, day, freq } => Some(RepeatDTO {
-                key: "everyN".to_string(),
-                freq,
-                day,
-                nth: "0".to_string(),
-                n,
+                key: Some("everyN".to_string()),
+                freq: Some(freq),
+                day: Some(day),
+                nth: None,
+                n: Some(n),
             }),
             RepeatModel::EveryNth { nth, day, freq } => Some(RepeatDTO {
-                key: "everyNth".to_string(),
-                freq,
-                day,
-                nth: RepeatDTO::nth_from(nth),
-                n: 0,
+                key: Some("everyNth".to_string()),
+                freq: Some(freq),
+                day: Some(day),
+                nth: Some(RepeatDTO::nth_from(nth)),
+                n: None,
             }),
         }
     }
@@ -101,21 +101,21 @@ impl RepeatDTO {
 
 impl RepeatDTO {
     pub fn to_model(&self) -> RepeatModel {
-        match self.key.as_str() {
+        match self.key.clone().unwrap_or("none".to_string()).as_str() {
             "none" => RepeatModel::None,
             "daily" => RepeatModel::Daily,
             "weekly" => RepeatModel::Weekly,
             "monthly" => RepeatModel::Monthly,
             "yearly" => RepeatModel::Yearly,
             "everyN" => RepeatModel::EveryN {
-                n: self.n,
-                day: self.day.clone(),
-                freq: self.freq.clone(),
+                n: self.n.unwrap_or(0),
+                day: self.day.clone().unwrap_or("0".to_string()),
+                freq: self.freq.clone().unwrap_or_default(),
             },
             "everyNth" => RepeatModel::EveryNth {
-                nth: RepeatDTO::nth_into(self.nth.clone()),
-                day: self.day.clone(),
-                freq: self.freq.clone(),
+                nth: RepeatDTO::nth_into(self.nth.clone().unwrap_or("0".to_string())),
+                day: self.day.clone().unwrap_or("0".to_string()),
+                freq: self.freq.clone().unwrap_or_default(),
             },
             _ => RepeatModel::None,
         }
@@ -131,6 +131,8 @@ impl RepeatModel {
 impl RepeatModel {
     pub fn create_repeat(&self, task: &TaskModel) -> Option<TaskModel> {
         let mut new_task = task.clone();
+        new_task._id = None;
+        new_task.completed = None;
         match self {
             RepeatModel::Daily => {
                 new_task.date = add_days(new_task.date, 1);
@@ -156,24 +158,15 @@ impl RepeatModel {
                 new_task.snooze = add_years(new_task.snooze, 1);
                 new_task.ttl = "later".to_string();
             }
-            RepeatModel::EveryNth { nth, day, freq } => match freq.as_str() {
-                "days" => {
+            RepeatModel::EveryNth { nth, day, freq } => {
+                if freq.as_str() == "days" {
                     new_task.date =
                         create_date_from_nth_day(new_task.date, day.clone(), *nth as i64);
                     new_task.snooze =
                         create_date_from_nth_day(new_task.date, day.clone(), *nth as i64);
                 }
-                // "weeks" => {
-                //     new_task.date = create_date_from_nth_week(new_task.date, *freq, *nth.into());
-                //     new_task.snooze = create_date_from_nth_week(new_task.date, *freq, *nth.into());
-                // }
-                // "months" => {
-                //     new_task.date = create_date_from_nth_month(new_task.date, *freq, *nth.into());
-                //     new_task.snooze = create_date_from_nth_month(new_task.date, *freq, *nth.into());
-                // }
-                _ => {}
-            },
-            RepeatModel::EveryN { n, day, freq } => match freq.as_str() {
+            }
+            RepeatModel::EveryN { n, day: _day, freq } => match freq.as_str() {
                 "days" => {
                     new_task.date = add_days(new_task.date, *n);
                     new_task.snooze = add_days(new_task.snooze, *n);
@@ -198,14 +191,12 @@ impl RepeatModel {
                 return None;
             }
         };
-        return Some(new_task);
+        Some(new_task)
     }
 }
 
 fn create_date_from_nth_day(date: Option<DateTime>, day: String, nth: i64) -> Option<DateTime> {
-    let Some(date) = date else {
-        return None;
-    };
+    let date = date?;
     let target_day = Weekday::from_str(day.as_str()).ok()?;
     let target_day_n_from_monday = target_day.number_from_monday() as i64;
 
@@ -237,40 +228,34 @@ fn create_date_from_nth_day(date: Option<DateTime>, day: String, nth: i64) -> Op
 }
 
 fn add_days(date: Option<DateTime>, days: u32) -> Option<DateTime> {
-    let Some(date) = date else {
-        return None;
-    };
+    let date = date?;
 
     let chrono_datetime = date.to_chrono();
 
     let new_datetime = chrono_datetime + Duration::days(days as i64);
 
     let new_date = DateTime::from_chrono(new_datetime);
-    return Some(new_date);
+    Some(new_date)
 }
 
 fn add_months(date: Option<DateTime>, months: u32) -> Option<DateTime> {
-    let Some(date) = date else {
-        return None;
-    };
+    let date = date?;
 
     let chrono_datetime = date.to_chrono();
 
     let new_datetime = chrono_datetime.checked_add_months(Months::new(months))?;
 
     let new_date = DateTime::from_chrono(new_datetime);
-    return Some(new_date);
+    Some(new_date)
 }
 
 fn add_years(date: Option<DateTime>, years: u32) -> Option<DateTime> {
-    let Some(date) = date else {
-        return None;
-    };
+    let date = date?;
 
     let chrono_datetime = date.to_chrono();
 
     let new_datetime = chrono_datetime.with_year(chrono_datetime.year() + years as i32)?;
 
     let new_date = DateTime::from_chrono(new_datetime);
-    return Some(new_date);
+    Some(new_date)
 }

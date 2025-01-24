@@ -6,13 +6,16 @@ export default {
   mutations: {
     addAlert(state, alert) {
       state.messages.push(alert);
+      if (state.messages.length > 3) {
+        state.messages.shift();
+      }
     },
     removeAlert(state, alert) {
       state.messages = state.messages.filter((a) => a.id !== alert.id);
     },
   },
   actions: {
-    SET_ALERT({ commit }, message) {
+    SET_ALERT({ commit, state }, message) {
       let alert = {
         title: "Success",
         type: "success",

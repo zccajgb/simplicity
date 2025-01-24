@@ -22,14 +22,16 @@ pub struct User {
     pub user_id: String,
     pub image_url: Option<String>,
     pub token_expiry: Option<i64>,
+    pub inbox_id: Option<String>,
 }
 
 impl User {
     pub fn from_user_model(model: users_repo::UserModel) -> Self {
         Self {
-            user_id: model.user_id.clone(),
-            image_url: model.image_url.clone(),
+            user_id: model.user_id,
+            image_url: model.image_url,
             token_expiry: Some(model.token_expiry),
+            inbox_id: model.inbox_id.map(|id| id.to_string()),
         }
     }
 }
@@ -44,10 +46,10 @@ pub async fn login_with_auth_code(
     let session_token = rand::thread_rng().gen::<u128>().to_string();
 
     let cookie = generate_session_cookie(session_token.clone()).map_api_err()?;
-    info!("creating cookie");
 
-    let db_user = users_repo::find_user_by_user_id(&token_user.user_id).await;
-
+    let db_user = users_repo::find_user_by_user_id(&token_user.user_id)
+        .await
+        .map_api_err()?;
     if db_user.is_some() {
         let user = users_repo::update_tokens_for_user(
             &token_user.user_id,
@@ -59,7 +61,6 @@ pub async fn login_with_auth_code(
         .await
         .map_api_err()?;
         jar.add(cookie);
-        info!("returning login");
         return Ok(Json(User::from_user_model(user)));
     }
 

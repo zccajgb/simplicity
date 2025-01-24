@@ -147,15 +147,27 @@ export default {
       await this.$store.dispatch('logout');
       window.location.reload();
     },
-  },
-  mounted() {
-    this.$store.dispatch('getProjects');
-    let selected = this.items.find(item => item.name === window.location.pathname.replace("/",""));
-    if (selected) {
-      this.selectedItemId = selected.id;
-      return;
+    setSelectedFromRoute(val) {
+      if (val.includes("projects")) {
+        this.type = "projects";
+        let id = val.split("/")[2];
+        this.selectedItemId = id;
+      } else if (val.includes("tags")) {
+        this.type = "tags";
+        let id = val.split("/")[2];
+        this.selectedItemId = id;
+      } else {
+        this.type = "main";
+        let selected = this.items.find(item => item.name === val);
+        this.selectedItemId = selected?.id;
+      }
     }
-    this.selectedItemId = 1;
-  } 
+  },
+  async mounted() {
+    await this.$store.dispatch('getProjects');
+    await this.getProjects();
+    let route = window.location.pathname;
+    this.setSelectedFromRoute(route);
+  }
 }
 </script>

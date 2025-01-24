@@ -61,14 +61,6 @@ export default {
       state.tasks.unshift(newItem);
     },
     setFilter(state, filter) {
-      console.log("filter", filter);
-      if (filter === "inbox") {
-        let inboxId = state.tasks[0]?.projectId;
-        console.log("inboxId: ", inboxId);
-        filter = (task) => {
-          return task.projectId === inboxId;
-        };
-      }
       state.filter = filter;
     },
     setGetter(state, getter) {
@@ -118,6 +110,7 @@ export default {
       try {
         let tasks = await state.getter();
         commit("setTasks", tasks);
+        clearTimeout(this.timeout);
         this.timeout = setTimeout(() => { dispatch("refreshTasks") }, 10000);    
       }
       catch (e) {

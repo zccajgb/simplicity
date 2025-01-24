@@ -1,5 +1,5 @@
 <template>
-  <aside v-if="task" class="fixed right-0 top-0 md:static h-screen bg-slate-500 text-slate-800" @click="close()" @focusout="saveTask()" >
+  <aside v-if="task" class="fixed right-0 top-0 md:static h-screen bg-slate-500 text-slate-800 flex flex-col" @click="close()" @focusout="saveTask()" >
     <div class="flex px-6 pt-8 w-full">
       <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="handleClickCheck"/>
       <div class="ml-6 mr-6 w-full">
@@ -11,7 +11,7 @@
       <AtomTTLSegmentButton v-model="task"/>
     </div>
     
-    <div class="h-[calc(100vh-9rem)] h-[calc(100dvh-9rem)]">
+    <div class="h-[calc(100vh-9rem)] h-[calc(100dvh-9rem)] relative">
       <div class="overflow-y-auto h-full">
         <div class="grid mt-2">
           <div class="grid grid-cols-2 pb-1 px-6 gap-1">
@@ -112,25 +112,25 @@
         </div>
       </div>
     </div>
-    
-    <div class="absolute bottom-0 w-full h-12">
+    <div 
+      v-if="showDelete"
+      class="flex w-full px-4 mb-1"
+    >
+      <div class="px-3 py-1 bg-slate-100 rounded-md mx-auto w-full mx-1 text-center">
+        <div class="inline-flex text-sm mr-2"> are you sure? </div>
+        <div class="inline-flex bg-slate-300 rounded-full ml-auto px-3 text-sm z-10 cursor-pointer" @click.stop="deleteTask">
+            <span class="text-center">delete</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="w-full h-12">
       <div class="flex"> 
         <div @click="$emit('close')" class="w-12 h-12 hover:bg-slate-300 flex">
           <ArrowRightIcon class="h-6 w-6 m-auto text-slate-100"/>
         </div>
         <div class="ml-auto w-12 h-12 flex hover:bg-slate-300" @click.stop="() => showDelete = !showDelete">
           <TrashIcon class="h-4 w-4 m-auto text-red-500"/>
-        </div>
-      </div>
-      <div 
-        v-if="showDelete"
-        class="absolute bottom-12 flex w-full px-4"
-      >
-        <div class="px-3 py-1 bg-slate-100 rounded-md mx-auto w-full mx-1 text-center">
-          <div class="inline-flex text-sm mr-2"> are you sure? </div>
-          <div class="inline-flex bg-slate-300 rounded-full ml-auto px-3 text-sm z-10 cursor-pointer" @click.stop="deleteTask">
-             <span class="text-center">delete</span>
-          </div>
         </div>
       </div>
     </div>
@@ -162,6 +162,7 @@ export default {
       showDelete: false,
       preventUpdate: false,
       modalVModel: {},
+      edited: false
     }
   },
   components: {
@@ -282,13 +283,12 @@ export default {
       this.showDelete = false;
       this.selector = null;
       this.saveTask();
-      this.$store.dispatch('updateTask', this.task);
     },
     async saveTask() {
-      if (this.preventUpdate) {
-        return;
-      }
-      this.$store.dispatch('updateTask', this.task);
+      if (this.preventUpdate) return;
+      if (!this.edited) return;
+      await this.$store.dispatch('updateTask', this.task);
+      this.edited = false;
     },
   },
   computed: {
@@ -319,6 +319,15 @@ export default {
   },
   beforeUnmount() {
     this.saveTask();
+  },
+  watch: {
+    task: {
+      handler() {
+        this.edited = true;
+      },
+      deep: true,
+      immediate: true,
+    }
   },
 }
 

@@ -32,8 +32,6 @@ export async function helperPut(uri, data) {
     let result = await axios.put(url, data);
     return result.data;
   } catch (error) {
-    console.log("helperPut error", error);
-    console.log("data", data);
     return handleError(error);
   }
 }
@@ -64,6 +62,7 @@ export async function handleLogout() {
 async function handleError(error) {
   if (error.status === 401) {
     store.dispatch('SET_ERROR', "request failed, testing authentication");
+    return { error: error.message };
     await setTimeout(() => {}, 500);
     try {
       await axios.get(`${apiUri}/ping`);

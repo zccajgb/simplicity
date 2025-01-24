@@ -1,6 +1,6 @@
 <template>
     <div class="relative h-full">
-      <div class="w-full max-h-screen overflow-y-scroll">
+      <div class="w-full max-w-[calc(100vh-3.5rem)] max-h-screen max-h-screen overflow-y-scroll">
         <ul>
           <AtomAddTaskInput v-model="showAdd" :saveFunction="addTask" ref="addTaskInput" @blur="showAdd=false"/>
           <Container @drop="drop">
@@ -88,8 +88,12 @@ export default {
       if (addedIndex < dropResult.removedIndex) {
         addedIndex--;
       }
-      const beforeTaskOrder = this.tasks[addedIndex]?.order ?? 0;
-      const afterTaskOrder = this.tasks[addedIndex + 1]?.order ?? beforeTaskOrder + 5000;
+
+      let afterTaskOrder = this.tasks[addedIndex + 1]?.order ?? 0;
+      if (this.tasks[addedIndex + 1].completed) {
+        afterTaskOrder = 0;
+      }
+      const beforeTaskOrder = this.tasks[addedIndex]?.order ?? afterTaskOrder + 5000;
       let newOrder = Math.round((afterTaskOrder + beforeTaskOrder) / 2);
       let movedTask = this.tasks[dropResult.removedIndex];
       movedTask.order = newOrder;

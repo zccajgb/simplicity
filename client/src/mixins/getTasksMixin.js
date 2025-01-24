@@ -7,7 +7,6 @@ export default {
   methods: {
     async getTasks(getter, filter) {
       this.loading = true;
-      console.log(getter);
       let tasks = await getter();
       this.$store.commit('setFilter', filter);
       this.$store.commit('setTasks', tasks); 

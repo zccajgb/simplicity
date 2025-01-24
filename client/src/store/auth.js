@@ -37,6 +37,7 @@ export default {
   getters: {
     isLoggedIn: state => state.isLoggedIn,
     user: state => state.user,
-    userIcon: state => state.icon
+    userIcon: state => state.icon,
+    userInboxId: state => state.user.inbox_id,
   }
 };

@@ -1,4 +1,5 @@
 use crate::domain::repeat::{RepeatDTO, RepeatModel};
+use crate::domain::subtask::{SubTaskDTO, SubTaskModel};
 use crate::repos::project_repo::{get_inbox_id_for_user, get_project_by_id_for_user};
 use crate::repos::tag_repo::get_tag_by_id_for_user;
 use crate::repos::task_repo::{
@@ -32,6 +33,8 @@ pub struct TaskDTO {
     pub snooze: Option<String>,
     pub repeat: Option<RepeatDTO>,
     pub order: Option<i64>,
+    pub subtasks: Option<Vec<SubTaskDTO>>,
+    pub comments: Option<String>,
 }
 
 impl TaskDTO {
@@ -48,6 +51,13 @@ impl TaskDTO {
             snooze: task.snooze.and_then(|d| d.try_to_rfc3339_string().ok()),
             repeat: RepeatDTO::from_model(task.repeat),
             order: Some(task.order),
+            subtasks: Some(
+                task.subtasks
+                    .into_iter()
+                    .map(|x| SubTaskDTO::from_subtask_model(x))
+                    .collect(),
+            ),
+            comments: (!task.comments.is_empty()).then(|| task.comments),
         }
     }
 
@@ -89,6 +99,14 @@ impl TaskDTO {
                 .unwrap_or(RepeatModel::None),
             last_updated: Some(DateTime::now()),
             order: self.order.unwrap_or(DateTime::now().timestamp_millis()),
+            subtasks: self
+                .subtasks
+                .unwrap_or_default()
+                .into_iter()
+                .map(|x| x.to_task_model())
+                .collect::<Result<Vec<SubTaskModel>>>()
+                .unwrap_or_default(),
+            comments: self.comments.unwrap_or("".to_string()),
         })
     }
     fn vec_from_task_model(tasks: Vec<TaskModel>) -> Vec<TaskDTO> {
@@ -176,7 +194,7 @@ pub async fn get_inbox_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
 
 #[get("/tasks/<id>")]
 pub async fn get_task_by_id(user: User, id: String) -> ApiJsonResult<TaskDTO> {
-    let task = get_task_by_id_for_user(user, id).await;
+    let task = get_task_by_id_for_user(&user, &id).await;
     map_and_return_task(task)
 }
 
@@ -260,14 +278,13 @@ pub async fn get_tasks_by_tag_with_completed(
 
 #[post("/tasks", data = "<task>")]
 pub async fn add_task(user: User, task: Json<TaskDTO>) -> ApiJsonResult<TaskDTO> {
-    info!("Adding task: {:?}", task);
     let task = task.into_inner();
 
     let task_result = create_task_guard(user.clone(), task.clone()).await;
     let task = task_result.map_api_err()?;
     let task_model = task.to_task_model().map_api_err()?;
 
-    let task_model = add_task_for_user(user, task_model).await;
+    let task_model = add_task_for_user(&user, task_model).await;
     let task = task_model.map(TaskDTO::from_task_model).map(Json);
     task.map_api_err()
 }
@@ -298,8 +315,9 @@ pub async fn update_task(user: User, id: String, task: Json<TaskDTO>) -> ApiJson
         error!("Task guard failed: {:?}", guard);
         return Err(ApiError::new(guard.to_string(), 400));
     }
-
     let task_model = task.to_task_model().map_api_err()?;
+    create_repeat(&task_model, &user).await?;
+
     let object_id = ObjectId::parse_str(&id).map_api_err()?;
     let task_model = update_task_for_user(user, object_id, task_model).await;
     let task = task_model.map(TaskDTO::from_task_model).map(Json);
@@ -309,11 +327,9 @@ pub async fn update_task(user: User, id: String, task: Json<TaskDTO>) -> ApiJson
 #[put("/tasks/<id>/complete")]
 pub async fn complete_task(user: User, id: String) -> ApiJsonResult<TaskDTO> {
     let object_id = ObjectId::parse_str(&id).map_api_err()?;
-    let task = get_task_by_id_for_user(user.clone(), id.clone()).await;
+    let task = get_task_by_id_for_user(&user, &id).await;
     let mut task = task.map_api_err()?;
-    if !task.repeat.is_none() {
-        let _new_task = task.repeat.create_repeat(&task);
-    }
+    create_repeat(&task, &user).await?;
     task.completed = Some(DateTime::now());
     task.order = task
         .completed
@@ -322,6 +338,37 @@ pub async fn complete_task(user: User, id: String) -> ApiJsonResult<TaskDTO> {
     let task = update_task_for_user(user, object_id, task).await;
     let task = task.map(TaskDTO::from_task_model).map(Json);
     task.map_api_err()
+}
+
+async fn create_repeat(task: &TaskModel, user: &User) -> ApiResult<()> {
+    let db_task = get_task_by_id_for_user(
+        user,
+        &task
+            ._id
+            .ok_or(anyhow!("no task id"))
+            .map_api_err()?
+            .to_string(),
+    )
+    .await
+    .map_api_err()?;
+    if task.completed.is_none() || db_task.completed.is_some() {
+        return Ok(());
+    }
+    if task.completed == db_task.completed {
+        return Ok(());
+    }
+
+    if !task.repeat.is_none() {
+        error!("task has a repeat");
+        let new_task = task.repeat.create_repeat(task);
+        if new_task.is_some() {
+            let new_task = add_task_for_user(user, new_task.expect("already checked"))
+                .await
+                .map_api_err()?;
+            error!("added task for user, {}", new_task.name)
+        };
+    }
+    Ok(())
 }
 
 async fn create_task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {

@@ -82,10 +82,11 @@ export default {
     },
     async getCount() {
       if (this.value === 'inbox') {
-        let tasks = await getInboxTasks();
-        this.taskCount = tasks.length;
+        const tasks = await getInboxTasks();
+        this.taskCount = tasks?.filter((task) => !task.completed)?.length || 0;
       } else if (this.value === 'today') {
-        this.taskCount = (await getTodayTasks()).filter((task) => !task.completed).length;
+        const tasks = await getTodayTasks();
+        this.taskCount = tasks?.filter((task) => !task.completed)?.length || 0;
       }
     }
   },
@@ -94,7 +95,6 @@ export default {
       this.logoutIcon = this.$store.getters.userIcon;
     }
     this.getCount();
-    console.log("count", this.taskCount);
     this.$store.subscribe((mutation,) => {
       const mutations = ["setTasks", "updateTask", "deleteTask", "updateTaskAndFilter", "addTask",]
       if (mutations.includes(mutation.type)) {
