@@ -1,5 +1,4 @@
 use dotenvy::dotenv_override;
-use pretty_env_logger;
 use rocket_cors::Cors;
 use rocket_cors::{AllowedOrigins, CorsOptions};
 use routes::projects;

@@ -78,6 +78,13 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: "/projects/edit/:projectId",
+      name: "projects/edit",
+      component: ProjectView,
+      meta: { requiresAuth: true },
+      props: { edit: true }
+    },
+    {
       path: "/tags/:tagId",
       name: "tags",
       component: TagView,

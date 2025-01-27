@@ -72,6 +72,10 @@ async function handleError(error) {
       return { error: error.message, data: null };
     }
   }
+  if (error.message.includes("request aborted")) {
+    console.warn("request aborted", error.message);
+    return { error: error.message, data: null };
+  }
   store.dispatch('SET_ERROR', error.message);
   return { error: error.message, data: null };
 }

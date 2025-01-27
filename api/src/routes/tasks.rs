@@ -182,7 +182,7 @@ pub async fn get_snoozed_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
 
 #[get("/tasks/inbox")]
 pub async fn get_inbox_tasks(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
-    let inbox_id = get_inbox_id_for_user(user.clone()).await;
+    let inbox_id = get_inbox_id_for_user(&user).await;
     match inbox_id {
         Ok(inbox_id) => {
             let tasks = get_inbox_tasks_for_user(user, inbox_id, false).await;
@@ -245,7 +245,7 @@ pub async fn get_snoozed_tasks_with_completed(user: User) -> ApiJsonResult<Vec<T
 
 #[get("/tasks/inbox/all")]
 pub async fn get_inbox_tasks_with_completed(user: User) -> ApiJsonResult<Vec<TaskDTO>> {
-    let inbox_id = get_inbox_id_for_user(user.clone()).await;
+    let inbox_id = get_inbox_id_for_user(&user).await;
     match inbox_id {
         Ok(inbox_id) => {
             let tasks = get_inbox_tasks_for_user(user, inbox_id, true).await;
@@ -387,7 +387,7 @@ async fn create_task_guard(user: User, task: TaskDTO) -> Result<TaskDTO> {
         task.user_id = Some(user.user_id.clone());
     }
     if task.project_id.is_none() {
-        task.project_id = get_inbox_id_for_user(user.clone())
+        task.project_id = get_inbox_id_for_user(&user)
             .await
             .ok()
             .map(|id| id.to_string());

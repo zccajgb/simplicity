@@ -2,9 +2,17 @@
   <aside v-if="task" class="fixed right-0 top-0 md:static h-screen bg-slate-500 text-slate-800 flex flex-col" @click="close()" @focusout="saveTask()" >
     <div class="flex px-6 pt-8 w-full">
       <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="handleClickCheck"/>
-      <div class="ml-6 mr-6 w-full">
-        <p class="text-xl text-white w-full" :class="task.completed ? 'line-through' : ''" contenteditable @blur="updateName"
-        v-text="task.name"></p>
+      <div class="ml-6 w-full">
+        <p 
+          class="text-xl text-white w-full" 
+          :class="task.completed ? 'line-through' : ''" 
+          contenteditable
+          @blur="updateName"
+          v-text="task.name"
+          @click="handleClickLink"
+          v-linkified
+        >
+        </p>
       </div>
     </div>
     <div class="flex my-4">
@@ -88,10 +96,12 @@
             ref="comments"
             class="w-full min-h-24 bg-slate-300 rounded py-4 px-4" 
             @blur="updateComments"
-            @focus="clearCommentPlaceholder"
-            contenteditable="true"
+            @focus="clearCommentPlaceholder()"
+            contenteditable
+            v-linkified
+            v-html="commentText"
+            @click="handleClickLink"
           >
-            {{ commentText }}
           </div>
         </div>
 
@@ -151,6 +161,7 @@ import { TrashIcon } from '@heroicons/vue/20/solid';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
+import linkify from 'vue-linkify';
 
 export default {
   props: ['selectedTaskId'],
@@ -162,7 +173,7 @@ export default {
       showDelete: false,
       preventUpdate: false,
       modalVModel: {},
-      edited: false
+      edited: false,
     }
   },
   components: {
@@ -186,9 +197,16 @@ export default {
     Square2StackIcon
   },
   directives: {
-    clickOutside: vueClickOutside
+    clickOutside: vueClickOutside,
+    linkified: linkify
   },
   methods: {
+    handleClickLink($event) {
+      if ($event.target.tagName === 'A') {
+        $event.preventDefault();
+        window.open($event.target.href, '_blank');
+      }
+    },
     deleteTask() {
       this.$store.dispatch('deleteTask', this.task.id);
       this.preventUpdate = true;
@@ -294,7 +312,7 @@ export default {
   computed: {
     commentText: {
       get() {
-        return this.showCommentPlaceholder ? 'Add a comment...' : this.task.comments;
+        return this.showCommentPlaceholder ? 'add a comment...' : this.task.comments;
       },
     },
     task: {

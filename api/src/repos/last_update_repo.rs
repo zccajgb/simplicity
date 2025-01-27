@@ -1,12 +1,9 @@
 use crate::services::mongo::get_client;
 
-use super::task_repo::{get_tasks_collection, get_tasks_inner, update_task_for_user, TaskModel};
 use anyhow::Result;
-use bson::oid::ObjectId;
 use chrono::Utc;
 use mongodb::bson::{doc, DateTime};
 use mongodb::{bson, Collection};
-use rocket::time::Date;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

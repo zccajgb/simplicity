@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use bson::{oid::ObjectId, DateTime};
+use bson::DateTime;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

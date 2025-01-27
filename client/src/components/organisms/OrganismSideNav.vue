@@ -18,6 +18,8 @@
           @filterItems="handleFilterProjects"
           @add="handleAddProject"
           :showNavMobile="showNavMobile"
+          @editProject="handleEditProject" 
+          type="projects"
           />
         </div>
         <div v-else-if="type==='tags'" class="h-full">
@@ -31,7 +33,8 @@
           header="tags"
           @filterItems="handleFilterTags"
           @add="handleAddTag"
-          :showNavMobile="showNavMobile" 
+          :showNavMobile="showNavMobile"
+          type="tags" 
           />
         </div>
          <div v-else class="h-full">
@@ -39,7 +42,8 @@
             v-model="items"
             :selectedItemId="selectedItemId"
             @select="handleSelect"
-            :showNavMobile="showNavMobile"  
+            :showNavMobile="showNavMobile" 
+            type="main"
           />
         </div>
       </ul>
@@ -105,6 +109,12 @@ export default {
       this.selectedItemId = item.id;
       this.$router.push({ name: "projects", params: { projectId: item.id } });
     },
+    handleEditProject(id) {
+      console.log("handle edit project", id);
+      this.showNavMobile = false;
+      this.selectedItemId = id;
+      this.$router.push({ name: "projects/edit", params: { projectId: id } });
+    },
     handleSelectTag(item) {
       this.selectedItemId = item.id;
       this.$router.push({ name: "tags", params: { tagId: item.id } });
@@ -132,9 +142,10 @@ export default {
     async handleAddProject(value) {
       if (value.trim() === '') return;
       const project = { name: value };
-      this.$store.dispatch('addProject', project);
-      this.projects = this.$store.getters.getProjectsWithoutInbox;
+      let projectId = await this.$store.dispatch('addProject', project);
+      this.getProjects();
       this.$refs.projects.showAdd = false;
+      this.$router.push({ name: "projects", params: { projectId: projectId } });
     },
     async handleAddTag(value) {
       if (value.trim() === '') return;

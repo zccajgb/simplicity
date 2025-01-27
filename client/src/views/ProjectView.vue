@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView v-if="!loading" v-model="tasks" selectedList="project" :projectId="projectId"/>
+  <OrganismDayView v-if="!loading" v-model="tasks" selectedList="project" :projectId="projectId" :editProject="edit"/>
 </template>
   
 <script>
@@ -11,6 +11,7 @@ export default {
   components: {
     OrganismDayView,
   },
+  props: ['edit'],
   data() {
     return {
       projectId: null,

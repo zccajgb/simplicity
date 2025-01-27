@@ -14,7 +14,7 @@
           />
           <div class="flex items-center mx-6 flex-auto my-auto">
               <p 
-                class="text-lg leading-6 min-w-12 px-2 pl-2 mr-6 pr-3" 
+                class="text-lg leading-6 min-w-12 px-2 pl-2 mr-6 pr-3 sm:pr-12" 
                 :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
@@ -23,7 +23,9 @@
                 @blur="updateName"
                 @focusout="updateName"
                 @keydown.enter.prevent="handleEnterClick"
-                v-text="task.name"
+                @click.stop="handleClickLink"
+                v-html="task.name"
+                v-linkified
               >
               </p>
             </div>
@@ -49,6 +51,7 @@
 import AtomCheckbox from '../atoms/AtomCheckbox.vue';
 import AtomTTL from '../atoms/AtomTTL.vue';
 import { BellSnoozeIcon } from '@heroicons/vue/24/solid';
+import linkify from 'vue-linkify';
 
 export default {
   props: [ 'taskId' ],
@@ -57,12 +60,22 @@ export default {
     AtomTTL,
     BellSnoozeIcon
   },
+  directives: {
+    linkified: linkify
+  },
   data() {
     return {
-      allowEdit: !this.$isMobile()
+      allowEdit: false
     }
   },
   methods: {
+    handleClickLink($event) {
+      if ($event.target.tagName === 'A') {
+        $event.preventDefault();
+        window.open($event.target.href, '_blank');
+      }
+      this.allowEdit = true;
+    },
     async handleClickIcon() {
       let ttl_next = {
           'today': 'tomorrow',
@@ -86,20 +99,18 @@ export default {
         event.target.blur();
       }
     },
-    // disallowEdit() {
-    //   if (this.$isMobile()) {
-    //     this.allowEdit = false;
-    //   }
-    // },
+    disallowEdit() {
+      this.allowEdit = false;
+    },
     updateName(event) {
       if (!event.target.innerText) {
         event.target.innerText = this.task.name;
-        // this.disallowEdit();
+        this.disallowEdit();
         return;
       }
       this.task.name = event.target.innerText;
       this.updateTask();
-      // this.disallowEdit();
+      this.disallowEdit();
     },
     updateTask() {
       this.$store.dispatch('updateTaskAndFilter', this.task);

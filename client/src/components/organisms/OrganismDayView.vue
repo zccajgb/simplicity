@@ -18,19 +18,26 @@
         class="w-[75vw] max-w-80"
       />
     </div>
-    <!-- <div v-if="dev" class="sticky bottom-10 right-24 text-4xl uppercase text-slate-500">
-      DEVELOPMENT
-    </div> -->
+    <div v-if="showEditProject">
+      <OrganismEditProject 
+        :selectedProjectId="projectId"
+        @close="allowEditProject=false"
+        class="w-[75vw] max-w-80"
+      />
+    </div>
   </div>
 </template>
   
 <script>
 import OrganismTaskList from '@/components/organisms/OrganismTaskList.vue';
 import OrganismSelectedTask from '@/components/organisms/OrganismSelectedTask.vue';
+import OrganismEditProject from '@/components/organisms/OrganismEditProject.vue';
+
 export default {
   components: {
     OrganismTaskList,
     OrganismSelectedTask,
+    OrganismEditProject
   },
   props: {
     selectedList: { 
@@ -48,12 +55,18 @@ export default {
     ttl: {
       type: String,
       required: false
+    },
+    editProject: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   data() {
     return {
       selectedTaskId: null,
-      dev: import.meta.env.DEV
+      dev: import.meta.env.DEV,
+      allowEditProject: true
     }
   },
   methods: {
@@ -72,6 +85,12 @@ export default {
     },
   },
   mounted() {
+  },
+  computed: {
+    showEditProject() {
+      console.log("showEditProject", this.allowEditProject, this.editProject);
+      return this.allowEditProject && this.editProject;
+    },
   },
   watch: {
     selectedTaskId() {

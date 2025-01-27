@@ -43,17 +43,25 @@
       >
         <p class="mx-auto my-auto text-xs"> {{ taskCount }} </p>
       </div>
+      <div 
+        v-if="selected && type==='projects'" 
+        class="my-auto items-center sm:block" 
+        :class="showNavMobile ? 'block' : 'hidden'"
+        @click.stop="editProject"
+      >
+        <Cog6ToothIcon class="h-6 w-6"/>
+      </div>
     </div>
   <!-- </li> -->
 </template>
 
 <script>
-import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon, BellSnoozeIcon, ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline';
+import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon, BellSnoozeIcon, ArrowTopRightOnSquareIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import IconCircle from '../icons/IconCircle.vue';
 import AtomText from '@/components/atoms/AtomText.vue';
 import { getTodayTasks, getInboxTasks } from '@/api/tasks';
 export default {
-  props: [ "value", "selected", "showNavMobile" ],
+  props: [ "id", "value", "selected", "showNavMobile", "type" ],
   components: {
     SunIcon,
     MoonIcon,
@@ -64,7 +72,8 @@ export default {
     MagnifyingGlassIcon,
     AtomText,
     BellSnoozeIcon,
-    ArrowTopRightOnSquareIcon
+    ArrowTopRightOnSquareIcon,
+    Cog6ToothIcon
   },
   data() {
     return {
@@ -76,6 +85,9 @@ export default {
     }
   },
   methods: {
+    editProject() {
+      this.$emit("editProject", this.id);
+    },
     showCount() {
       // return !this.selected && this.taskCount > 0;
       return this.taskCount > 0;

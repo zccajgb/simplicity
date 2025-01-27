@@ -107,11 +107,12 @@ export default {
       commit("updateTaskAndFilter", taskRes);
     },
     async refreshTasks({ commit, state, dispatch }) {
+      console.log("refreshing tasks");
       try {
         let tasks = await state.getter();
         commit("setTasks", tasks);
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => { dispatch("refreshTasks") }, 10000);    
+        this.timeout = setTimeout(() => { dispatch("refreshTasks") }, 60000);    
       }
       catch (e) {
         console.error("could not get tasks: ", e);

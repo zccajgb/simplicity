@@ -18,8 +18,11 @@
     :key="item.id" 
     :value="item.name"
     :selected="selectedItemId === item.id"
+    :id="item.id"
     @click="$emit('select', item)"
     :showNavMobile="showNavMobile"
+    :type="type"
+    @editProject="(value) => $emit('editProject', value)"
     />
     <div v-if="addable" class="">
       <AtomAddInput 
@@ -75,6 +78,10 @@ export default {
     showNavMobile: {
       type: Boolean,
       default: false
+    },
+    type: {
+      type: String,
+      required: true
     }
   },
   data() {

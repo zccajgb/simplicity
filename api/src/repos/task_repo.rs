@@ -212,3 +212,14 @@ pub async fn delete_task_for_user(user: User, id: String) -> Result<()> {
     }
     Ok(())
 }
+
+pub async fn move_all_tasks_for_project_to_inbox(user: User, project_id: &ObjectId) -> Result<()> {
+    let inbox_id = user
+        .inbox_id
+        .ok_or_else(|| anyhow::anyhow!("No inbox found"))?;
+    let collection = get_tasks_collection().await?;
+    let filter = doc! { "user_id": user.user_id, "project_id": project_id };
+    let update = doc! { "$set": { "project_id": ObjectId::parse_str(inbox_id)? } };
+    collection.update_many(filter, update).await?;
+    Ok(())
+}

@@ -151,8 +151,7 @@ fn create_auth_client() -> BasicClient {
 pub async fn get_user_from_session_token(session_token: &str) -> Result<UserModel> {
     let user = users_repo::find_user_by_session_token(session_token).await;
     let mut user = user.ok_or(anyhow::anyhow!("User not found"))?;
-    if (user.token_expiry < chrono::Utc::now().timestamp()) {
-        info!("Token expired, refreshing");
+    if user.token_expiry < chrono::Utc::now().timestamp() {
         user = refresh_token(user, session_token.to_string())
             .await
             .inspect_err(|e| error!("Error refreshing token: {:?}", e))?;
@@ -168,6 +167,7 @@ async fn refresh_token(user: UserModel, session_token: String) -> Result<UserMod
         result = refresh_token_inner(&user, &session_token).await;
         counter += 1;
         if counter > 3 {
+            error!("error refreshing token, giving up. {:?}", result);
             break;
         }
         wait.wait();
@@ -185,10 +185,7 @@ async fn refresh_token_inner(user: &UserModel, session_token: &String) -> Result
         .exchange_refresh_token(&RefreshToken::new(refresh_token))
         .request_async(async_http_client)
         .await
-        .map_err(|e| {
-            error!("Error refreshing token: {:?}", e);
-            anyhow::anyhow!("Error refreshing token")
-        })?;
+        .map_err(|e| anyhow::anyhow!("Error refreshing token"))?;
 
     let access_token = token.access_token().secret().as_str();
     let user = users_repo::update_tokens_for_user(
