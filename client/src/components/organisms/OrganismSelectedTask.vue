@@ -4,7 +4,7 @@
       <AtomCheckbox :done="task.completed" class="h-8 w-8 text-slate-100" @click="handleClickCheck"/>
       <div class="ml-6 w-full">
         <p 
-          class="text-xl text-white w-full" 
+          class="text-xl text-white w-full text-transform-none" 
           :class="task.completed ? 'line-through' : ''" 
           contenteditable
           @blur="updateName"
@@ -94,7 +94,7 @@
         <div class="px-6">
           <div 
             ref="comments"
-            class="w-full min-h-24 bg-slate-300 rounded py-4 px-4" 
+            class="w-full min-h-24 bg-slate-300 rounded py-4 px-4 text-transform-none" 
             @blur="updateComments"
             @focus="clearCommentPlaceholder()"
             contenteditable
@@ -350,3 +350,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.text-transform-none {
+  text-transform: none;
+}
+</style>

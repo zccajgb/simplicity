@@ -14,7 +14,7 @@
           />
           <div class="flex items-center mx-6 flex-auto my-auto">
               <p 
-                class="text-lg leading-6 min-w-12 px-2 pl-2 mr-6 pr-3 sm:pr-12" 
+                class="text-lg leading-6 min-w-12 px-2 pl-2 mr-6 pr-3 sm:pr-12 text-transform-none" 
                 :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
@@ -131,3 +131,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.text-transform-none {
+  text-transform: none;
+}
+</style>
