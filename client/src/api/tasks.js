@@ -69,7 +69,7 @@ export async function updateTask(task) {
     console.error("updateTask: task name is not set. Task: ", task);
     return;
   }
-  let uri = `tasks/${task.id}`;
+  let uri = `tasks/${task._id}`;
   return await helperPut(uri, task);
 }
 

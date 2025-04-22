@@ -63,11 +63,7 @@ pub async fn set_inbox_id_for_user(user_id: &str, inbox_id: &str) -> Result<User
     let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
     let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
     let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
-    error!(
-        "formatted url: {}/users/{}",
-        couch_url,
-        user._id.clone().unwrap()
-    );
+
     let client = create_http_client(&couch_url);
     let res = client
         .put(format!("{}/users/{}", couch_url, user._id.clone().unwrap()))
@@ -95,20 +91,43 @@ async fn find_user(query: Value) -> Result<Option<UserModel>> {
     let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
 
     let client = create_http_client(&couch_url);
-
+    error!("couch url: {}", couch_url);
     let res = client
         .post(format!("{}/users/_find", couch_url))
         .basic_auth(&username, Some(&password))
         .json(&query)
         .send()
         .await?;
+
+    if let Err(e) = res.error_for_status_ref() {
+        let body = res.text().await?;
+        error!(
+            "Error finding user: Status: {:?}, Body: {:?}: Request Body: {:?}",
+            e, body, query
+        );
+        return Ok(None);
+    };
+
     let json = res.json::<Value>().await.ok();
     let Some(json) = json else {
         return Ok(None);
     };
-    let user: Vec<UserModel> = serde_json::from_value(json["docs"].clone())
-        .inspect_err(|e| error!("Error deserializing user: {:?}", e))?;
+    if json.get("error").is_some() {
+        let error = json.get("reason").and_then(|x| x.as_str());
+        return Err(anyhow::anyhow!(
+            "Error finding user by id: {:?}",
+            error.unwrap_or("unknown error")
+        ));
+    }
+
+    let user: Vec<UserModel> = serde_json::from_value(json["docs"].clone()).inspect_err(|e| {
+        error!(
+            "Find User: Error deserializing user: {:?}. Json: {:?}",
+            e, json
+        )
+    })?;
     if user.is_empty() {
+        error!("Find User: No user found matching query: {:?}", query);
         return Ok(None);
     }
     Ok(Some(user[0].clone()))
@@ -118,7 +137,6 @@ pub async fn find_user_by_id(_id: &str) -> Result<Option<UserModel>> {
     let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
     let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
     let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
-
     let client = create_http_client(&couch_url);
 
     let res = client
@@ -131,13 +149,22 @@ pub async fn find_user_by_id(_id: &str) -> Result<Option<UserModel>> {
         return Ok(None);
     };
 
+    if json.get("error").is_some() {
+        let error = json.get("reason").and_then(|x| x.as_str());
+        return Err(anyhow::anyhow!(
+            "Error finding user by id: {:?}",
+            error.unwrap_or("unknown error")
+        ));
+    }
+
     let user: UserModel = serde_json::from_value(json)
         .inspect_err(|e| error!("Error deserializing user in find user by id: {:?}", e))?;
     Ok(Some(user))
 }
 
 pub async fn find_user_by_session_token(session_token: &str) -> Option<UserModel> {
-    let filter = json!({ "session_token": session_token });
+    let filter =
+        json!({ "selector": { "session_token": { "$elemMatch": { "$eq": session_token } } } });
     let user = find_user(filter).await;
     match user {
         Ok(Some(user)) => Some(user),

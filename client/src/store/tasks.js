@@ -65,7 +65,7 @@ export default {
       state.tasks = state.tasks.filter(task => task._id !== id);
     },
     updateTaskAndFilter(state, newItem) {
-      let item = state?.tasks?.find(task => task._id === newItem.id);
+      let item = state?.tasks?.find(task => task._id === newItem._id);
       if (!item) return;
       Object.assign(item, newItem);
   

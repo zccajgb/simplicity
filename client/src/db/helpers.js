@@ -3,6 +3,8 @@ import find from 'pouchdb-find';
 import store from '@/store/index.js';
 PouchDB.plugin(find);
 
+const couchDbUrl = import.meta.env.VITE_COUCHDB_URL;
+
 export async function getJwt() {
   return await store.dispatch('getJwt');
 }
@@ -16,7 +18,7 @@ export async function getDb(dbNamePrefix) {
     console.error("error in getDb", e);
   }
   const jwt = await getJwt();
-  const remote = "http://192.168.1.56:5984/" + dbName;
+  const remote = couchDbUrl + '/' + dbName;
   const remoteDb = new PouchDB(remote, {
     fetch: (url, opts) => {
       opts.headers.set('Authorization', `Bearer ${jwt}`);
@@ -26,20 +28,20 @@ export async function getDb(dbNamePrefix) {
   const opts= { 
     live: true,
   };
-  // try {
-  //   db.replicate.to(remoteDb, opts, function(err) {
-  //     if (err) {
-  //       console.error(err);
-  //     }
-  //   });
-  //   db.replicate.from(remoteDb, opts, function(err) {
-  //     if (err) {
-  //       console.error(err);
-  //     }
-  //   });
-  // } catch (e) {
-  //   console.error("error in from", e);
-  // }
+  try {
+    db.replicate.to(remoteDb, opts, function(err) {
+      if (err) {
+        console.error(err);
+      }
+    });
+    db.replicate.from(remoteDb, opts, function(err) {
+      if (err) {
+        console.error(err);
+      }
+    });
+  } catch (e) {
+    console.error("error in from", e);
+  }
   return db;
 }
 

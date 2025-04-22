@@ -12,10 +12,10 @@ export default {
       state.projects.push(value);
     },
     deleteProject(state, id) {
-      state.projects = state.projects.filter(project => project.id !== id);
+      state.projects = state.projects.filter(project => project._id !== id);
     },
     updateProject(state, newItem) {
-      let item = state?.projects?.find(project => project.id === newItem.id);
+      let item = state?.projects?.find(project => project._id === newItem._id);
       if (!item) return;
       Object.assign(item, newItem);
     },
@@ -28,7 +28,7 @@ export default {
         return;
       }
       commit("addProject", projRes);
-      return projRes.id;
+      return projRes._id;
     },
     async getProjects({ commit }) {
       let projects = await getProjects();
@@ -37,7 +37,7 @@ export default {
     async updateProject({ commit, rootGetters }, project) {
       commit("updateTask", project);
       const inboxId = rootGetters['userInboxId'];
-      if (project.id === inboxId) {
+      if (project._id === inboxId) {
         console.error("Cannot update inbox project");
         return;
       } 
@@ -59,8 +59,8 @@ export default {
   },
   getters: {
     getAllProjects: state => state.projects,
-    getProjectById: state => id => state.projects.find(project => project.id === id),
-    getProjectNameById: state => id => state.projects.find(project => project.id === id)?.name,
+    getProjectById: state => id => state.projects.find(project => project._id === id),
+    getProjectNameById: state => id => state.projects.find(project => project._id === id)?.name,
     getProjectByIndex: state => index => state.projects[index],
     getProjectsWithoutInbox: state => state.projects.filter(project => project.name !== "inbox"),
   },

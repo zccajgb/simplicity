@@ -217,6 +217,7 @@ pub fn create_jwt(user: &User) -> Result<String> {
         .checked_add_signed(chrono::Duration::seconds(3600))
         .expect("valid timestamp")
         .timestamp() as usize;
+    error!("creating jwt for user: {:?}", user);
     let claims = Claims {
         sub: user.user_id.clone(),
         exp: expiration,

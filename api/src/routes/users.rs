@@ -53,7 +53,6 @@ pub async fn login_with_auth_code(
         .await
         .map_api_err()?;
     if db_user.is_some() {
-        error!("db user is some!!!");
         let user = users_repo::update_tokens_for_user(
             &token_user.user_id,
             token_user.access_token,
@@ -65,7 +64,6 @@ pub async fn login_with_auth_code(
         .map_api_err()?;
         jar.add(cookie);
         let user = User::from_user_model(user);
-        error!("returning user, {:?}", user);
         return Ok(Json(user));
     }
 

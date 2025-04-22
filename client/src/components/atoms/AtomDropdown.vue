@@ -4,7 +4,7 @@
       {{ display }}
     </div>
     <div v-if="isOpen" class="absolute mt-2 bg-white shadow-lg rounded-md focus-within:block w-full">
-      <div v-for="item in items" :key="item.id" class="px-1 py-2 hover:bg-gray-200 w-full">
+      <div v-for="item in items" :key="item._id" class="px-1 py-2 hover:bg-gray-200 w-full">
         <div @click="selectItem(item)" class="mx-auto justify-center">{{item}} </div>
       </div>
     </div>

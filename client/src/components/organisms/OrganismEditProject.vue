@@ -81,7 +81,7 @@ export default {
     },
     async deleteProject() {
       this.preventUpdate = true;
-      await this.$store.dispatch('deleteProject', this.project.id);
+      await this.$store.dispatch('deleteProject', this.project._id);
       window.location.assign("/inbox");
     },
     updateName(event) {

@@ -19,6 +19,7 @@ export default {
       if (user === null) {
         state.user = null;
         state.icon = null;
+        state.jwt = null
         return;
       }
       state.user = user;

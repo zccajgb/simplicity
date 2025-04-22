@@ -106,8 +106,8 @@ export default {
       this.$router.push({ name: item.name });
     },
     handleSelectProject(item) {
-      this.selectedItemId = item.id;
-      this.$router.push({ name: "projects", params: { projectId: item.id } });
+      this.selectedItemId = item._id;
+      this.$router.push({ name: "projects", params: { projectId: item._id } });
     },
     handleEditProject(id) {
       this.showNavMobile = false;
@@ -115,8 +115,8 @@ export default {
       this.$router.push({ name: "projects/edit", params: { projectId: id } });
     },
     handleSelectTag(item) {
-      this.selectedItemId = item.id;
-      this.$router.push({ name: "tags", params: { tagId: item.id } });
+      this.selectedItemId = item._id;
+      this.$router.push({ name: "tags", params: { tagId: item._id } });
     },
     async handleFilterProjects($event) {
       if (!$event || $event === "") {
@@ -169,7 +169,7 @@ export default {
       } else {
         this.type = "main";
         let selected = this.items.find(item => item.name === val);
-        this.selectedItemId = selected?.id;
+        this.selectedItemId = selected?._id;
       }
     }
   },
