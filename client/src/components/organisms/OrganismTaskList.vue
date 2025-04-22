@@ -69,10 +69,11 @@ export default {
   methods: {
     async addTask(taskName) {
       this.showAdd = false;
+      const projectId = this.projectId ? this.projectId : this.$store.getters.userInboxId
       const task = new Task(taskName,
         this.$store.getters.userId, //todo
         null,
-        this.projectId ? this.projectId : this.$store.getters.userInboxId,
+        projectId,
         this.tag ? [this.tag] : [],
         this.date ?? null,
         null,
