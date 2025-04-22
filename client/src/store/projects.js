@@ -1,4 +1,4 @@
-import { addProject, getProjects, updateProject, deleteProject } from "@/api/projects";
+import { addProject, getProjects, updateProject, deleteProject } from "@/db/projects";
 
 export default {
   state: {
@@ -27,23 +27,18 @@ export default {
         console.error(projRes.error);
         return;
       }
-      console.log("Project added", projRes);
       commit("addProject", projRes);
       return projRes.id;
     },
     async getProjects({ commit }) {
-      let projRes = await getProjects();
-      if (projRes.error) {
-        console.error(projRes.error);
-        return;
-      }
-      commit("setProjects", projRes);
+      let projects = await getProjects();
+      commit("setProjects", projects);
     },
     async updateProject({ commit, rootGetters }, project) {
       commit("updateTask", project);
       const inboxId = rootGetters['userInboxId'];
       if (project.id === inboxId) {
-        console.log("Cannot update inbox project");
+        console.error("Cannot update inbox project");
         return;
       } 
 
@@ -57,7 +52,7 @@ export default {
       }
       commit("updateProject", res);
     },
-    async deleteProject({ commit, dispatch }, projectId) {
+    async deleteProject({ commit }, projectId) {
       await deleteProject(projectId);
       commit("deleteProject", projectId);
     },

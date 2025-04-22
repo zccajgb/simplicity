@@ -17,6 +17,8 @@
     "deep-equal": "^2.2.3",
     "jwt-decode": "^4.0.0",
     "pinia": "^2.2.4",
+    "pouchdb": "^9.0.0",
+    "pouchdb-find": "^9.0.0",
     "register-service-worker": "^1.7.2",
     "vue": "^3.5.12",
     "vue-click-outside": "^1.1.0",

@@ -1,24 +1,23 @@
-use std::collections;
+use serde_json::{json, Value};
 
-use crate::services::mongo::get_client;
-use anyhow::{anyhow, Result};
-use bson::oid::ObjectId;
-use futures::stream::TryStreamExt;
-use mongodb::bson::doc;
-use mongodb::Collection;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
+
+use super::couchdb_repo::create_http_client;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserModel {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub _id: Option<ObjectId>,
+    pub _id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub _rev: Option<String>,
     pub user_id: String,
     pub access_token: String,
     pub refresh_token: Option<String>,
     pub image_url: Option<String>,
     pub token_expiry: i64,
     pub session_token: Vec<String>,
-    pub inbox_id: Option<ObjectId>,
+    pub inbox_id: Option<String>,
 }
 
 impl UserModel {
@@ -30,75 +29,124 @@ impl UserModel {
     }
 }
 
-pub async fn get_users_collection() -> Result<Collection<UserModel>> {
-    let client = get_client().await?;
-    let db = client.database("simplicity");
-    let collection = db.collection::<UserModel>("users");
-    Ok(collection)
-}
-
 pub async fn add_user(user: UserModel) -> Result<UserModel> {
-    let collection = get_users_collection().await?;
-    let res = collection.insert_one(user).await?;
-    let id = res
-        .inserted_id
-        .as_object_id()
-        .ok_or(anyhow!("No id found"))?;
-    info!("Inserted user with id: {:?}", id);
-    let inserted_user = find_user_by_id(&id.to_string()).await;
-    inserted_user.ok_or(anyhow!("User not found in db after adding"))
+    let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
+    let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
+    let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
+
+    let client = create_http_client(&couch_url);
+    let res = client
+        .post(format!("{}/users", couch_url))
+        .basic_auth(&username, Some(&password))
+        .json(&user)
+        .send()
+        .await?;
+
+    let json = res.json::<Value>().await?;
+
+    let id: &str = json["id"]
+        .as_str()
+        .ok_or(anyhow::anyhow!("Failed to get id"))?;
+    find_user_by_id(id)
+        .await?
+        .ok_or(anyhow::anyhow!("add_user: User not found"))
 }
 
 pub async fn set_inbox_id_for_user(user_id: &str, inbox_id: &str) -> Result<UserModel> {
-    let collection = get_users_collection().await?;
-    let filter = doc! { "user_id": user_id };
-    let oid = ObjectId::parse_str(inbox_id).inspect_err(|e| error!("Error parsing id: {:?}", e))?;
-    let update = doc! {
-        "$set": { "inbox_id": oid }
-    };
-    collection.update_one(filter, update).await?;
+    let mut user = find_user_by_user_id(user_id).await?.ok_or(anyhow::anyhow!(
+        "set_inbox_id_for_user 1: User not found: {:?}",
+        user_id
+    ))?;
+
+    user.inbox_id = Some(inbox_id.to_string());
+
+    let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
+    let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
+    let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
+    error!(
+        "formatted url: {}/users/{}",
+        couch_url,
+        user._id.clone().unwrap()
+    );
+    let client = create_http_client(&couch_url);
+    let res = client
+        .put(format!("{}/users/{}", couch_url, user._id.clone().unwrap()))
+        .basic_auth(&username, Some(&password))
+        .json(&user)
+        .send()
+        .await;
+
+    let json = res?.json::<Value>().await?;
+
     let user = find_user_by_user_id(user_id)
         .await?
-        .ok_or(anyhow!("User not found"))?;
-    if user.inbox_id.map(|x| x.to_string()) != Some(inbox_id.to_string()) {
-        anyhow::bail!("Inbox id not updated");
-    }
+        .ok_or(anyhow::anyhow!("set_inbox_id_for_user 2: User not found"))?;
     Ok(user)
 }
 
 pub async fn find_user_by_user_id(user_id: &str) -> Result<Option<UserModel>> {
-    let collection = get_users_collection().await;
-    let collection = collection.inspect_err(|e| error!("Error getting collection: {:?}", e))?;
-    let filter = doc! { "user_id": user_id };
-    collection
-        .find_one(filter)
-        .await
-        .inspect_err(|e| error!("Error finding user: {:?}", e))
-        .map_err(Into::into)
+    let filter = json!({ "selector": { "user_id": user_id } });
+    find_user(filter).await
 }
 
-pub async fn find_user_by_id(_id: &str) -> Option<UserModel> {
-    let collection = get_users_collection().await;
-    let collection = collection
-        .inspect_err(|e| error!("Error getting collection: {:?}", e))
-        .ok()?;
-    let oid = ObjectId::parse_str(_id)
-        .inspect_err(|e| error!("Error parsing id: {:?}", e))
-        .ok()?;
-    let filter = doc! { "_id":  oid };
-    let user = collection.find_one(filter).await.ok().flatten();
+async fn find_user(query: Value) -> Result<Option<UserModel>> {
+    let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
+    let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
+    let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
 
-    user
+    let client = create_http_client(&couch_url);
+
+    let res = client
+        .post(format!("{}/users/_find", couch_url))
+        .basic_auth(&username, Some(&password))
+        .json(&query)
+        .send()
+        .await?;
+    let json = res.json::<Value>().await.ok();
+    let Some(json) = json else {
+        return Ok(None);
+    };
+    let user: Vec<UserModel> = serde_json::from_value(json["docs"].clone())
+        .inspect_err(|e| error!("Error deserializing user: {:?}", e))?;
+    if user.is_empty() {
+        return Ok(None);
+    }
+    Ok(Some(user[0].clone()))
+}
+
+pub async fn find_user_by_id(_id: &str) -> Result<Option<UserModel>> {
+    let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
+    let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
+    let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
+
+    let client = create_http_client(&couch_url);
+
+    let res = client
+        .get(format!("{}/users/{}", couch_url, _id))
+        .basic_auth(&username, Some(&password))
+        .send()
+        .await?;
+    let json = res.json::<Value>().await.ok();
+    let Some(json) = json else {
+        return Ok(None);
+    };
+
+    let user: UserModel = serde_json::from_value(json)
+        .inspect_err(|e| error!("Error deserializing user in find user by id: {:?}", e))?;
+    Ok(Some(user))
 }
 
 pub async fn find_user_by_session_token(session_token: &str) -> Option<UserModel> {
-    let collection = get_users_collection().await;
-    let collection = collection
-        .inspect_err(|e| error!("Error getting collection: {:?}", e))
-        .ok()?;
-    let filter = doc! { "session_token": session_token };
-    let user = collection.find_one(filter).await.ok().flatten();
-    user
+    let filter = json!({ "session_token": session_token });
+    let user = find_user(filter).await;
+    match user {
+        Ok(Some(user)) => Some(user),
+        Ok(None) => None,
+        Err(e) => {
+            error!("Error finding user by session token: {:?}", e);
+            None
+        }
+    }
 }
 
 pub async fn update_tokens_for_user(
@@ -108,61 +156,69 @@ pub async fn update_tokens_for_user(
     token_expiry: i64,
     session_token: String,
 ) -> Result<UserModel> {
-    let collection = get_users_collection().await?;
-    let filter = doc! { "user_id": user_id };
-    let mut update = doc! {
-        "$set":
-            {
-                "access_token": access_token.clone(),
-                "refresh_token": refresh_token.clone(),
-                "token_expiry": token_expiry
-            },
-        "$push": { "session_token": session_token.clone() }
-    };
+    let mut user = find_user_by_user_id(user_id)
+        .await?
+        .ok_or(anyhow::anyhow!("updating_tokens_for_user: User not found"))?;
+    user.access_token = access_token;
+    user.refresh_token = refresh_token;
+    user.token_expiry = token_expiry;
+    user.session_token.push(session_token.clone());
 
-    if refresh_token.is_none() {
-        update = doc! {
-            "$set":
-                {
-                    "access_token": access_token.clone(),
-                    "token_expiry": token_expiry
-                },
-            "$push": { "session_token": session_token.clone() }
-        };
+    let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
+    let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
+    let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
+
+    let client = create_http_client(&couch_url);
+    let res = client
+        .put(format!("{}/users/{}", couch_url, user._id.clone().unwrap()))
+        .basic_auth(&username, Some(&password))
+        .json(&user)
+        .send()
+        .await?;
+
+    let json = res.json::<Value>().await?;
+    if json.get("error").is_some() {
+        let error = json.get("reason").and_then(|x| x.as_str());
+        return Err(anyhow::anyhow!(
+            "Error updating tokens for user: {:?}",
+            error.unwrap_or("unknown error")
+        ));
     }
-
-    collection.update_one(filter, update).await?;
     let user = find_user_by_user_id(user_id)
         .await?
-        .ok_or(anyhow!("User not found"))?;
-    if user.token_expiry != token_expiry {
-        anyhow::bail!("Token expiry not updated")
-    }
-    if !user.session_token.contains(&session_token) {
-        anyhow::bail!("Refresh token not updated");
-    }
+        .ok_or(anyhow::anyhow!("update_tokens_for_user: User not found"))?;
     Ok(user)
 }
 
-pub async fn logout(user_id: &str, session_token: &str) -> Result<()> {
-    let collection = get_users_collection().await?;
-    let filter = doc! { "user_id": user_id };
-    let update = doc! {
-        "$pull": { "session_token": session_token }
-    };
-    collection.update_one(filter.clone(), update).await?;
+pub async fn logout(user_id: &str, session_token: &str) -> Result<UserModel> {
+    let mut user = find_user_by_user_id(user_id)
+        .await?
+        .ok_or(anyhow::anyhow!("logout: User not found"))?;
+
+    user.session_token.retain(|x| *x != session_token);
+
+    if user.session_token.is_empty() {
+        user.access_token = "".to_string();
+        user.refresh_token = None;
+        user.token_expiry = 0;
+    }
+
+    let username = std::env::var("COUCHDB_USER").expect("COUCHDB_USER must be set");
+    let password = std::env::var("COUCHDB_PASSWORD").expect("COUCHDB_PASSWORD must be set");
+    let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
+
+    let client = create_http_client(&couch_url);
+    let res = client
+        .put(format!("{}/users/{}", couch_url, user._id.clone().unwrap()))
+        .basic_auth(&username, Some(&password))
+        .json(&user)
+        .send()
+        .await;
+
+    res.inspect_err(|e| error!("Error updating inbox id for user: {:?}", e))?;
+
     let user = find_user_by_user_id(user_id)
         .await?
-        .ok_or(anyhow!("User not found"))?;
-    if user.session_token.is_empty() {
-        let update = doc! {
-            "$set": {
-            "access_token": "",
-            "refresh_token": None::<String>,
-            "token_expiry": 0
-            }
-        };
-        collection.update_one(filter, update).await?;
-    }
-    Ok(())
+        .ok_or(anyhow::anyhow!("logout: User not found"))?;
+    Ok(user)
 }

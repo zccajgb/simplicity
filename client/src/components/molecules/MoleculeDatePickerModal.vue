@@ -33,6 +33,9 @@ export default {
         return this.modelValue;
       },
       set(value) {
+        if (typeof value === 'string' || typeof value === 'number') {
+          value = new Date(value);
+        }
         this.$emit('update:modelValue', value);
         this.$emit('close');
       }

@@ -8,7 +8,7 @@
         @selected="handleClickTask($event)"
         :projectId="projectId"
         :tagId="tagId"
-        :ttl="ttl"
+        :date="date"
       />
     </div>
     <div v-if="selectedTaskId!=null">
@@ -52,8 +52,8 @@ export default {
       type: Number,
       required: false
     },
-    ttl: {
-      type: String,
+    date: {
+      type: Date,
       required: false
     },
     editProject: {
@@ -88,7 +88,6 @@ export default {
   },
   computed: {
     showEditProject() {
-      console.log("showEditProject", this.allowEditProject, this.editProject);
       return this.allowEditProject && this.editProject;
     },
   },

@@ -1,3 +1,4 @@
+import { getTomorrow } from "./ttlHelper";
 export default {
   data() {
     return {
@@ -5,12 +6,33 @@ export default {
     }
   },
   methods: {
-    async getTasks(getter, filter) {
+    async getTasks(query, filter, includeSnoozed = false) {
+      if (!includeSnoozed) {
+        if (query.$or) {
+          query = {
+            $and: [
+              query,
+              { $or: [
+                { snooze: { $eq: null } }, 
+                { snooze: { $lt: getTomorrow() } },
+              ] }
+            ]
+          };
+          console.log(query);
+        } else {
+          query = {
+              ...query,
+              $or: [
+                { snooze: { $eq: null } }, 
+                { snooze: { $lt: getTomorrow() } },
+              ]
+          }
+        }
+      }
       this.loading = true;
-      let tasks = await getter();
       this.$store.commit('setFilter', filter);
-      this.$store.commit('setTasks', tasks); 
-      this.$store.commit("setGetter", getter); 
+      this.$store.commit("setQuery", query);
+      this.$store.dispatch("getTasks");
       this.loading = false;
     }
   }

@@ -9,7 +9,6 @@
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getAllTasks } from '@/api/tasks';
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
 import getTasksMixin from '@/mixins/getTasksMixin';
 
@@ -30,7 +29,9 @@ export default {
     }
   },
   async mounted() {
-    await this.getTasks(getAllTasks, (tasks) => tasks); 
+    const filter = () => { return true };
+    const query = {};
+    await this.getTasks(query, filter);
   },
   computed: {
     tasks: {

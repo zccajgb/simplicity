@@ -4,15 +4,15 @@
         <ul>
           <AtomAddTaskInput v-model="showAdd" :saveFunction="addTask" ref="addTaskInput" @blur="showAdd=false"/>
           <Container @drop="drop">
-            <Draggable v-for="task in tasks" :key="task.id">
+            <Draggable v-for="task in tasks" :key="task._id">
               <MoleculeTaskListItem 
-                  :id="task.id"
-                  :taskId="task.id" 
-                  @click.stop="$emit('selected', task.id)"
+                  :id="task._id"
+                  :taskId="task._id" 
+                  @click.stop="$emit('selected', task._id)"
                   class="w-full"
                   :class="{ 
-                    'mt-16': dropTarget === task.id,
-                    'mx-0 px-0 left-0 fixed': dragTarget === task.id,
+                    'mt-16': dropTarget === task._id,
+                    'mx-0 px-0 left-0 fixed': dragTarget === task._id,
                     'hide': !filter(task),
                   }"
                 />
@@ -37,6 +37,7 @@ import MoleculeTaskListItem from '@/components/molecules/MoleculeTaskListItem.vu
 import AtomAddButtonLarge from '@/components/atoms/AtomAddButtonLarge.vue';
 import AtomAddTaskInput from '@/components/atoms/AtomAddTaskInput.vue';
 import { Container, Draggable } from 'vue-dndrop';
+import { Task } from '@/models/task.js';
 
 export default {
   components: {
@@ -55,8 +56,8 @@ export default {
       type: Number,
       required: false
     },
-    ttl: {
-      type: String,
+    date: {
+      type: Date,
       required: false
     }
   },
@@ -68,14 +69,20 @@ export default {
   methods: {
     async addTask(taskName) {
       this.showAdd = false;
-      const task = {
-        name: taskName,
-        completed: null,
-        projectId: this.projectId ? this.projectId : null,
-        tags: this.tag ? [this.tag] : [],
-        depends: [],
-        ttl: this.ttl ? this.ttl : "later"
-      };
+      const task = new Task(taskName,
+        this.$store.getters.userId, //todo
+        null,
+        this.projectId ? this.projectId : this.$store.getters.userInboxId,
+        this.tag ? [this.tag] : [],
+        this.date ?? null,
+        null,
+        "",//todo
+        Date.now(),//order should be timestamp,
+        [],
+        "",
+        new Date(),
+        [],
+      );
       this.$store.dispatch('addTask', task);
     },
     handleKeyDown(event) {
@@ -97,7 +104,7 @@ export default {
       let newOrder = Math.round((afterTaskOrder + beforeTaskOrder) / 2);
       let movedTask = this.tasks[dropResult.removedIndex];
       movedTask.order = newOrder;
-      this.$store.dispatch('reorderTask', movedTask);
+      this.$store.dispatch('updateTask', movedTask);
     },
   },
   mounted() {

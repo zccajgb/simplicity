@@ -1,10 +1,6 @@
 use dotenvy::dotenv_override;
 use rocket_cors::Cors;
 use rocket_cors::{AllowedOrigins, CorsOptions};
-use routes::projects;
-use routes::scheduled;
-use routes::tags;
-use routes::tasks;
 use routes::users;
 use services::fairing::AuthFairing;
 use services::logger::TimestampLogger;
@@ -32,11 +28,7 @@ fn rocket() -> _ {
         info!("Running in production mode");
     }
     rocket::build()
-        .mount("/", tags::get_routes())
-        .mount("/", tasks::get_routes())
-        .mount("/", projects::get_routes())
         .mount("/", users::get_routes())
-        .mount("/", scheduled::get_routes())
         .attach(AuthFairing)
 }
 

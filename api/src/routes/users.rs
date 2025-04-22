@@ -3,13 +3,15 @@ use rocket::http::CookieJar;
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 
+use crate::repos::couchdb_repo;
 use crate::repos::project_repo;
 use crate::repos::users_repo;
 use crate::services::api_error::ApiJsonResult;
 use crate::services::api_error::{ApiResult, ResultExt};
+use crate::services::auth::create_jwt;
 use crate::services::auth::{generate_session_cookie, get_user_from_auth_code};
 pub fn get_routes() -> Vec<rocket::Route> {
-    routes![public, login_with_auth_code, logout, ping]
+    routes![public, login_with_auth_code, logout, ping, get_jwt_for_user]
 }
 
 #[derive(Serialize, Deserialize)]
@@ -51,6 +53,7 @@ pub async fn login_with_auth_code(
         .await
         .map_api_err()?;
     if db_user.is_some() {
+        error!("db user is some!!!");
         let user = users_repo::update_tokens_for_user(
             &token_user.user_id,
             token_user.access_token,
@@ -61,15 +64,27 @@ pub async fn login_with_auth_code(
         .await
         .map_api_err()?;
         jar.add(cookie);
-        return Ok(Json(User::from_user_model(user)));
+        let user = User::from_user_model(user);
+        error!("returning user, {:?}", user);
+        return Ok(Json(user));
     }
 
     let db_user = users_repo::add_user(token_user).await.map_api_err()?;
-    let _user_inbox = project_repo::create_inbox_for_user(User::from_user_model(db_user.clone()))
+    info!("added user to repo");
+    let user = User::from_user_model(db_user);
+    couchdb_repo::create_db_for_user(user.clone())
         .await
         .map_api_err()?;
-
-    Ok(Json(User::from_user_model(db_user)))
+    info!("created db for user");
+    let inbox_id = couchdb_repo::create_inbox_for_user(user.clone())
+        .await
+        .map_api_err()?;
+    info!("created inbox for user");
+    users_repo::set_inbox_id_for_user(&user.user_id, &inbox_id)
+        .await
+        .map_api_err()?;
+    info!("set inbox id for user");
+    Ok(Json(user))
 }
 
 #[get("/logout")]
@@ -92,4 +107,10 @@ pub async fn public() -> &'static str {
 #[get("/ping")]
 pub async fn ping() -> &'static str {
     "pong"
+}
+
+#[get("/jwt")]
+pub async fn get_jwt_for_user(user: User) -> ApiResult<String> {
+    let jwt = create_jwt(&user).map_api_err()?;
+    Ok(jwt)
 }

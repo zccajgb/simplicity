@@ -174,6 +174,7 @@ export default {
       preventUpdate: false,
       modalVModel: {},
       edited: false,
+      task: null,
     }
   },
   components: {
@@ -208,7 +209,7 @@ export default {
       }
     },
     deleteTask() {
-      this.$store.dispatch('deleteTask', this.task.id);
+      this.$store.dispatch('deleteTask', this.task._id);
       this.preventUpdate = true;
       this.$emit("close");
     },
@@ -241,7 +242,10 @@ export default {
       return this.formatDate(date);
     },
     formatDate(date) {
-      if (typeof date === 'string') {
+      if (!date) {
+        return '';
+      }
+      if (typeof date === 'string' || typeof date === 'number') {
         date = new Date(date);
       }
       if (date.getFullYear() !== new Date().getFullYear()) {
@@ -305,8 +309,8 @@ export default {
     async saveTask() {
       if (this.preventUpdate) return;
       if (!this.edited) return;
-      await this.$store.dispatch('updateTask', this.task);
       this.edited = false;
+      this.task = await this.$store.dispatch('updateTask', this.task);
     },
   },
   computed: {
@@ -315,19 +319,13 @@ export default {
         return this.showCommentPlaceholder ? 'add a comment...' : this.task.comments;
       },
     },
-    task: {
-      get() {
-        return this.$store.getters.getTaskById(this.selectedTaskId);
-      },
-      set(value) {
-        this.$store.dispatch('updateTask', value);
-      }
-    },
     projectName() {
       return this.$store.getters.getProjectNameById(this.task.projectId);
     }
   },
   async mounted() {
+    this.task = this.$store.getters.getTaskById(this.selectedTaskId);
+    console.log(this.task);
     if (!this.task) {
       return;
     }
@@ -340,13 +338,17 @@ export default {
   },
   watch: {
     task: {
-      handler() {
+      handler(newTask, oldTask) {
+        if (!oldTask) {
+          return;
+        }
         this.edited = true;
       },
       deep: true,
       immediate: true,
     }
   },
+
 }
 
 </script>

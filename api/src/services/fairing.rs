@@ -27,14 +27,14 @@ impl Fairing for AuthFairing {
 
         let cookie = request.cookies().get("session_token");
         let Some(cookie) = cookie else {
-            error!("Error in fairing, No token found");
+            // error!("Error in fairing, No token found");
             request.local_cache(|| Status::Unauthorized);
             return;
         };
 
         let session_token = cookie.value();
         if let Err(e) = get_user_from_session_token(session_token).await {
-            error!("Error in fairing, Invalid token. {:?}", e);
+            // error!("Error in fairing, Invalid token. {:?}", e);
             request.local_cache(|| Status::Unauthorized);
             return;
         };

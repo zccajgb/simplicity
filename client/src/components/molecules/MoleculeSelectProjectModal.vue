@@ -24,8 +24,8 @@
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
-import { getTags, addTag } from '@/api/tags';
-import { getAllTasks } from '@/api/tasks';
+import { getTags, addTag } from '@/db/tags';
+import { getAllTasks } from '@/db/tasks';
 import MoleculeMenuItem from './MoleculeMenuItem.vue';
 export default {
   props: ['modelValue', 'itemtype', 'multiselect'],

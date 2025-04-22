@@ -5,7 +5,7 @@
         <div class="h-full p-4 hover:bg-slate-400" @click="$emit('back')">
           <ArrowLeftIcon class="h-6 w-6"/>
         </div>
-        <div class="inline-flex ml-6 items-center justify-center">  
+        <div v-if="showNavMobile" class="inline-flex ml-6 items-center justify-center">  
           <p class="text-lg" >{{header}}</p>
         </div>
       </div>

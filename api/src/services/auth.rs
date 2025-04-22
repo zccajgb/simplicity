@@ -1,19 +1,22 @@
-use std::thread;
-
-use crate::repos::users_repo::{self, UserModel};
+use crate::{
+    repos::users_repo::{self, UserModel},
+    routes::users::User,
+};
 use anyhow::{anyhow, Context, Result};
+use chrono::Utc;
 use delay::{Delay, Waiter};
 use google_jwt_signin::Client;
+use jsonwebtoken::{encode, EncodingKey, Header};
 use log::error;
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, RedirectUrl, RefreshToken, TokenResponse, TokenUrl,
 };
-use rand::Rng;
 use rocket::{
     http::{Cookie, SameSite},
     time::{Duration, OffsetDateTime},
 };
+use serde::{Deserialize, Serialize};
 
 pub fn validate_token(token: &str) -> Result<()> {
     let client_id = std::env::var("GOOGLE_CLIENT_ID").expect("GOOGLE_CLIENT_ID must be set");
@@ -39,6 +42,7 @@ pub fn validate_token_and_get_user(token: &str, refresh_token: &Option<&str>) ->
 
     let user = UserModel {
         _id: None,
+        _rev: None,
         user_id: user_id.to_string(),
         access_token: token.to_string(),
         refresh_token: refresh_token.map(|s| s.to_string()),
@@ -105,6 +109,7 @@ pub async fn get_user_from_token(
         .to_string();
     let user = UserModel {
         _id: None,
+        _rev: None,
         user_id: user_id.to_string(),
         access_token: access_token.to_string(),
         refresh_token: refresh_token.map(|s| s.to_string()),
@@ -197,4 +202,34 @@ async fn refresh_token_inner(user: &UserModel, session_token: &String) -> Result
     )
     .await?;
     Ok(user)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    sub: String,
+    exp: usize,
+    // iat: usize,
+    // roles: Vec<String>,
+}
+
+pub fn create_jwt(user: &User) -> Result<String> {
+    let expiration = Utc::now()
+        .checked_add_signed(chrono::Duration::seconds(3600))
+        .expect("valid timestamp")
+        .timestamp() as usize;
+    let claims = Claims {
+        sub: user.user_id.clone(),
+        exp: expiration,
+        // iat: Utc::now().timestamp() as usize,
+        // roles: vec![String::from("editor")],
+    };
+
+    let secret = std::env::var("COUCHDB_JWT_SECRET").expect("no secret defined");
+
+    let token = encode(
+        &Header::default(),
+        &claims,
+        &EncodingKey::from_secret(secret.as_ref()),
+    )?;
+    Ok(token)
 }

@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import { getTags, addTag } from '@/api/tags';
+import { getTags, addTag } from '@/db/tags';
 import MoleculeSideNavGroup from '../molecules/MoleculeSideNavGroup.vue';
 import MoleculeSideNavItem from '../molecules/MoleculeSideNavItem.vue';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
@@ -110,7 +110,6 @@ export default {
       this.$router.push({ name: "projects", params: { projectId: item.id } });
     },
     handleEditProject(id) {
-      console.log("handle edit project", id);
       this.showNavMobile = false;
       this.selectedItemId = id;
       this.$router.push({ name: "projects/edit", params: { projectId: id } });

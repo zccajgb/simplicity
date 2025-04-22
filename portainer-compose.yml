@@ -16,6 +16,7 @@ services:
       RUST_LOG_STYLE: pretty
       PROD: true
       REDIRECT_URL: https://simplicity.buckleyresearch.com
+      COUCHDB_JWT_SECRET: ${COUCHDB_JWT_SECRET}
 
   client:
     image: zccajgb/simplicity-client:latest

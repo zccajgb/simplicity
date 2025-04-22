@@ -59,7 +59,7 @@
 import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon, BellSnoozeIcon, ArrowTopRightOnSquareIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import IconCircle from '../icons/IconCircle.vue';
 import AtomText from '@/components/atoms/AtomText.vue';
-import { getTodayTasks, getInboxTasks } from '@/api/tasks';
+import { getTodayTasks, getInboxTasks } from '@/db/tasks';
 export default {
   props: [ "id", "value", "selected", "showNavMobile", "type" ],
   components: {
@@ -94,7 +94,7 @@ export default {
     },
     async getCount() {
       if (this.value === 'inbox') {
-        const tasks = await getInboxTasks();
+        const tasks = await getInboxTasks(this.$store.getters.userInboxId);
         this.taskCount = tasks?.filter((task) => !task.completed)?.length || 0;
       } else if (this.value === 'today') {
         const tasks = await getTodayTasks();
@@ -108,7 +108,7 @@ export default {
     }
     this.getCount();
     this.$store.subscribe((mutation,) => {
-      const mutations = ["setTasks", "updateTask", "deleteTask", "updateTaskAndFilter", "addTask",]
+      const mutations = ["setTasks", "updateTask", "deleteTask", "addTask",]
       if (mutations.includes(mutation.type)) {
         this.getCount();
       }

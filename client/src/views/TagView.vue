@@ -4,7 +4,6 @@
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getTasksByTagId } from '@/api/tasks';
 import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
@@ -22,9 +21,9 @@ export default {
   },
   async mounted() {
     this.tagId = this.$route.params.tagId;
-    await this.getTasks(() => getTasksByTagId(this.tagId), (task) => {
-        return task.tagId === this.tagId;
-    });
+    const filter = (task) => { return task.tagId === this.tagId };
+    const query = { tagId: this.tagId };
+    this.getTasks(query, filter);
   },
   watch: {
     '$route.params.tagId': {
