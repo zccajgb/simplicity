@@ -7,6 +7,7 @@
     @blur="handleBlur" 
     @keyup.enter="handleEnter"
     :value="defaultValue"
+    autocapitalize="off"
   />
 </template>
 

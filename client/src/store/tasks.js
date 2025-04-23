@@ -26,7 +26,6 @@ const sortWithFilter = (tasks, filter) => {
 };
 
 const checkAndCreateRepeat = async (dispatch, task) => {
-  console.log("checking repeat, completed", task.completed);
   if (!task.completed) {
     return;
   }
@@ -34,11 +33,9 @@ const checkAndCreateRepeat = async (dispatch, task) => {
     return;
   }
   const dbTask = await getTaskById(task._id);
-  console.log("checking repeat, dbTask", dbTask.completed);
   if (!dbTask.completed) {
     const repeatTask = createRepeat(toRaw(task));
     if (repeatTask) {
-      console.log("created repeat", repeatTask);
       dispatch("addTask", repeatTask);
     }
   }
@@ -110,8 +107,9 @@ export default {
         console.error(taskRes.error);
         return;
       }
-      return await getTaskById(task._id);
-      // dispatch("getTasks");
+      let newTask = await getTaskById(task._id);
+      commit("updateTask", newTask);
+      // await dispatch("getTasks");
     },
     // async refreshTasks({ commit, state, dispatch }) {
     //   console.log("refreshing tasks");

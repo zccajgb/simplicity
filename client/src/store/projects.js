@@ -1,4 +1,5 @@
 import { addProject, getProjects, updateProject, deleteProject } from "@/db/projects";
+import { moveTasksToInbox } from "@/db/tasks";
 
 export default {
   state: {
@@ -21,14 +22,14 @@ export default {
     },
   },
   actions: {
-    async addProject({ commit }, project) {
+    async addProject({ commit, dispatch }, project) {
       let projRes = await addProject(project);
       if (projRes.error) {
         console.error(projRes.error);
         return;
       }
-      commit("addProject", projRes);
-      return projRes._id;
+      await dispatch("getProjects");
+      return projRes.id;
     },
     async getProjects({ commit }) {
       let projects = await getProjects();
@@ -52,7 +53,10 @@ export default {
       }
       commit("updateProject", res);
     },
-    async deleteProject({ commit }, projectId) {
+    async deleteProject({ commit, rootGetters }, projectId) {
+      console.log("deleting project", projectId);
+      const inboxId = rootGetters['userInboxId'];
+      await moveTasksToInbox(projectId, inboxId);
       await deleteProject(projectId);
       commit("deleteProject", projectId);
     },

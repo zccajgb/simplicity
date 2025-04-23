@@ -68,14 +68,14 @@ export default {
   data() {
     return {
       items: [
-        { id: 4, name: 'inbox' },
-        { id: 1, name: 'today' },
-        { id: 2, name: 'tomorrow' },
-        { id: 3, name: 'later' },
-        { id: 5, name: 'projects' },
-        { id: 6, name: 'tags' },
-        { id: 7, name: 'search' },
-        { id: 8, name: 'snoozed' }
+        { _id: 4, name: 'inbox' },
+        { _id: 1, name: 'today' },
+        { _id: 2, name: 'tomorrow' },
+        { _id: 3, name: 'later' },
+        { _id: 5, name: 'projects' },
+        { _id: 6, name: 'tags' },
+        { _id: 7, name: 'search' },
+        { _id: 8, name: 'snoozed' }
       ],
       projects: [],
       tags: [],
@@ -90,7 +90,7 @@ export default {
       this.selectedItemId = null;
     },
     async handleSelect(item) {
-      if (this.selectedItemId === item.id) return;
+      if (this.selectedItemId === item._id) return;
       if (item.name === 'projects') {
         this.type = 'projects';
         await this.getProjects();
@@ -109,10 +109,10 @@ export default {
       this.selectedItemId = item._id;
       this.$router.push({ name: "projects", params: { projectId: item._id } });
     },
-    handleEditProject(id) {
+    handleEditProject(_id) {
       this.showNavMobile = false;
-      this.selectedItemId = id;
-      this.$router.push({ name: "projects/edit", params: { projectId: id } });
+      this.selectedItemId = _id;
+      this.$router.push({ name: "projects/edit", params: { projectId:_id } });
     },
     handleSelectTag(item) {
       this.selectedItemId = item._id;
@@ -160,15 +160,15 @@ export default {
     setSelectedFromRoute(val) {
       if (val.includes("projects")) {
         this.type = "projects";
-        let id = val.split("/")[2];
-        this.selectedItemId = id;
+        let _id = val.split("/")[2];
+        this.selectedItemId = _id;
       } else if (val.includes("tags")) {
         this.type = "tags";
-        let id = val.split("/")[2];
-        this.selectedItemId = id;
+        let _id = val.split("/")[2];
+        this.selectedItemId = _id;
       } else {
         this.type = "main";
-        let selected = this.items.find(item => item.name === val);
+        let selected = this.items.find(item => item.name === val.slice(1));
         this.selectedItemId = selected?._id;
       }
     }
@@ -178,6 +178,11 @@ export default {
     await this.getProjects();
     let route = window.location.pathname;
     this.setSelectedFromRoute(route);
-  }
+  },
+  watch: {
+    $route(to, from) {
+      this.setSelectedFromRoute(to.path);
+    }
+  },
 }
 </script>

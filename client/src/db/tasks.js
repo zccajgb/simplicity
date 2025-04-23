@@ -55,3 +55,12 @@ export async function getTodayTasks() {
   const taskRes = await findTasks({ date: { $lte : today } } );
   return taskRes.docs;
 }
+
+export async function moveTasksToInbox(projectId, inboxId) {
+  const tasks = await findTasks({ projectId: projectId });
+  if (tasks.docs.length === 0) return;
+  await tasks.docs.forEach(async task => {
+    task.projectId = inboxId;
+    await updateTask(task);
+  });
+}

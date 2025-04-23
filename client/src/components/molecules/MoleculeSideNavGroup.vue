@@ -15,10 +15,10 @@
     </div>
     <MoleculeSideNavItem
     v-for="item in items" 
-    :key="item.id" 
+    :key="item._id" 
     :value="item.name"
-    :selected="selectedItemId === item.id"
-    :id="item.id"
+    :selected="selectedItemId === item._id"
+    :id="item._id"
     @click="$emit('select', item)"
     :showNavMobile="showNavMobile"
     :type="type"

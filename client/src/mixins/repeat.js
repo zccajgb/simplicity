@@ -33,11 +33,9 @@ export function createRepeat(task) {
     if (task.repeat.key === "everynth") {
       const n = nthToN(newTask.repeat.nth);
       const dayOfWeek = dayOfWeekToInt(task.repeat.day);
-      console.log("n", n);
       newTask.date = getNthWeekday(newTask.date.getFullYear(), newTask.date.getMonth() + 1, dayOfWeek, n);
     }
   task.repeat = null;
-  console.log("created repeat", newTask.date);
   return newTask;
 }
 
@@ -46,16 +44,11 @@ function getNthWeekday(year, month, dayOfWeek, n) {
     console.error("n is negative", n);
     throw new Error("n is negative");
   }
-  console.log("nth", n);
   const firstOfMonth = new Date(year, month, 1);
   const firstDay = firstOfMonth.getDay(); // 0 (Sunday) to 6 (Saturday)
-  console.log("firstDay", firstDay);
-  console.log("dayOfWeek", dayOfWeek);
   const offset = (dayOfWeek - firstDay + 7) % 7;
-  console.log("offset", offset);
   const day = 1 + offset + (n - 1) * 7;
   const result = new Date(year, month, day);
-  console.log("result", year, month, day);
   return result.getMonth() === month ? result : getNthWeekday(year, month, dayOfWeek, n-1);
 }
 

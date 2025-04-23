@@ -86,7 +86,7 @@ export default {
   },
   methods: {
     editProject() {
-      this.$emit("editProject", this._id);
+      this.$emit("editProject", this.id);
     },
     showCount() {
       // return !this.selected && this.taskCount > 0;

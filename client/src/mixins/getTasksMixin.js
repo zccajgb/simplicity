@@ -18,7 +18,6 @@ export default {
               ] }
             ]
           };
-          console.log(query);
         } else {
           query = {
               ...query,

@@ -9,8 +9,9 @@
           contenteditable
           @blur="updateName"
           v-text="task.name"
-          @click="handleClickLink"
+          @click.stop="handleClickLink"
           v-linkified
+
         >
         </p>
       </div>
@@ -310,7 +311,8 @@ export default {
       if (this.preventUpdate) return;
       if (!this.edited) return;
       this.edited = false;
-      this.task = await this.$store.dispatch('updateTask', this.task);
+      await this.$store.dispatch('updateTask', this.task);
+      // this.task = await this.$store.dispatch('updateTask', this.task);
     },
   },
   computed: {
@@ -325,7 +327,6 @@ export default {
   },
   async mounted() {
     this.task = this.$store.getters.getTaskById(this.selectedTaskId);
-    console.log(this.task);
     if (!this.task) {
       return;
     }
