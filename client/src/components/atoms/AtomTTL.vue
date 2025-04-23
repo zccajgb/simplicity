@@ -14,9 +14,10 @@ import { SunIcon, MoonIcon } from '@heroicons/vue/24/outline';
 import { SunIcon as SunIconFilled, MoonIcon as MoonIconFilled } from '@heroicons/vue/24/solid';
 import IconCircle from '../icons/IconCircle.vue';
 import IconCircleFilled from '../icons/IconCircleFilled.vue';
+import { getTtl } from '@/mixins/ttlHelper';
 
 export default {
-  props: [ "ttl", "selected"],
+  props: [ "date", "selected", "ttlString"],
   components: {
     SunIcon,
     MoonIcon,
@@ -28,6 +29,14 @@ export default {
   methods: {
   },
   mounted() {
+  },
+  computed: {
+    ttl() {
+      if (this.ttlString) {
+        return this.ttlString;
+      }
+      return getTtl(this.date);
+    }
   }
 }
 

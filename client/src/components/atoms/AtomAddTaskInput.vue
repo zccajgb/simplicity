@@ -1,14 +1,18 @@
 <template>
-  <div v-show="model" class="flex w-full p-1 border border-slate-300 min-h-16">
+  <div v-show="model" 
+    class="flex w-full border border-slate-300 min-h-16 p-1"
+    >
     <input 
       type="text"
       ref="input" 
       class="flex w-full rounded mx-4 h-12 px-4 my-auto text-slate-500 text-lg leading-6"
-      @blur="handleBlur" 
+      @blur="handleBlur"
       @keyup.enter="handleEnter"
-      :value="defaultValue"
-    />
-  </div>
+      :value="inputValue"
+      autocapitalize="off"
+      />
+      <XMarkIcon @mousedown="clearText" class="hover:text-slate-800 h-12 w-12 absolute right-5 top-2 text-slate-500 p-2"/>
+    </div>
 </template>
 
 <script>
@@ -18,7 +22,12 @@ It needs three things to work:
 - A modelValue (to show or hide the input)
 - A ref setting to be fed to the add button
 */
+
+import { XMarkIcon } from '@heroicons/vue/24/outline';
 export default {
+  components: {
+    XMarkIcon,
+  },
   props: {
     saveFunction: {
       type: Function,
@@ -33,7 +42,18 @@ export default {
       default: '',
     },
   },
+  data() {
+    return {
+      currentValue: '',
+    };
+  },
   methods: {
+    clearText($event) {
+      $event.preventDefault();
+      this.$refs.input.value = '';    
+      this.currentValue = '';
+      this.model = true;
+    },
     handleEnter($event) {
       if (!$event.target.value) {
         return;
@@ -41,14 +61,14 @@ export default {
       this.saveFunction($event.target.value);
       this.focus();
       this.$refs.input.value = '';
+      this.currentValue = '';
     },
     handleBlur($event) {
-      if (!$event.target.value) {
-        this.$emit('blur');
-        return;
+      if ($event.target.value) {
+        this.currentValue = $event.target.value;
       }
-      this.saveFunction($event.target.value);
       this.model = false;
+      this.$emit('blur');
     },
     focus() {
       this.$refs.input.focus();
@@ -63,6 +83,9 @@ export default {
         this.$emit('update:modelValue', value);
       },
     },
+    inputValue() {
+      return this.currentValue ? this.currentValue : this.defaultValue;
+    }
   },
 };
 </script>

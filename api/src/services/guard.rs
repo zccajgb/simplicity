@@ -12,7 +12,7 @@ impl<'r> FromRequest<'r> for User {
     async fn from_request(request: &'r rocket::Request<'_>) -> request::Outcome<Self, Self::Error> {
         let cookie = request.cookies().get("session_token");
         let Some(cookie) = cookie else {
-            error!("No token found");
+            // error!("No token found");
             return Outcome::Error((Status::Unauthorized, ()));
         };
 
@@ -21,7 +21,7 @@ impl<'r> FromRequest<'r> for User {
         match user {
             Ok(user) => Outcome::Success(User::from_user_model(user)),
             Err(e) => {
-                error!("Error in guard: {:?}", e);
+                // error!("Error in guard: {:?}", e);
                 Outcome::Error((Status::Unauthorized, ()))
             }
         }

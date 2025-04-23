@@ -38,7 +38,7 @@
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
             ]"
-            :ttl="task.ttl"
+            :date="task.date"
             @click.stop="handleClickIcon"
           />
         </div>
@@ -52,6 +52,7 @@ import AtomCheckbox from '../atoms/AtomCheckbox.vue';
 import AtomTTL from '../atoms/AtomTTL.vue';
 import { BellSnoozeIcon } from '@heroicons/vue/24/solid';
 import linkify from 'vue-linkify';
+import { setToday, setTomorrow, setLater, getTtl } from '@/mixins/ttlHelper';
 
 export default {
   props: [ 'taskId' ],
@@ -78,11 +79,11 @@ export default {
     },
     async handleClickIcon() {
       let ttl_next = {
-          'today': 'tomorrow',
-          'tomorrow': 'later',
-          'later': 'today'
+          'today': setTomorrow,
+          'tomorrow': setLater,
+          'later': setToday
       }
-      this.task.ttl = ttl_next[this.task.ttl];
+      this.task = ttl_next[this.ttl](this.task);
       this.updateTask();
     },
     async handleClickCheck() {
@@ -113,7 +114,7 @@ export default {
       this.disallowEdit();
     },
     updateTask() {
-      this.$store.dispatch('updateTaskAndFilter', this.task);
+      this.$store.dispatch('updateTask', this.task);
     },
     filter() {
       let filterVal = this.$store.getters.getFilter(this.task);
@@ -126,6 +127,9 @@ export default {
   computed: {
     task() {
       return this.$store.getters.getTaskById(this.taskId);
+    },
+    ttl() {
+      return getTtl(this.task.date)
     }
   }
 }

@@ -1,13 +1,17 @@
 
 import { googleLogout } from 'vue3-google-login';
-import { handleLogout } from '../api/helperApi';
+import { handleLogout, getJwt } from '../api/helperApi';
 
 export default {
   state: {
     isLoggedIn: false,
-    user: null
+    user: null,
+    jwt: null,
   },
   mutations: {
+    setJwt(state, jwt) {
+      state.jwt = jwt;
+    },
     setLoggedIn(state, value) {
       state.isLoggedIn = value;
     },
@@ -15,6 +19,7 @@ export default {
       if (user === null) {
         state.user = null;
         state.icon = null;
+        state.jwt = null
         return;
       }
       state.user = user;
@@ -33,11 +38,24 @@ export default {
       commit('setUser', null);
       window.location.reload();
     },
+    async getJwt({ state, commit }) {
+      let jwt = state.jwt;
+      if (!jwt || jwt.exp < Date.now() / 1000) {
+        jwt = await getJwt();
+        if (jwt.error) {
+          console.error("error getting jwt", jwt.error);
+          return;
+        }
+        commit('setJwt', jwt);
+      }
+      return jwt;
+    }
   },
   getters: {
     isLoggedIn: state => state.isLoggedIn,
     user: state => state.user,
     userIcon: state => state.icon,
     userInboxId: state => state.user.inbox_id,
+    userId: state => state.user.user_id,
   }
 };

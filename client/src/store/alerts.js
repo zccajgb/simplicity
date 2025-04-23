@@ -11,7 +11,7 @@ export default {
       }
     },
     removeAlert(state, alert) {
-      state.messages = state.messages.filter((a) => a.id !== alert.id);
+      state.messages = state.messages.filter((a) => a._id !== alert._id);
     },
   },
   actions: {

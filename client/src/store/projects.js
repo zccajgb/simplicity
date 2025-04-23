@@ -1,4 +1,5 @@
-import { addProject, getProjects, updateProject, deleteProject } from "@/api/projects";
+import { addProject, getProjects, updateProject, deleteProject } from "@/db/projects";
+import { moveTasksToInbox } from "@/db/tasks";
 
 export default {
   state: {
@@ -12,38 +13,33 @@ export default {
       state.projects.push(value);
     },
     deleteProject(state, id) {
-      state.projects = state.projects.filter(project => project.id !== id);
+      state.projects = state.projects.filter(project => project._id !== id);
     },
     updateProject(state, newItem) {
-      let item = state?.projects?.find(project => project.id === newItem.id);
+      let item = state?.projects?.find(project => project._id === newItem._id);
       if (!item) return;
       Object.assign(item, newItem);
     },
   },
   actions: {
-    async addProject({ commit }, project) {
+    async addProject({ commit, dispatch }, project) {
       let projRes = await addProject(project);
       if (projRes.error) {
         console.error(projRes.error);
         return;
       }
-      console.log("Project added", projRes);
-      commit("addProject", projRes);
+      await dispatch("getProjects");
       return projRes.id;
     },
     async getProjects({ commit }) {
-      let projRes = await getProjects();
-      if (projRes.error) {
-        console.error(projRes.error);
-        return;
-      }
-      commit("setProjects", projRes);
+      let projects = await getProjects();
+      commit("setProjects", projects);
     },
     async updateProject({ commit, rootGetters }, project) {
       commit("updateTask", project);
       const inboxId = rootGetters['userInboxId'];
-      if (project.id === inboxId) {
-        console.log("Cannot update inbox project");
+      if (project._id === inboxId) {
+        console.error("Cannot update inbox project");
         return;
       } 
 
@@ -57,15 +53,18 @@ export default {
       }
       commit("updateProject", res);
     },
-    async deleteProject({ commit, dispatch }, projectId) {
+    async deleteProject({ commit, rootGetters }, projectId) {
+      console.log("deleting project", projectId);
+      const inboxId = rootGetters['userInboxId'];
+      await moveTasksToInbox(projectId, inboxId);
       await deleteProject(projectId);
       commit("deleteProject", projectId);
     },
   },
   getters: {
     getAllProjects: state => state.projects,
-    getProjectById: state => id => state.projects.find(project => project.id === id),
-    getProjectNameById: state => id => state.projects.find(project => project.id === id)?.name,
+    getProjectById: state => id => state.projects.find(project => project._id === id),
+    getProjectNameById: state => id => state.projects.find(project => project._id === id)?.name,
     getProjectByIndex: state => index => state.projects[index],
     getProjectsWithoutInbox: state => state.projects.filter(project => project.name !== "inbox"),
   },

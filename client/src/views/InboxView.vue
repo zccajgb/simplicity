@@ -1,24 +1,26 @@
 <template>
-  <OrganismDayView v-if="!loading" selectedList="inbox"/>
+  <OrganismDayView v-if="!loading" selectedList="project" :projectId="inboxId" :editProject="false"/>
 </template>
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getInboxTasks } from '@/api/tasks';
 import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
+  data: () => ({
+    inboxId: null,
+  }),
+  mixins: [getTasksMixin],
   components: {
     OrganismDayView,
   },
-  mixins: [ getTasksMixin ],
   methods: {
   },
   async mounted() {
-    const inboxId = this.$store.getters.userInboxId;
-    await this.getTasks(getInboxTasks, (task) => {
-      return task.projectId === inboxId;
-    });
+    this.inboxId = this.$store.getters.userInboxId;
+    const filter = (task) => { return task.projectId === this.inboxId };
+    const query = { projectId: this.inboxId };
+    this.getTasks(query, filter);
   },
 }
 </script>

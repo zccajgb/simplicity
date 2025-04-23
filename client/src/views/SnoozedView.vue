@@ -4,24 +4,19 @@
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getSnoozedTasks } from '@/api/tasks';
+import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
   components: {
     OrganismDayView,
   },
+  mixins: [getTasksMixin],
   methods: {
-    async getTasks() {
-      const tasks = await getSnoozedTasks();
-      this.$store.commit('setTasks', tasks);
-      this.$store.commit('setGetter', getSnoozedTasks);
-      this.$store.commit('setFilter', (task) => {
-        return !!task.snooze;
-      });
-    },
   },
   async mounted() {
-    await this.getTasks();
+      const filter = (task) => { return !!task.snooze };
+      const query = { snooze: { $ne: null } };
+      await this.getTasks(query, filter, true);
   },
 }
 </script>

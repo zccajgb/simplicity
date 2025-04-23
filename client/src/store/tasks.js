@@ -1,4 +1,6 @@
-import { addTask, updateTask, deleteTask } from "@/api/tasks";
+import { addTask, updateTask, deleteTask, findTasks, getTaskById } from "@/db/tasks";
+import { createRepeat } from "@/mixins/repeat";
+import { toRaw } from "vue";
 
 const sort = (tasks) => {
   if (!tasks || !tasks.length) return [];
@@ -23,35 +25,44 @@ const sortWithFilter = (tasks, filter) => {
   });
 };
 
+const checkAndCreateRepeat = async (dispatch, task) => {
+  if (!task.completed) {
+    return;
+  }
+  if (!task.repeat) {
+    return;
+  }
+  const dbTask = await getTaskById(task._id);
+  if (!dbTask.completed) {
+    const repeatTask = createRepeat(toRaw(task));
+    if (repeatTask) {
+      dispatch("addTask", repeatTask);
+    }
+  }
+}
+
 export default {
   state: {
     tasks: [],
     filter: () => { return true },
-    getter: () => {},
+    query: () => {},
     timeout: null
   },
   mutations: {
-    setTasks( state , value) {
-      state.tasks = sort(value);
+    setTasks(state, tasks) {
+      state.tasks = sort(tasks);
     },
     updateTask(state, newItem) {
-      let item = state?.tasks?.find(task => task.id === newItem.id);
+      let item = state?.tasks?.find(task => task._id === newItem._id);
       if (!item) return;
       Object.assign(item, newItem);
       state.tasks = sort(state.tasks);
     },
-    reorderTask(state, newItem) {
-      let item = state?.tasks?.find(task => task.id === newItem.id);
-      if (!item) return;
-      item.order = newItem.order;
-      Object.assign(item, item);
-      state.tasks = sort(state.tasks);
-    },
     deleteTask(state, id) {
-      state.tasks = state.tasks.filter(task => task.id !== id);
+      state.tasks = state.tasks.filter(task => task._id !== id);
     },
     updateTaskAndFilter(state, newItem) {
-      let item = state?.tasks?.find(task => task.id === newItem.id);
+      let item = state?.tasks?.find(task => task._id === newItem._id);
       if (!item) return;
       Object.assign(item, newItem);
   
@@ -63,66 +74,60 @@ export default {
     setFilter(state, filter) {
       state.filter = filter;
     },
-    setGetter(state, getter) {
-      state.getter = getter;
+    setQuery(state, query) {
+      state.query = query;
     }
   },
   actions: {
-    async deleteTask({ commit }, taskId) {
-      await deleteTask(taskId);
-      commit("deleteTask", taskId);
+    async getTasks({ commit, state }) {
+      console.log("query", state.query);
+      let tasks = await findTasks(state.query);
+      commit("setTasks", tasks.docs);
     },
-    async addTask({ commit }, task) {
+    async deleteTask({ commit, dispatch }, taskId) {
+      await deleteTask(taskId);
+      dispatch("getTasks");
+      
+    },
+    async addTask({ commit, dispatch }, task) {
       let taskRes = await addTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);
         return;
       }
-      commit("addTask", taskRes);
+      dispatch("getTasks");
     },
-    async reorderTask({ dispatch, commit }, task) {
-      commit("reorderTask", task);
-      await dispatch("updateTask", task);
-    },
-    async updateTask({ commit }, task) {
-      commit("updateTask", task);
+    async updateTask({ commit, dispatch }, task) {
       task.name = task.name.replace(/[\r\n]+/g, " ");
       if (!task.name) return;
 
+      await checkAndCreateRepeat(dispatch, task);
       let taskRes = await updateTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);
         return;
       }
-      commit("updateTask", taskRes);
+      let newTask = await getTaskById(task._id);
+      commit("updateTask", newTask);
+      // await dispatch("getTasks");
     },
-    async updateTaskAndFilter({ commit }, task) {
-      task.name = task.name.replace(/[\r\n]+/g, " ");
-      if (!task.name) return;
-      let taskRes = await updateTask(task);
-      if (taskRes.error) {
-        console.error(taskRes.error);
-        return;
-      }
-      commit("updateTaskAndFilter", taskRes);
-    },
-    async refreshTasks({ commit, state, dispatch }) {
-      console.log("refreshing tasks");
-      try {
-        let tasks = await state.getter();
-        commit("setTasks", tasks);
-        clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => { dispatch("refreshTasks") }, 60000);    
-      }
-      catch (e) {
-        console.error("could not get tasks: ", e);
-      }
-    },
+    // async refreshTasks({ commit, state, dispatch }) {
+    //   console.log("refreshing tasks");
+    //   try {
+    //     let tasks = await state.getter();
+    //     commit("setTasks", tasks);
+    //     clearTimeout(this.timeout);
+    //     this.timeout = setTimeout(() => { dispatch("refreshTasks") }, 60000);    
+    //   }
+    //   catch (e) {
+    //     console.error("could not get tasks: ", e);
+    //   }
+    // },
     
   },
   getters: {
     getAllTasks: state => state.tasks,
-    getTaskById: state => id => state.tasks.find(task => task.id === id),
+    getTaskById: state => id => state.tasks.find(task => task._id === id),
     getTaskByIndex: state => index => state.tasks[index],
     getFilter: state => state.filter
   }

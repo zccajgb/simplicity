@@ -18,6 +18,10 @@ services:
       ROCKET_LOG_LEVEL: ${ROCKET_LOG_LEVEL}
       RUST_LOG_STYLE: pretty
       REDIRECT_URL: http://localhost:8080
+      COUCHDB_JWT_SECRET: ${COUCHDB_JWT_SECRET}
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      COUCHDB_URL: ${COUCHDB_URL}
 
   client:
     image: zccajgb/simplicity-client:latest
@@ -29,13 +33,13 @@ services:
     depends_on:
       - api
 
-  # mongodb:
-  #   image: mongo:latest
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo-data:/data/db
-  #   command: mongod --quiet
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    command: mongod --quiet
 
   cron:
     image: zccajgb/simplicity-cron:latest

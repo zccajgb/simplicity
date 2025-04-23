@@ -4,7 +4,6 @@
   
 <script>
 import OrganismDayView from '@/components/organisms/OrganismDayView.vue';
-import { getTasksByProjectId } from '@/api/tasks';
 import getTasksMixin from '@/mixins/getTasksMixin';
 
 export default {
@@ -20,18 +19,22 @@ export default {
   mixins: [getTasksMixin],
   async mounted() {
     this.projectId = this.$route.params.projectId;
-    this.getTasks(() => getTasksByProjectId(this.projectId), (task) => {
-        return task.projectId === this.projectId;
-    });
+    const filter = (task) => {
+      return task.projectId === this.projectId;
+    };
+    const query = { projectId: this.projectId };
+    this.getTasks(query, filter);
   },
   watch: {
     '$route.params.projectId': {
       immediate: true,
       handler(id) {
         this.projectId = id;
-        this.getTasks(() => getTasksByProjectId(id), (task) => {
-          return task.projectId === id;
-        });
+        const filter = (task) => {
+          return task.projectId === this.projectId;
+        };
+        const query = { projectId: this.projectId };
+        this.getTasks(query, filter);
       }
     },
   }

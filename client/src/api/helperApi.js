@@ -79,3 +79,7 @@ async function handleError(error) {
   store.dispatch('SET_ERROR', error.message);
   return { error: error.message, data: null };
 }
+
+export async function getJwt() {
+  return await helperGet('jwt');
+}
