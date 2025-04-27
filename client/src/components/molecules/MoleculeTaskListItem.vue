@@ -31,7 +31,7 @@
             </div>
             <div class="flex mr-2 w-24">
               <div
-                v-if="showProject"
+                v-if="showProject === true || showProject === 'inbox' && this.$store.getters.getProjectNameById(task.projectId) !== 'inbox'"
                 class="px-2 py-1 text-sm"
                 :class="`text-${projectColour}-300`"
               >
