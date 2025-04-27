@@ -1,5 +1,6 @@
 import { addTask, updateTask, deleteTask, findTasks, getTaskById } from "@/db/tasks";
 import { createRepeat } from "@/mixins/repeat";
+import { handleCompletedAndSnoozed } from "@/mixins/getTasksMixin";
 import { toRaw } from "vue";
 
 const sort = (tasks) => {
@@ -46,6 +47,8 @@ export default {
     tasks: [],
     filter: () => { return true },
     query: () => {},
+    includeSnoozed: false,
+    includeCompleted: false,
     timeout: null
   },
   mutations: {
@@ -74,22 +77,35 @@ export default {
     setFilter(state, filter) {
       state.filter = filter;
     },
-    setQuery(state, query) {
+    setQuery(state, query, includeSnoozed, includeCompleted) {
       state.query = query;
+      state.includeSnoozed = includeSnoozed;
+      state.includeCompleted = includeCompleted;
     }
   },
   actions: {
+    async getCompletedTasks({ dispatch, state }, completed) {
+      console.log("getting completed tasks");
+      state.includeCompleted = completed;
+      await dispatch("getTasks");
+    },
+    async getSnoozedTasks({ dispatch, state }, snoozed) {
+      state.includeSnoozed = snoozed;
+      await dispatch("getTasks");
+    },
     async getTasks({ commit, state }) {
       console.log("query", state.query);
-      let tasks = await findTasks(state.query);
+      let query = { ...state.query };
+      query = handleCompletedAndSnoozed(query, state.includeSnoozed, state.includeCompleted);
+      let tasks = await findTasks(query);
       commit("setTasks", tasks.docs);
     },
-    async deleteTask({ commit, dispatch }, taskId) {
+    async deleteTask({ dispatch }, taskId) {
       await deleteTask(taskId);
       dispatch("getTasks");
       
     },
-    async addTask({ commit, dispatch }, task) {
+    async addTask({ dispatch }, task) {
       let taskRes = await addTask(task);
       if (taskRes.error) {
         console.error(taskRes.error);
@@ -129,6 +145,8 @@ export default {
     getAllTasks: state => state.tasks,
     getTaskById: state => id => state.tasks.find(task => task._id === id),
     getTaskByIndex: state => index => state.tasks[index],
-    getFilter: state => state.filter
+    getFilter: state => state.filter,
+    showCompletedTasks: state => state.includeCompleted,
+    showSnoozedTasks: state => state.includeSnoozed
   }
-};
+}

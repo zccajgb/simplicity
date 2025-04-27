@@ -15,6 +15,7 @@
                     'mx-0 px-0 left-0 fixed': dragTarget === task._id,
                     'hide': !filter(task),
                   }"
+                  :showProject="showProject"
                 />
             </Draggable>
         </Container>
@@ -24,7 +25,37 @@
             <p class="my-auto text-lg text-slate-500 ml-16 "> add a task to continue </p>
           </div>
           <img src="@/assets/logo-no-background.svg" class="w-1/4 mx-auto mt-auto opacity-50"/>   
-      </div>
+        </div>
+        <div class="flex">
+          <AtomIconButton 
+            class="ml-auto mr-2 mt-4 mb-4 border-slate-300 border"
+            :class="showCompleted ? 'bg-slate-200' : 'bg-white'"
+            icon="plus"
+            buttonText="show completed"
+            @click="getCompleted"
+          >
+            <ArchiveBoxIcon class="h-5 w-5"/>
+          </AtomIconButton>
+          <AtomIconButton 
+            class="mr-auto ml-2 mt-4 mb-4 border-slate-300 border"
+            :class="showSnoozed ? 'bg-slate-200' : 'bg-white'"
+            icon="plus"
+            buttonText="show snoozed"
+            @click="getSnoozed"
+          >
+            <BellSnoozeIcon class="h-5 w-5"/>
+          </AtomIconButton>
+          <!-- <AtomIconButton 
+            class="mr-auto ml-2 mt-4 border-slate-300 border"
+            :class="showSnoozed ? 'bg-slate-200' : 'bg-white'"
+            icon="plus"
+            buttonText="show snoozed"
+            @click="getSnoozed"
+          >
+            <MoonIcon class="h-5 w-5"/>
+          </AtomIconButton> -->
+
+        </div>
       </div>
       <div class="absolute bottom-0 right-0 p-4">
         <AtomAddButtonLarge ref="addButton" v-model="showAdd" :focusRef="$refs.addTaskInput" :lightMode="false"/>
@@ -35,7 +66,9 @@
 <script>
 import MoleculeTaskListItem from '@/components/molecules/MoleculeTaskListItem.vue';
 import AtomAddButtonLarge from '@/components/atoms/AtomAddButtonLarge.vue';
+import AtomIconButton from '@/components/atoms/AtomIconButton.vue';
 import AtomAddTaskInput from '@/components/atoms/AtomAddTaskInput.vue';
+import { ArchiveBoxIcon, BellSnoozeIcon } from '@heroicons/vue/24/outline';
 import { Container, Draggable } from 'vue-dndrop';
 import { Task } from '@/models/task.js';
 
@@ -44,6 +77,9 @@ export default {
     MoleculeTaskListItem,
     AtomAddButtonLarge,
     AtomAddTaskInput,
+    ArchiveBoxIcon,
+    AtomIconButton,
+    BellSnoozeIcon,
     Container,
     Draggable
   },
@@ -59,7 +95,11 @@ export default {
     date: {
       type: Date,
       required: false
-    }
+    },
+    showProject: {
+      type: Boolean,
+      default: false
+    },
   },
   data() {
     return {
@@ -67,6 +107,12 @@ export default {
     }
   },
   methods: {
+    async getCompleted() {
+      this.$store.dispatch('getCompletedTasks', !this.showCompleted);
+    },
+    async getSnoozed() {
+      this.$store.dispatch('getSnoozedTasks', !this.showSnoozed);
+    },
     async addTask(taskName) {
       this.showAdd = false;
       const projectId = this.projectId ? this.projectId : this.$store.getters.userInboxId
@@ -117,6 +163,12 @@ export default {
     },
     filter() {
       return this.$store.getters.getFilter;
+    },
+    showCompleted() {
+      return this.$store.getters.showCompletedTasks;
+    },
+    showSnoozed() {
+      return this.$store.getters.showSnoozedTasks;
     },
   },
 }

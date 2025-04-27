@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView snoozed selectedList="snoozed"/>
+  <OrganismDayView snoozed selectedList="snoozed" :showProject="true"/>
 </template>
   
 <script>

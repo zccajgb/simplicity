@@ -3,7 +3,7 @@
     <div class="p-1">
       <AtomSearchBar @input="filterTasks"/>
     </div>
-  <OrganismDayView v-if="!loading" selectedList="search"/>
+  <OrganismDayView v-if="!loading" selectedList="search" :showProject="true"/>
   </div>
   </template>
   

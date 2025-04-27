@@ -9,6 +9,7 @@
         :projectId="projectId"
         :tagId="tagId"
         :date="date"
+        :showProject="showProject"
       />
     </div>
     <div v-if="selectedTaskId!=null">
@@ -57,6 +58,11 @@ export default {
       required: false
     },
     editProject: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    showProject: {
       type: Boolean,
       required: false,
       default: false

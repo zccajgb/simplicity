@@ -62,11 +62,13 @@ export async function handleLogout() {
 async function handleError(error) {
   if (error.status === 401) {
     store.dispatch('SET_ERROR', "request failed, testing authentication");
-    return { error: error.message };
+    // return { error: error.message };
     await setTimeout(() => {}, 500);
+    console.log("handling");
     try {
       await axios.get(`${apiUri}/ping`);
     } catch (error) {
+      console.log("failed again");
       store.dispatch("logout");
       store.dispatch('SET_ERROR', "authentication failed, logging out");
       return { error: error.message, data: null };

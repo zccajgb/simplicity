@@ -22,6 +22,7 @@
     @click="$emit('select', item)"
     :showNavMobile="showNavMobile"
     :type="type"
+    :colour="item.colour"
     @editProject="(value) => $emit('editProject', value)"
     />
     <div v-if="addable" class="">
