@@ -3,8 +3,7 @@ import { moveTasksToInbox } from "@/db/tasks";
 
 const colours = [
   "gray", "stone",
-  "red", "orange", "yellow",
-  "green", "emerald", "cyan", "sky",
+  "red", "orange", "green", "emerald", "cyan", "sky",
   "blue", "indigo", "purple", "fuchsia",
   "pink", "rose"
 ];
