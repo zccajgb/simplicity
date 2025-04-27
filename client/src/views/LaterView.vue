@@ -1,5 +1,5 @@
 <template>
-  <OrganismDayView v-if="!loading" selectedList="later"/>
+  <OrganismDayView v-if="!loading" selectedList="later" :showProject="true"/>
 </template>
   
 <script>

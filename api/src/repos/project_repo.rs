@@ -12,6 +12,7 @@ pub struct ProjectModel {
     pub _id: Option<ObjectId>,
     pub user_id: String,
     pub name: String,
+    pub colour: String,
     pub completed: bool,
 }
 
@@ -56,6 +57,7 @@ pub async fn get_inbox_id_for_user(user: &User) -> Result<ObjectId> {
             let project = ProjectModel {
                 _id: Some(ObjectId::new()),
                 user_id: user.user_id.clone(),
+                colour: "slate".into(),
                 name: "inbox".into(),
                 completed: false,
             };
@@ -81,6 +83,7 @@ pub async fn create_inbox_for_user(user: User) -> Result<ObjectId> {
     let user_id = user.user_id.clone();
     let project = ProjectModel {
         _id: Some(ObjectId::new()),
+        colour: "stone".into(),
         user_id: user.user_id.clone(),
         name: "inbox".into(),
         completed: false,

@@ -5,6 +5,9 @@ export default {
   },
   mutations: {
     addAlert(state, alert) {
+      if (alert.message.toLowerCase().includes("request aborted")) {
+        return;
+      }
       state.messages.push(alert);
       if (state.messages.length > 3) {
         state.messages.shift();

@@ -1,5 +1,5 @@
 use crate::{
-    repos::users_repo::{self, UserModel},
+    repos::users_repo::{self, logout, UserModel},
     routes::users::User,
 };
 use anyhow::{anyhow, Context, Result};
@@ -157,9 +157,17 @@ pub async fn get_user_from_session_token(session_token: &str) -> Result<UserMode
     let user = users_repo::find_user_by_session_token(session_token).await;
     let mut user = user.ok_or(anyhow::anyhow!("User not found"))?;
     if user.token_expiry < chrono::Utc::now().timestamp() {
-        user = refresh_token(user, session_token.to_string())
-            .await
-            .inspect_err(|e| error!("Error refreshing token: {:?}", e))?;
+        let user_result = refresh_token(user.clone(), session_token.to_string()).await;
+        match user_result {
+            Ok(user_result) => {
+                user = user_result;
+            }
+            Err(e) => {
+                error!("Error refreshing token, logging out: {:?}", e);
+                logout(&user.user_id, session_token).await?;
+                return Err(anyhow::anyhow!("Error refreshing token"));
+            }
+        }
     }
     Ok(user)
 }
@@ -185,7 +193,7 @@ async fn refresh_token_inner(user: &UserModel, session_token: &String) -> Result
     let refresh_token = user
         .clone()
         .refresh_token
-        .ok_or(anyhow::anyhow!("No refresh token"))?;
+        .ok_or(anyhow::anyhow!("No refresh token for user: {:?}", user))?;
     let token = client
         .exchange_refresh_token(&RefreshToken::new(refresh_token))
         .request_async(async_http_client)
@@ -217,7 +225,7 @@ pub fn create_jwt(user: &User) -> Result<String> {
         .checked_add_signed(chrono::Duration::seconds(3600))
         .expect("valid timestamp")
         .timestamp() as usize;
-    error!("creating jwt for user: {:?}", user);
+
     let claims = Claims {
         sub: user.user_id.clone(),
         exp: expiration,

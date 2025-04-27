@@ -23,15 +23,32 @@
                 @blur="updateName"
                 @focusout="updateName"
                 @keydown.enter.prevent="handleEnterClick"
-                @click.stop="handleClickLink"
+                @click="handleClickLink"
                 v-html="task.name"
                 v-linkified
               >
               </p>
             </div>
-            <div v-if="task.snooze" class="flex items-center mr-10">
-              <BellSnoozeIcon class="h-4 w-4"/>
+            <div class="flex mr-2 w-24">
+              <div
+                v-if="showProject"
+                class="px-2 py-1 text-sm"
+                :class="`text-${projectColour}-300`"
+              >
+                {{ projectName }}
+              </div>
             </div>
+            <div v-if="task.snooze" class="flex items-center mr-10" @click.stop="handleUnsnooze">
+              <BellSnoozeIcon 
+                class="h-4 w-4"
+                :class="[
+                  task.completed || !filter(task) ? 'text-slate-300':  '',
+                  task.completed ? 'line-through' : '',
+                  snoozedToday ? 'text-red-400' : 'text-slate-400',
+                ]"
+              />
+            </div>
+            <div v-else class="flex mr-10 h-4 w-4"> </div>
           <AtomTTL
             class="flex items-center justify-end right-0 "
             :class="[
@@ -55,7 +72,7 @@ import linkify from 'vue-linkify';
 import { setToday, setTomorrow, setLater, getTtl } from '@/mixins/ttlHelper';
 
 export default {
-  props: [ 'taskId' ],
+  props: [ 'taskId', 'showProject' ],
   components: {
     AtomCheckbox,
     AtomTTL,
@@ -70,11 +87,20 @@ export default {
     }
   },
   methods: {
+    handleUnsnooze() {
+      this.task.snooze = null;
+      this.updateTask();
+    },
     handleClickLink($event) {
       if ($event.target.tagName === 'A') {
         $event.preventDefault();
+        $event.stopPropagation();
         window.open($event.target.href, '_blank');
       }
+      if (this.$isMobile()) {
+        return;
+      }
+      $event.stopPropagation();
       this.allowEdit = true;
     },
     async handleClickIcon() {
@@ -122,6 +148,9 @@ export default {
     }
   },
   mounted() {
+    if (this.$isMobile()) {
+      this.disallowEdit();
+    }
     // this.task = this.$store.getters.getTaskById(this.taskId);
   },
   computed: {
@@ -130,6 +159,17 @@ export default {
     },
     ttl() {
       return getTtl(this.task.date)
+    },
+    snoozedToday() {
+      const today = new Date().setHours(23, 59, 59, 59)
+      const snoozedToday = this.task.snooze && new Date(this.task.snooze) < today;
+      return snoozedToday;
+    },
+    projectName() {
+      return this.$store.getters.getProjectNameById(this.task.projectId);
+    },
+    projectColour() {
+      return this.$store.getters.getProjectColourById(this.task.projectId);
     }
   }
 }

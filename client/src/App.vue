@@ -28,7 +28,7 @@ export default {
 </script>
 
 <template>
-  <div class="flex w-screen h-screen">
+  <div class="flex w-screen h-screen overflow-hidden">
     <OrganismSideNav class="h-screen" v-if="$store.getters.isLoggedIn"/>
     <div class="h-full w-full">
       <MoleculeAlert

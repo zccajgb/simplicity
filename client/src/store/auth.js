@@ -1,6 +1,7 @@
 
 import { googleLogout } from 'vue3-google-login';
 import { handleLogout, getJwt } from '../api/helperApi';
+import { jwtDecode } from 'jwt-decode';
 
 export default {
   state: {
@@ -40,7 +41,8 @@ export default {
     },
     async getJwt({ state, commit }) {
       let jwt = state.jwt;
-      if (!jwt || jwt.exp < Date.now() / 1000) {
+      const jwt_payload = jwt ? jwtDecode(jwt): null;
+      if (!jwt_payload || !jwt_payload.exp || jwt_payload.exp < Date.now() / 1000) {
         jwt = await getJwt();
         if (jwt.error) {
           console.error("error getting jwt", jwt.error);

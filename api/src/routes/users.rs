@@ -46,7 +46,6 @@ pub async fn login_with_auth_code(
     let auth_code = auth_code.into_inner().code;
     let token_user = get_user_from_auth_code(&auth_code).await.map_api_err()?;
     let session_token = rand::thread_rng().gen::<u128>().to_string();
-
     let cookie = generate_session_cookie(session_token.clone()).map_api_err()?;
 
     let db_user = users_repo::find_user_by_user_id(&token_user.user_id)
@@ -103,7 +102,7 @@ pub async fn public() -> &'static str {
 }
 
 #[get("/ping")]
-pub async fn ping() -> &'static str {
+pub async fn ping(_user: User) -> &'static str {
     "pong"
 }
 

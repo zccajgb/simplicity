@@ -1,5 +1,18 @@
-import { addProject, getProjects, updateProject, deleteProject } from "@/db/projects";
+import { addProject, getProjects, updateProject, deleteProject, getProjectById } from "@/db/projects";
 import { moveTasksToInbox } from "@/db/tasks";
+
+const colours = [
+  "gray", "stone",
+  "red", "orange", "yellow",
+  "green", "emerald", "cyan", "sky",
+  "blue", "indigo", "purple", "fuchsia",
+  "pink", "rose"
+];
+
+function chooseProjectColour() {
+  const randomIndex = Math.floor(Math.random() * colours.length);
+  return colours[randomIndex];
+}
 
 export default {
   state: {
@@ -23,6 +36,9 @@ export default {
   },
   actions: {
     async addProject({ commit, dispatch }, project) {
+      if (!project.colour) {
+        project.colour = chooseProjectColour();
+      }
       let projRes = await addProject(project);
       if (projRes.error) {
         console.error(projRes.error);
@@ -36,7 +52,6 @@ export default {
       commit("setProjects", projects);
     },
     async updateProject({ commit, rootGetters }, project) {
-      commit("updateTask", project);
       const inboxId = rootGetters['userInboxId'];
       if (project._id === inboxId) {
         console.error("Cannot update inbox project");
@@ -51,7 +66,8 @@ export default {
         console.error(res.error);
         return;
       }
-      commit("updateProject", res);
+      let newProject = await getProjectById(project._id);
+      commit("updateProject", newProject);
     },
     async deleteProject({ commit, rootGetters }, projectId) {
       console.log("deleting project", projectId);
@@ -65,7 +81,9 @@ export default {
     getAllProjects: state => state.projects,
     getProjectById: state => id => state.projects.find(project => project._id === id),
     getProjectNameById: state => id => state.projects.find(project => project._id === id)?.name,
+    getProjectColourById: state => id => state.projects.find(project => project._id === id)?.colour ?? "slate",
     getProjectByIndex: state => index => state.projects[index],
     getProjectsWithoutInbox: state => state.projects.filter(project => project.name !== "inbox"),
+    getAllProjectColours: () => colours.map(colour => ({ name: colour })),
   },
 };

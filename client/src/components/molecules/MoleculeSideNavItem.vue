@@ -19,6 +19,18 @@
         <MagnifyingGlassIcon v-else-if="value==='search'"/>
         <ArrowTopRightOnSquareIcon v-else-if="value==='logout'"/>
       </div>
+     
+      <div 
+        class="flex h-4 w-4 mx-auto sm:ml-2 my-auto text-right items-center"
+        :class="[
+          showNavMobile ? 'ml-2' : '',
+          `text-${colour}-400`
+          ]"
+        v-if="type==='projects' && value!=='logout'"
+      >
+        <IconCircleFullFilled/>
+      </div>
+      
       <div 
         v-if="!showNavMobile && !iconList.includes(value)"
         class="sm:hidden text-sm text-left text-balance px-[5px] my-auto truncate"
@@ -60,12 +72,14 @@ import { SunIcon, MoonIcon, FolderIcon, InboxIcon, TagIcon, MagnifyingGlassIcon,
 import IconCircle from '../icons/IconCircle.vue';
 import AtomText from '@/components/atoms/AtomText.vue';
 import { getTodayTasks, getInboxTasks } from '@/db/tasks';
+import IconCircleFullFilled from '@/components/icons/IconCircleFullFilled.vue';
 export default {
-  props: [ "id", "value", "selected", "showNavMobile", "type" ],
+  props: [ "id", "value", "selected", "showNavMobile", "type", "colour" ],
   components: {
     SunIcon,
     MoonIcon,
     IconCircle,
+    IconCircleFullFilled,
     FolderIcon,
     InboxIcon,
     TagIcon,
@@ -98,6 +112,7 @@ export default {
         this.taskCount = tasks?.filter((task) => !task.completed)?.length || 0;
       } else if (this.value === 'today') {
         const tasks = await getTodayTasks();
+        console.log(tasks);
         this.taskCount = tasks?.filter((task) => !task.completed)?.length || 0;
       }
     }

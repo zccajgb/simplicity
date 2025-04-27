@@ -45,14 +45,14 @@ export async function getAllTasks() {
 }
 
 export async function getInboxTasks(inboxId) {
-  const taskRes = await findTasks({ projectId: inboxId });
+  const taskRes = await findTasks({ projectId: inboxId, completed: null, snooze: null });
   return taskRes.docs;
 }
 
 export async function getTodayTasks() {
   let today = new Date();
   today.setHours(23, 59, 59, 999); 
-  const taskRes = await findTasks({ date: { $lte : today } } );
+  const taskRes = await findTasks({ date: { $lte: today, $gt: null }, completed: null, snooze: null  } );
   return taskRes.docs;
 }
 

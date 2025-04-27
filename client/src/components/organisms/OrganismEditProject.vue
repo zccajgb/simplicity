@@ -14,7 +14,29 @@
         >
         </p>
       </div>
-    </div>   
+    </div>  
+    
+    <div class="flex mt-10 mx-6">
+      <AtomIconButton 
+        class=""
+        :button-text="project.colour"
+        @click.stop="selector = selector === 'colour' ? null : 'colour'"> 
+        <IconCircleFullFilled 
+          class="h-4 w-4"
+          :class="`text-${project.colour}-400`"
+        />
+      </AtomIconButton>
+    </div>
+
+    <div class="absolute w-full flex mt-4 px-4">
+      <MoleculeSelectColourModal 
+        class="mx-auto"
+        v-if="selector==='colour'" 
+        @close="close" 
+        v-model="project.colour"
+        itemtype="colour"
+      />
+    </div>
 
     <div class="flex flex-col mt-auto">
       <div 
@@ -49,6 +71,9 @@ import { ArrowRightIcon } from '@heroicons/vue/20/solid';
 import { TrashIcon } from '@heroicons/vue/20/solid';
 import vueClickOutside from 'vue-click-outside';
 import linkify from 'vue-linkify';
+import AtomIconButton from '../atoms/AtomIconButton.vue';
+import IconCircleFullFilled from '../icons/IconCircleFullFilled.vue';
+import MoleculeSelectColourModal from '../molecules/MoleculeSelectColourModal.vue';
 
 export default {
   props: ['selectedProjectId'],
@@ -67,6 +92,9 @@ export default {
     AtomCheckbox,
     TrashIcon,
     ArrowRightIcon,
+    MoleculeSelectColourModal,
+    IconCircleFullFilled,
+    AtomIconButton,
   },
   directives: {
     clickOutside: vueClickOutside,
@@ -122,7 +150,10 @@ export default {
     },
     projectName() {
       return this.$store.getters.getProjectNameById(this.project.projectId);
-    }
+    },
+    projectColour() {
+      return this.$store.getters.getProjectColourById(this.project.projectId);
+    },
   },
   async mounted() {
     if (!this.project) {

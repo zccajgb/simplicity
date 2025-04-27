@@ -91,7 +91,7 @@ async fn find_user(query: Value) -> Result<Option<UserModel>> {
     let couch_url = std::env::var("COUCHDB_URL").expect("COUCHDB_URL must be set");
 
     let client = create_http_client(&couch_url);
-    error!("couch url: {}", couch_url);
+
     let res = client
         .post(format!("{}/users/_find", couch_url))
         .basic_auth(&username, Some(&password))

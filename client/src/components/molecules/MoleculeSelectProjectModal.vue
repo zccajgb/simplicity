@@ -7,7 +7,15 @@
           class="rounded-md hover:bg-slate-300 max-h-12 overflow-hidden"
           :class="isSelected(item._id) ? 'bg-slate-400 text-white' : ''"
           @click="handleSelect(item._id)">
-          {{item.name }}
+          <span v-if="itemtype === 'project'" class="inline-flex mr-2"> 
+            <IconCircleFullFilled 
+             class="h-4 w-4"
+            :class="`text-${item.colour}-400`"
+            />
+          </span>
+          <span class="inline-flex ml-2"> 
+            {{ item.name }}
+          </span>
         </MoleculeMenuItem>
       </div>
       <div @click.stop>
@@ -24,6 +32,7 @@
 import AtomSearchBar from '@/components/atoms/AtomSearchBar.vue';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
+import IconCircleFullFilled from '@/components/icons/IconCircleFullFilled.vue';
 import { getTags, addTag } from '@/db/tags';
 import { getAllTasks } from '@/db/tasks';
 import MoleculeMenuItem from './MoleculeMenuItem.vue';
@@ -40,6 +49,7 @@ export default {
     AtomAddButton,
     AtomAddInput,
     MoleculeMenuItem,
+    IconCircleFullFilled,
   },
   methods: {
     async getItems() {
