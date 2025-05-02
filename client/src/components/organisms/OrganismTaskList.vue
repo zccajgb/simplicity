@@ -8,6 +8,7 @@
               <MoleculeTaskListItem 
                   :id="task._id"
                   :taskId="task._id" 
+                  :data-task-id="task._id"
                   @click.stop="$emit('selected', task._id)"
                   class="w-full"
                   :class="{ 
@@ -16,7 +17,22 @@
                     'hide': !filter(task),
                   }"
                   :showProject="showProject"
+                  @showEditProject="handleShowEditProject"
                 />
+              <div 
+                v-if="showEditProject == task._id" 
+                class="absolute z-50"
+                :style="modalPosition"
+              >
+                <MoleculeSelectProjectModal
+                  v-model="task.projectId"
+                  itemtype="project"
+                  :inline="true"
+                  @close="handleCloseEditProject(task)"
+                  @focusout="handleCloseEditProject(task)"
+                  @blur="handleCloseEditProject(task)"
+                />
+              </div>
             </Draggable>
         </Container>
         </ul>
@@ -28,7 +44,7 @@
         </div>
         <div class="flex">
           <AtomIconButton 
-            class="ml-auto mr-2 mt-4 mb-4 border-slate-300 border"
+            class="ml-auto mr-2 mt-4 mb-4 border-slate-300 border hidden md:block"
             :class="showCompleted ? 'bg-slate-200' : 'bg-white'"
             icon="plus"
             buttonText="show completed"
@@ -37,10 +53,28 @@
             <ArchiveBoxIcon class="h-5 w-5"/>
           </AtomIconButton>
           <AtomIconButton 
-            class="mr-auto ml-2 mt-4 mb-4 border-slate-300 border"
+            class="ml-auto mr-1 mt-4 mb-4 border-slate-300 border md:hidden"
+            :class="showCompleted ? 'bg-slate-200' : 'bg-white'"
+            icon="plus"
+            buttonText="completed"
+            @click="getCompleted"
+          >
+            <ArchiveBoxIcon class="h-5 w-5"/>
+          </AtomIconButton>
+          <AtomIconButton 
+            class="mr-auto ml-2 mt-4 mb-4 border-slate-300 border hidden md:block"
             :class="showSnoozed ? 'bg-slate-200' : 'bg-white'"
             icon="plus"
             buttonText="show snoozed"
+            @click="getSnoozed"
+          >
+            <BellSnoozeIcon class="h-5 w-5"/>
+          </AtomIconButton>
+          <AtomIconButton 
+            class="mr-auto ml-1 mt-4 mb-4 border-slate-300 border md:hidden"
+            :class="showSnoozed ? 'bg-slate-200' : 'bg-white'"
+            icon="plus"
+            buttonText="snoozed"
             @click="getSnoozed"
           >
             <BellSnoozeIcon class="h-5 w-5"/>
@@ -65,6 +99,7 @@
   
 <script>
 import MoleculeTaskListItem from '@/components/molecules/MoleculeTaskListItem.vue';
+import MoleculeSelectProjectModal from '@/components/molecules/MoleculeSelectProjectModal.vue';
 import AtomAddButtonLarge from '@/components/atoms/AtomAddButtonLarge.vue';
 import AtomIconButton from '@/components/atoms/AtomIconButton.vue';
 import AtomAddTaskInput from '@/components/atoms/AtomAddTaskInput.vue';
@@ -81,7 +116,8 @@ export default {
     AtomIconButton,
     BellSnoozeIcon,
     Container,
-    Draggable
+    Draggable,
+    MoleculeSelectProjectModal,
   },
   props: {
     projectId: {
@@ -104,9 +140,33 @@ export default {
   data() {
     return {
       showAdd: false,
+      showEditProject: null,
+      modalPosition: {}, // Add this to store the modal's position
     }
   },
   methods: {
+    updateModalPosition({ id, top, left }) {
+      this.showEditProject = id;
+      this.modalPosition = {
+        top: `${top}px`,
+        left: `${left}px`,
+      };
+    },
+    handleCloseEditProject(task) {
+      this.$store.dispatch('updateTask', task);
+      this.showEditProject = null;
+      this.modalPosition = {}; // Reset modal position
+    },
+    handleShowEditProject({ id, top, right }) {
+      const containerRect = this.$el.getBoundingClientRect();
+      console.log(containerRect.right, right);
+      right = containerRect.right - right;
+      this.showEditProject = id;
+      this.modalPosition = {
+        top: `${top}px`,
+        right: `${right}px`,
+      };
+    },
     async getCompleted() {
       this.$store.dispatch('getCompletedTasks', !this.showCompleted);
     },

@@ -188,25 +188,29 @@ async fn refresh_token(user: UserModel, session_token: String) -> Result<UserMod
     result
 }
 
-async fn refresh_token_inner(user: &UserModel, session_token: &String) -> Result<UserModel> {
+async fn refresh_token_inner(user: &UserModel, session_token: &str) -> Result<UserModel> {
     let client = create_auth_client();
     let refresh_token = user
         .clone()
         .refresh_token
         .ok_or(anyhow::anyhow!("No refresh token for user: {:?}", user))?;
     let token = client
-        .exchange_refresh_token(&RefreshToken::new(refresh_token))
+        .exchange_refresh_token(&RefreshToken::new(refresh_token.clone()))
         .request_async(async_http_client)
         .await
-        .map_err(|e| anyhow::anyhow!("Error refreshing token"))?;
+        .map_err(|e| anyhow::anyhow!("Error refreshing token, {:?}", e))?;
 
     let access_token = token.access_token().secret().as_str();
+    let mut new_refresh_token = token.refresh_token().map(|t| t.secret().clone());
+    if new_refresh_token.is_none() {
+        new_refresh_token = Some(refresh_token);
+    }
     let user = users_repo::update_tokens_for_user(
         &user.user_id,
         access_token.to_string(),
-        None,
+        new_refresh_token,
         user.token_expiry,
-        session_token.clone(),
+        String::from(session_token),
     )
     .await?;
     Ok(user)

@@ -1,24 +1,37 @@
 <template>
-  <div class="flex flex-wrap rounded-md bg-slate-100 max-h-[50vh] overflow-y-auto" @click.stop>
-    <AtomSearchBar @input="handleFilter" ref="search"/>
-    <div class="w-full px-4 pb-2 overflow-y-auto">
+  <div 
+    class="flex flex-wrap rounded-md max-h-[50vh] overflow-y-auto max-w-96"
+    :class="inline ? 'bg-white' : 'bg-slate-100'"
+    @click.stop
+    @focusout="$emit('close')"
+  >
+    <AtomSearchBar v-if="!inline" @input="handleFilter" ref="search"/>
+    <div class="w-full overflow-y-auto h-full" 
+    :class="inline ? 'p-0 pt-2' : 'px-4 pb-2'">
       <div v-for="item in items" :key="item._id" class="w-full">
         <MoleculeMenuItem 
-          class="rounded-md hover:bg-slate-300 max-h-12 overflow-hidden"
-          :class="isSelected(item._id) ? 'bg-slate-400 text-white' : ''"
+          class="rounded-md hover:bg-slate-300 max-h-12 overflow-hidden flex items-center"
+          :class="isSelected(item._id) ? inline ? 'bg-slate-200' : 'bg-slate-400 text-white' : ''"
           @click="handleSelect(item._id)">
-          <span v-if="itemtype === 'project'" class="inline-flex mr-2"> 
+          <span v-if="itemtype === 'project'" class="inline-flex mr-2 items-center"> 
             <IconCircleFullFilled 
-             class="h-4 w-4"
-            :class="`text-${item.colour}-400`"
+             :class="[
+              `text-${item.colour}-400`,
+              inline ? 'h-3 w-3' : 'h-4 w-4'
+            ]"
             />
           </span>
-          <span class="inline-flex ml-2"> 
+          <div 
+            class="inline-flex items-center" 
+            :class="[
+              inline ? 'text-sm' : ''
+            ]"
+          >
             {{ item.name }}
-          </span>
+          </div>
         </MoleculeMenuItem>
       </div>
-      <div @click.stop>
+      <div @click.stop v-if="!inline">
         <AtomAddInput ref="addProject" :saveFunction="handleAdd" :defaultValue="$refs?.search?.$refs?.input?.value ?? ''" v-model="showAdd" :lightMode="true"/>
         <div class="pr-2">
           <AtomAddButton v-model="showAdd" :focusRef="$refs.addProject" :lightMode="false"/>
@@ -37,11 +50,28 @@ import { getTags, addTag } from '@/db/tags';
 import { getAllTasks } from '@/db/tasks';
 import MoleculeMenuItem from './MoleculeMenuItem.vue';
 export default {
-  props: ['modelValue', 'itemtype', 'multiselect'],
+  props: {
+    modelValue: {
+      type: [String, Array],
+      default: null,
+    },
+    itemtype: {
+      type: String,
+      required: true,
+    },
+    multiselect: {
+      type: Boolean,
+      default: false,
+    },
+    inline: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['update:modelValue', 'close'],
   data() {
     return {
       items: [],
-      showAdd: false,
     };
   },
   components: {
