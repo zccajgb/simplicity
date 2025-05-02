@@ -12,9 +12,9 @@
                   task.completed ? 'line-through' : '',
                 ]"
           />
-          <div class="flex items-center mx-6 flex-auto my-auto">
+          <div class="flex items-center ml-6 flex-auto my-auto">
               <p 
-                class="text-lg leading-6 min-w-12 px-2 pl-2 mr-6 pr-3 sm:pr-12 text-transform-none" 
+                class="text-lg min-w-12 text-transform-none" 
                 :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
                   task.completed ? 'line-through' : '',
@@ -28,17 +28,27 @@
                 v-linkified
               >
               </p>
-            </div>
-            <div class="flex mr-2 w-24">
+          </div>
+            <div class="flex mr-1 md:w-24">
               <div
                 v-if="showProject === true || showProject === 'inbox' && this.$store.getters.getProjectNameById(task.projectId) !== 'inbox'"
-                class="px-2 py-1 text-sm"
-                :class="`text-${projectColour}-300`"
+                class="px-2 py-1 text-sm hidden sm:block"
+                :class="`text-${projectColour}-400`"
+                @click.stop="emitShowEditProject"
+                ref="projectName"
               >
                 {{ projectName }}
               </div>
+              
+              <div
+                v-if="showProject === true || showProject === 'inbox' && this.$store.getters.getProjectNameById(task.projectId) !== 'inbox'"
+                class="px-2 py-1 my-auto text-sm sm:hidden"
+                :class="`text-${projectColour}-400`"
+              >
+                <IconCircleFullFilled class="h-2 w-2"/>
+              </div>
             </div>
-            <div v-if="task.snooze" class="flex items-center mr-10" @click.stop="handleUnsnooze">
+            <div v-if="task.snooze" class="flex items-center mr-2 md:mr-10" @click.stop="handleUnsnooze">
               <BellSnoozeIcon 
                 class="h-4 w-4"
                 :class="[
@@ -48,7 +58,7 @@
                 ]"
               />
             </div>
-            <div v-else class="flex mr-10 h-4 w-4"> </div>
+            <div v-else class="flex mr-2 md:mr-10 h-4 w-4"> </div>
           <AtomTTL
             class="flex items-center justify-end right-0 "
             :class="[
@@ -70,13 +80,16 @@ import AtomTTL from '../atoms/AtomTTL.vue';
 import { BellSnoozeIcon } from '@heroicons/vue/24/solid';
 import linkify from 'vue-linkify';
 import { setToday, setTomorrow, setLater, getTtl } from '@/mixins/ttlHelper';
+import IconCircleFullFilled from '../icons/IconCircleFullFilled.vue';
 
 export default {
+  emits: ['showEditProject'],
   props: [ 'taskId', 'showProject' ],
   components: {
     AtomCheckbox,
     AtomTTL,
-    BellSnoozeIcon
+    BellSnoozeIcon,
+    IconCircleFullFilled,
   },
   directives: {
     linkified: linkify
@@ -87,6 +100,18 @@ export default {
     }
   },
   methods: {
+    emitShowEditProject() {
+      const projectNameElement = this.$refs.projectName;
+      let position = { top: 0, right: 0 };
+      if (projectNameElement) {
+        const rect = projectNameElement.getBoundingClientRect();
+        position = {
+          top: rect.bottom + window.scrollY, // Adjust for scrolling
+          right: rect.right + window.scrollX, // Use the right edge of the element
+        };
+      }
+      this.$emit('showEditProject', { id: this.task._id, ...position });
+    },
     handleUnsnooze() {
       this.task.snooze = null;
       this.updateTask();

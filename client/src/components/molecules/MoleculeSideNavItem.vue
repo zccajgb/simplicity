@@ -21,9 +21,9 @@
       </div>
      
       <div 
-        class="flex h-4 w-4 mx-auto sm:ml-2 my-auto text-right items-center"
+        class="flex h-2 w-2 ml-1 sm:h-4 sm:w-4 mx-auto sm:ml-2 my-auto text-right items-center"
         :class="[
-          showNavMobile ? 'ml-2' : '',
+          showNavMobile ? 'ml-1' : '',
           `text-${colour}-400`
           ]"
         v-if="type==='projects' && value!=='logout'"
@@ -33,7 +33,7 @@
       
       <div 
         v-if="!showNavMobile && !iconList.includes(value)"
-        class="sm:hidden text-sm text-left text-balance px-[5px] my-auto truncate"
+        class="sm:hidden text-xs text-left text-balance px-[5px] my-auto truncate"
       >
         {{value}}
       </div>
