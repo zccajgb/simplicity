@@ -13,7 +13,9 @@
                 ]"
           />
           <div class="flex items-center ml-6 flex-auto my-auto">
+          <div class="flex items-center ml-6 flex-auto my-auto">
               <p 
+                class="text-lg min-w-12 text-transform-none" 
                 class="text-lg min-w-12 text-transform-none" 
                 :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
@@ -23,6 +25,7 @@
                 @blur="updateName"
                 @focusout="updateName"
                 @keydown.enter.prevent="handleEnterClick"
+                @click="handleClickLink"
                 @click="handleClickLink"
                 v-html="task.name"
                 v-linkified
@@ -61,6 +64,7 @@
               />
             </div>
             <div v-else class="flex mr-2 md:mr-10 h-4 w-4"> </div>
+            <div v-else class="flex mr-2 md:mr-10 h-4 w-4"> </div>
           <AtomTTL
             class="flex items-center justify-end right-0 "
             :class="[
@@ -83,13 +87,18 @@ import { BellSnoozeIcon } from '@heroicons/vue/24/solid';
 import linkify from 'vue-linkify';
 import { setToday, setTomorrow, setLater, getTtl } from '@/mixins/ttlHelper';
 import IconCircleFullFilled from '../icons/IconCircleFullFilled.vue';
+import IconCircleFullFilled from '../icons/IconCircleFullFilled.vue';
 
 export default {
+  emits: ['showEditProject'],
+  props: [ 'taskId', 'showProject' ],
   emits: ['showEditProject'],
   props: [ 'taskId', 'showProject' ],
   components: {
     AtomCheckbox,
     AtomTTL,
+    BellSnoozeIcon,
+    IconCircleFullFilled,
     BellSnoozeIcon,
     IconCircleFullFilled,
   },
@@ -118,12 +127,33 @@ export default {
       this.task.snooze = null;
       this.updateTask();
     },
+    emitShowEditProject() {
+      const projectNameElement = this.$refs.projectName;
+      let position = { top: 0, right: 0 };
+      if (projectNameElement) {
+        const rect = projectNameElement.getBoundingClientRect();
+        position = {
+          top: rect.bottom + window.scrollY, // Adjust for scrolling
+          right: rect.right + window.scrollX, // Use the right edge of the element
+        };
+      }
+      this.$emit('showEditProject', { id: this.task._id, ...position });
+    },
+    handleUnsnooze() {
+      this.task.snooze = null;
+      this.updateTask();
+    },
     handleClickLink($event) {
       if ($event.target.tagName === 'A') {
         $event.preventDefault();
         $event.stopPropagation();
+        $event.stopPropagation();
         window.open($event.target.href, '_blank');
       }
+      if (this.$isMobile()) {
+        return;
+      }
+      $event.stopPropagation();
       if (this.$isMobile()) {
         return;
       }
@@ -178,6 +208,9 @@ export default {
     if (this.$isMobile()) {
       this.disallowEdit();
     }
+    if (this.$isMobile()) {
+      this.disallowEdit();
+    }
     // this.task = this.$store.getters.getTaskById(this.taskId);
   },
   computed: {
@@ -186,6 +219,17 @@ export default {
     },
     ttl() {
       return getTtl(this.task.date)
+    },
+    snoozedToday() {
+      const today = new Date().setHours(23, 59, 59, 59)
+      const snoozedToday = this.task.snooze && new Date(this.task.snooze) < today;
+      return snoozedToday;
+    },
+    projectName() {
+      return this.$store.getters.getProjectNameById(this.task.projectId);
+    },
+    projectColour() {
+      return this.$store.getters.getProjectColourById(this.task.projectId);
     },
     snoozedToday() {
       const today = new Date().setHours(23, 59, 59, 59)
