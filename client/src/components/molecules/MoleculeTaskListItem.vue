@@ -13,9 +13,7 @@
                 ]"
           />
           <div class="flex items-center ml-6 flex-auto my-auto">
-          <div class="flex items-center ml-6 flex-auto my-auto">
               <p 
-                class="text-lg min-w-12 text-transform-none" 
                 class="text-lg min-w-12 text-transform-none" 
                 :class="[
                   task.completed || !filter(task) ? 'text-slate-300':  'text-slate-500',
@@ -25,7 +23,6 @@
                 @blur="updateName"
                 @focusout="updateName"
                 @keydown.enter.prevent="handleEnterClick"
-                @click="handleClickLink"
                 @click="handleClickLink"
                 v-html="task.name"
                 v-linkified
@@ -87,18 +84,13 @@ import { BellSnoozeIcon } from '@heroicons/vue/24/solid';
 import linkify from 'vue-linkify';
 import { setToday, setTomorrow, setLater, getTtl } from '@/mixins/ttlHelper';
 import IconCircleFullFilled from '../icons/IconCircleFullFilled.vue';
-import IconCircleFullFilled from '../icons/IconCircleFullFilled.vue';
 
 export default {
-  emits: ['showEditProject'],
-  props: [ 'taskId', 'showProject' ],
   emits: ['showEditProject'],
   props: [ 'taskId', 'showProject' ],
   components: {
     AtomCheckbox,
     AtomTTL,
-    BellSnoozeIcon,
-    IconCircleFullFilled,
     BellSnoozeIcon,
     IconCircleFullFilled,
   },
