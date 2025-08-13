@@ -44,6 +44,8 @@
                 v-if="showProject === true || showProject === 'inbox' && this.$store.getters.getProjectNameById(task.projectId) !== 'inbox'"
                 class="px-2 py-1 my-auto text-sm sm:hidden"
                 :class="`text-${projectColour}-400`"
+                @click.stop="emitShowEditProject"
+                ref="projectName"
               >
                 <IconCircleFullFilled class="h-2 w-2"/>
               </div>

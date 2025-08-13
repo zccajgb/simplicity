@@ -27,7 +27,7 @@
             <AtomIconButton :buttonText="projectName" @click.stop="selectModal('project')" :selected="projectName != 'inbox'">
               <FolderIcon class="h-4 w-4"/>
             </AtomIconButton>
-            <AtomIconButton :buttonText="getDateText(task.snooze, 'snooze')" @click.stop="selectModal('snooze')" :selected="!!task.snooze">
+            <AtomIconButton :buttonText="getDateText(task.snooze, 'snooze')" @click.stop="handleSnooze()" :selected="!!task.snooze">
               <BellSnoozeIcon class="h-4 w-4"/>
             </AtomIconButton>
           </div>
@@ -83,9 +83,9 @@
             v-model="task.repeat"
             v-else-if="selector === 'repeat'"
           />
-          <MoleculeDatePickerModal 
+          <MoleculeSnoozeModal 
             @close="close" 
-            v-model="task.snooze" 
+            v-model="task" 
             v-else-if="selector === 'snooze'"
           />
         </div>
@@ -163,6 +163,7 @@ import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
 import linkify from 'vue-linkify';
+import { getTomorrow } from '@/mixins/ttlHelper';
 
 export default {
   props: ['selectedTaskId'],
@@ -203,6 +204,14 @@ export default {
     linkified: linkify
   },
   methods: {
+    handleSnooze() {
+      let tomorrow = getTomorrow();
+      if (this.task.date && this.task.date > tomorrow) {
+        this.task.snooze = true;
+      } else {
+        this.selectModal('snooze');
+      }
+    },
     handleClickLink($event) {
       if ($event.target.tagName === 'A') {
         $event.preventDefault();
