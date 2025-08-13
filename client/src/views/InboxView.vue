@@ -22,7 +22,10 @@ export default {
     const filter = (task) => { return (task.projectId === this.inboxId) || new Date(task.snooze) < getTomorrow() };
     const query = { $or: [ 
       { projectId: this.inboxId },
-      { snooze: { $lt: getTomorrow(), $gt: null } }
+      // { $and: [
+        // { snooze: true}, 
+        // { date: { $lt: getTomorrow(), $gt: null } }
+      // ]}
     ]};
     this.getTasks(query, filter);
   },

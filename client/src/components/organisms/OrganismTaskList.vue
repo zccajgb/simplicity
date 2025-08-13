@@ -61,7 +61,7 @@
           >
             <ArchiveBoxIcon class="h-5 w-5"/>
           </AtomIconButton>
-          <AtomIconButton 
+          <AtomIconButton
             class="mr-auto ml-2 mt-4 mb-4 border-slate-300 border hidden md:block"
             :class="showSnoozed ? 'bg-slate-200' : 'bg-white'"
             icon="plus"
@@ -106,6 +106,7 @@ import AtomAddTaskInput from '@/components/atoms/AtomAddTaskInput.vue';
 import { ArchiveBoxIcon, BellSnoozeIcon } from '@heroicons/vue/24/outline';
 import { Container, Draggable } from 'vue-dndrop';
 import { Task } from '@/models/task.js';
+import { getToday } from '@/mixins/ttlHelper';
 
 export default {
   components: {

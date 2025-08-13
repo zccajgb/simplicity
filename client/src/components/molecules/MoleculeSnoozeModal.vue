@@ -2,8 +2,7 @@
   <div class="flex flex-wrap w-full min-h-16 rounded-md bg-slate-200">
     <div class="w-full">
         <MoleculeMenuItem class="w-full rounded-md hover:bg-slate-300" @click="handleSelect('short')">
-
-          short
+          short 
         </MoleculeMenuItem>
         <MoleculeMenuItem class="w-full rounded-md hover:bg-slate-300" @click="handleSelect('medium')">
           medium 
@@ -42,19 +41,24 @@ export default {
       if (key === "long") {
         base_interval = 7;
       }
-      if (!this.n_snoozes) {
-        this.n_snoozes = 0;
+    
+      if (!this.selected.n_snoozes) {
+        this.selected.n_snoozes = 0;
       }
-      this.n_snoozes += 1;
-      this.n_snoozes = Math.min(this.n_snoozes, 10);
-      let snooze_interval = base_interval * this.n_snoozes;
-      this.date = new Date();
-      this.date.setDate((new Date().getDate()) + snooze_interval);
-      this.snoozed = true;
+      this.selected.n_snoozes += 1;
+      this.selected.n_snoozes = Math.min(this.selected.n_snoozes, 10);
+      let snooze_interval = base_interval * this.selected.n_snoozes;
+      console.log("snooze_interval", snooze_interval, "base_interval", base_interval, "n_snoozes", this.selected.n_snoozes);
+      let date = new Date();
+      date.setDate((new Date().getDate()) + snooze_interval);
+      this.selected.date = date;
+      this.selected.snooze = true;
+      this.$emit('update:modelValue', this.selected);
       this.$emit('close');
     },
   },
   mounted() {
+    // console.log("selected", this.selected);
   },
   computed: {
     selected: {

@@ -55,3 +55,10 @@ export function getTomorrow() {
   date.setHours(0, 0, 0, 0);
   return date;
 }
+
+export function getDayAfterTomorrow() {
+  let date = new Date();
+  date.setDate(date.getDate() + 2);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}

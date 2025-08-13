@@ -18,10 +18,27 @@ export default {
 
 export function handleCompletedAndSnoozed(query, includeSnoozed, includeCompleted) {
   if (!includeSnoozed) {
-    query = {
-      ...query,
-      snooze: { $lt: getTomorrow() },
-    };
+    if (query.$or) {
+      query = {
+        $and: [
+          query,
+          {
+            $or: [
+              { snooze: { $ne: true } },
+              { date: { $lt: getTomorrow() } }
+            ]
+          }
+        ]
+      };
+    } else {
+      query = {
+        ...query,
+        $or: [
+          { snooze: { $ne: true } },
+          { date: { $lt: getTomorrow() } }
+        ]
+      };
+    }
   }
   if (!includeCompleted) {
     if (query.$or) {

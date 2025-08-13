@@ -61,7 +61,7 @@
               />
             </div>
             <div v-else class="flex mr-2 md:mr-10 h-4 w-4"> </div>
-            <div v-else class="flex mr-2 md:mr-10 h-4 w-4"> </div>
+            <!-- <div v-else class="flex mr-2 md:mr-10 h-4 w-4"> </div> -->
           <AtomTTL
             class="flex items-center justify-end right-0 "
             :class="[
@@ -130,10 +130,6 @@ export default {
         };
       }
       this.$emit('showEditProject', { id: this.task._id, ...position });
-    },
-    handleUnsnooze() {
-      this.task.snooze = null;
-      this.updateTask();
     },
     handleClickLink($event) {
       if ($event.target.tagName === 'A') {
@@ -214,7 +210,7 @@ export default {
     },
     snoozedToday() {
       const today = new Date().setHours(23, 59, 59, 59)
-      const snoozedToday = this.task.snooze && new Date(this.task.snooze) < today;
+      const snoozedToday = this.task.snooze && new Date(this.task.date) < today;
       return snoozedToday;
     },
     projectName() {
@@ -223,17 +219,6 @@ export default {
     projectColour() {
       return this.$store.getters.getProjectColourById(this.task.projectId);
     },
-    snoozedToday() {
-      const today = new Date().setHours(23, 59, 59, 59)
-      const snoozedToday = this.task.snooze && new Date(this.task.snooze) < today;
-      return snoozedToday;
-    },
-    projectName() {
-      return this.$store.getters.getProjectNameById(this.task.projectId);
-    },
-    projectColour() {
-      return this.$store.getters.getProjectColourById(this.task.projectId);
-    }
   }
 }
 

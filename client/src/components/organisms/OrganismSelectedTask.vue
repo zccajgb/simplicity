@@ -27,7 +27,7 @@
             <AtomIconButton :buttonText="projectName" @click.stop="selectModal('project')" :selected="projectName != 'inbox'">
               <FolderIcon class="h-4 w-4"/>
             </AtomIconButton>
-            <AtomIconButton :buttonText="getDateText(task.snooze, 'snooze')" @click.stop="handleSnooze()" :selected="!!task.snooze">
+            <AtomIconButton :buttonText="task.snooze ? getDateText(task.date, 'snooze') : 'snooze'" @click.stop="handleSnooze()" :selected="!!task.snooze">
               <BellSnoozeIcon class="h-4 w-4"/>
             </AtomIconButton>
           </div>
@@ -89,8 +89,6 @@
             v-else-if="selector === 'snooze'"
           />
         </div>
-
-        <AtomHorizontalSeperator/>
 
         <div class="px-6">
           <div 
@@ -157,13 +155,14 @@ import MoleculeSubTaskListItem from '@/components/molecules/MoleculeSubTaskListI
 import MoleculeSelectProjectModal from '@/components/molecules/MoleculeSelectProjectModal.vue';
 import MoleculeSelectRepeatModal from '@/components/molecules/MoleculeSelectRepeatModal.vue';
 import MoleculeDatePickerModal from '@/components/molecules/MoleculeDatePickerModal.vue';
+import MoleculeSnoozeModal from '@/components/molecules/MoleculeSnoozeModal.vue';
 import { FolderIcon, BellSnoozeIcon, CalendarIcon, ArrowPathIcon, ArrowRightIcon, TagIcon, Square2StackIcon } from '@heroicons/vue/24/outline';
 import { TrashIcon } from '@heroicons/vue/20/solid';
 import vueClickOutside from 'vue-click-outside';
 import AtomAddButton from '@/components/atoms/AtomAddButton.vue';
 import AtomAddInput from '@/components/atoms/AtomAddInput.vue';
 import linkify from 'vue-linkify';
-import { getTomorrow } from '@/mixins/ttlHelper';
+import { getDayAfterTomorrow } from '@/mixins/ttlHelper';
 
 export default {
   props: ['selectedTaskId'],
@@ -188,6 +187,7 @@ export default {
     MoleculeSelectProjectModal,
     MoleculeDatePickerModal,
     MoleculeSelectRepeatModal,
+    MoleculeSnoozeModal,
     AtomAddButton,
     AtomAddInput,
     TrashIcon,
@@ -205,12 +205,17 @@ export default {
   },
   methods: {
     handleSnooze() {
-      let tomorrow = getTomorrow();
-      if (this.task.date && this.task.date > tomorrow) {
-        this.task.snooze = true;
-      } else {
-        this.selectModal('snooze');
+      if (this.task.snooze) {
+        this.task.snooze = false;
+        this.task.n_snoozes -= 1;
+        return;
       }
+      let dayAfterTomorrow = getDayAfterTomorrow();
+      if (this.task.date && this.task.date > dayAfterTomorrow) {
+        this.task.snooze = true;
+        return;
+      } 
+      this.selectModal('snooze');
     },
     handleClickLink($event) {
       if ($event.target.tagName === 'A') {
