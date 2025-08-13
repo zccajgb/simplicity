@@ -29,6 +29,7 @@ fn rocket() -> _ {
     }
     rocket::build()
         .mount("/", users::get_routes())
+        .attach(make_cors())
         .attach(AuthFairing)
 }
 
@@ -39,7 +40,7 @@ fn make_cors() -> Cors {
         "https://127.0.0.1:8080",
         "https://simplicity.buckleyresearch.com",
     ]);
-    let allowed_origins = AllowedOrigins::all();
+    // let allowed_origins = AllowedOrigins::all();
 
     let cors = CorsOptions {
         allowed_origins,
