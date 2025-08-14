@@ -1,7 +1,7 @@
 <template>
-  <div class="md:flex w-full h-screen bg-white relative">
+  <div class="md:flex w-full h-fix overflow-y-auto bg-white relative">
     <div 
-      class="flex flex-col h-screen grow" 
+      class="flex flex-col h-fix grow" 
       @click="this.selectedTaskId=null"
     >
       <OrganismTaskList 

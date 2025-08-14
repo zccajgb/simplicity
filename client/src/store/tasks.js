@@ -79,6 +79,13 @@ export default {
     },
     setQuery(state, query, includeSnoozed, includeCompleted) {
       state.query = query;
+      if (typeof includeSnoozed === 'undefined') {
+        includeSnoozed = false;
+      }
+      if (typeof includeCompleted === 'undefined') {
+        includeCompleted = false;
+      }
+      console.log("setQuery", includeSnoozed, includeCompleted);
       state.includeSnoozed = includeSnoozed;
       state.includeCompleted = includeCompleted;
     }
@@ -94,8 +101,9 @@ export default {
       await dispatch("getTasks");
     },
     async getTasks({ commit, state }) {
-      console.log("query", state.query);
+      // console.log("query", state.query);
       let query = { ...state.query };
+
       query = handleCompletedAndSnoozed(query, state.includeSnoozed, state.includeCompleted);
       let tasks = await findTasks(query);
       commit("setTasks", tasks.docs);

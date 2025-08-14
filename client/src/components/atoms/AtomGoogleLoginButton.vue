@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-screen h-screen py-32 px-5">
+  <div class="flex w-screen h-fix py-32 px-5">
     <div class="m-auto border border-slate-200 bg-slate-100 rounded-md px-10 h-full">
       <img src="@/assets/logo.svg" class="w-44 h-44"/>
       <div class="sm:space-y-10 sm:mb-10 space-y-6">

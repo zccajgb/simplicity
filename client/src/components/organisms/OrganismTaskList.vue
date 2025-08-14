@@ -1,6 +1,6 @@
 <template>
     <div class="relative h-full">
-      <div class="w-full max-w-[calc(100vw-3.5rem)] max-h-screen max-h-screen overflow-y-scroll">
+      <div class="w-full max-w-[calc(100vw-3.5rem)] h-fix overflow-y-scroll">
         <ul>
           <AtomAddTaskInput v-model="showAdd" :saveFunction="addTask" ref="addTaskInput" @blur="showAdd=false"/>
           <Container @drop="drop">
@@ -91,7 +91,7 @@
 
         </div>
       </div>
-      <div class="fixed bottom-0 right-0 p-4">
+      <div class="absolute bottom-0 right-0 p-4">
         <AtomAddButtonLarge ref="addButton" v-model="showAdd" :focusRef="$refs.addTaskInput" :lightMode="false"/>
       </div>
     </div>

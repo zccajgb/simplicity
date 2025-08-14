@@ -20,14 +20,8 @@ export default {
   async mounted() {
     this.inboxId = this.$store.getters.userInboxId;
     const filter = (task) => { return (task.projectId === this.inboxId) || new Date(task.snooze) < getTomorrow() };
-    const query = { $or: [ 
-      { projectId: this.inboxId },
-      // { $and: [
-        // { snooze: true}, 
-        // { date: { $lt: getTomorrow(), $gt: null } }
-      // ]}
-    ]};
-    this.getTasks(query, filter);
+    const query = { projectId: this.inboxId };
+    this.getTasks(query, filter, false, false);
   },
 }
 </script>

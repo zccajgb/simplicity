@@ -1,6 +1,6 @@
 <template>
   <!-- <div class="flex"> -->
-    <aside class="top-0 left-0 p-0 m-0">
+    <aside class="top-0 left-0 p-0 m-0 max-h-fix">
     <div class="top-0 left-0 w-14 sm:w-64 m-0 h-full bg-slate-800 text-white flex flex-col" :class="showNavMobile ? 'w-64' : 'w-14'">
       <div class="flex sm:hidden" @click="showNavMobile = !showNavMobile">
         <Bars3Icon class="h-8 w-8 my-4" :class="showNavMobile ? 'mx-4' : 'mx-auto'"/>

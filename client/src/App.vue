@@ -17,9 +17,14 @@ export default {
   methods: {
     handleVisibilityChange() {
     },
+    setVh() {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    }
   },
  mounted() {
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
+    window.addEventListener('resize', this.setVh);
+    this.setVh();
   },
   beforeUnmount() {
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
@@ -28,8 +33,8 @@ export default {
 </script>
 
 <template>
-  <div class="flex w-screen h-screen overflow-hidden">
-    <OrganismSideNav class="h-screen" v-if="$store.getters.isLoggedIn"/>
+  <div class="flex w-screen h-fix overflow-hidden">
+    <OrganismSideNav class="h-fix" v-if="$store.getters.isLoggedIn"/>
     <div class="h-full w-full">
       <MoleculeAlert
       class="absolute top-2 z-50 left-2 max-h-16"
@@ -40,5 +45,5 @@ export default {
   </div>
 </template>
 
-<style scoped>
+<style>
 </style>
