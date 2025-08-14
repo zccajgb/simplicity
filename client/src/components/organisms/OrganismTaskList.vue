@@ -91,7 +91,7 @@
 
         </div>
       </div>
-      <div class="absolute bottom-0 right-0 p-4">
+      <div class="fixed bottom-0 right-0 p-4">
         <AtomAddButtonLarge ref="addButton" v-model="showAdd" :focusRef="$refs.addTaskInput" :lightMode="false"/>
       </div>
     </div>
