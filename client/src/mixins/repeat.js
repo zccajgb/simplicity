@@ -6,7 +6,11 @@ export function createRepeat(task) {
   }
   let newTask = Task.clone(task);
 
-  newTask.date = task.date ?? new Date();
+  newTask.date = task.date;
+  if (!newTask.date || newTask.date < new Date()) {
+    newTask.date = new Date();
+  }
+  
   if (task.repeat.key === "yearly") {
     newTask.date = new Date(newTask.date.getFullYear() + 1, newTask.date.getMonth(), newTask.date.getDate());
     }

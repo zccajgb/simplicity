@@ -15,7 +15,7 @@ export default {
   },
   async mounted() {
       const filter = (task) => { return !!task.snooze };
-      const query = { snooze: { $ne: null } };
+      const query = { snooze: true };
       await this.getTasks(query, filter, true);
   },
 }

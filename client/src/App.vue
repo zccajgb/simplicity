@@ -18,7 +18,7 @@ export default {
     handleVisibilityChange() {
     },
   },
-  mounted() {
+ mounted() {
     document.addEventListener("visibilitychange", this.handleVisibilityChange);
   },
   beforeUnmount() {
