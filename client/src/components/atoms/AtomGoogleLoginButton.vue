@@ -9,6 +9,11 @@
         <div>
           <button class="button bg-slate-500 text-white w-32 h-8 rounded-md" @click="login">login with google</button>
         </div>
+        <div> 
+          <p class="my-1"> this app is still in alpha </p>
+          <p class="my-1"> for access, email <a href="mailto:joe@buckleyresearch.com"> joe@buckleyresearch.com</a></p>
+          <p class="my-1"> i'm using google auth, sorry </p>
+        </div>
       </div>
     </div>
   </div>

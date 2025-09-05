@@ -205,7 +205,7 @@ export default {
   },
   methods: {
     handleSnooze() {
-      if (this.task.snooze) {
+      if (this.task.snooze && !(this.task.date > getDayAfterTomorrow())) {
         this.task.snooze = false;
         this.task.n_snoozes -= 1;
         return;
